@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function VerificationRequestTable() {
+export default function AdminAnalytics() {
   return (
     <div>
       
