@@ -1,12 +1,14 @@
-import React from 'react'
-import Sidebar from './components/admin/Sidebar'
+'use client';
+
+import React from 'react';
+import LandingPage from './(pages)/home/LandingPage';
 
 export default function page() {
   return (
     <>
       <div>
-        <Sidebar />
+        <LandingPage />
       </div>
     </>
-  )
+  );
 }
