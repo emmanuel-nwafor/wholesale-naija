@@ -13,7 +13,7 @@ interface MenuItem {
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { label: "Home", href: "/", icon: <Home size={20} /> },
+  { label: "Home", href: "/store/dashboard", icon: <Home size={20} /> },
   { label: "Products", href: "/store/products", icon: <Package size={20} /> },
   { label: "Store Management", href: "/store/products", icon: <Store size={20} /> },
   { label: "Reviews", href: "/store/reviews", icon: <Star size={20} /> },
@@ -26,11 +26,11 @@ export default function StoreSidebar() {
   const pathname = usePathname();
 
   const SidebarContent = (
-    <div className="flex flex-col h-full bg-white text-gray-800">
+    <div className="flex flex-col h-full bg-gray-50 text-gray-800">
       <div className="p-4 border-b border-gray-200">
         <Link href="/">
           <Image
-            src="https://res.cloudinary.com/dqtjja88b/image/upload/v1760219419/Screenshot_2025-10-11_224658_q8bjy2.png"
+            src="https://res.cloudinary.com/dqtjja88b/image/upload/v1760218941/wholesaleNaija-removebg-preview_tkw3tv.png"
             alt="Wholesale Naija"
             width={170}
             height={48}
@@ -47,18 +47,14 @@ export default function StoreSidebar() {
                 <Link
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all ${
-                    isActive
-                      ? "bg-green-50 text-green-600 font-medium"
-                      : "hover:bg-gray-100"
-                  }`}
+                  className="hover:bg-white flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all"
                 >
-                  <span className={isActive ? "text-green-600" : "text-gray-600"}>
+                  <span>
                     {item.icon}
                   </span>
                   <span className="flex-1">{item.label}</span>
                   {item.badge && (
-                    <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="bg-gray-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {item.badge}
                     </span>
                   )}
