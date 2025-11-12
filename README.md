@@ -79,9 +79,9 @@ The Wholesale Naija Web Application is built with a modern web development stack
 ## Author Info
 Developed with passion by a dedicated developer.
 
-*   **LinkedIn**: [Your LinkedIn Profile](https://linkedin.com/in/yourusername)
-*   **Twitter**: [@yourtwitterhandle](https://twitter.com/yourtwitterhandle)
-*   **Portfolio**: [Your Portfolio Website](https://yourportfolio.com)
+*   **LinkedIn**: [Emmanuel Chinecherem](https://linkedin.com/in/yourusername)
+*   **Twitter**: [@eChinecherem](https://twitter.com/yourtwitterhandle)
+*   **Portfolio**: [Emmanuel](https://eco-studios-fullstack.vercel.app)
 
 ## License
 This project is currently unlicensed. Please contact the author for details on usage and distribution.

@@ -1,6 +1,31 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Outfit", sans-serif;
   background-color: white;
+}
+
+/* Webkit scrollbar customization */
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+* {
+  scrollbar-width: thin; /* makes it tiny */
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
