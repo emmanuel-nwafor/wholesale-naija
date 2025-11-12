@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Home, Package, Store, MessageSquare, User, Menu, X } from "lucide-react";
+import { Home, Package, Store, MessageSquare, User, Menu, X, Star } from "lucide-react";
 
 interface MenuItem {
   label: string;
@@ -14,14 +14,14 @@ interface MenuItem {
 
 const MENU_ITEMS: MenuItem[] = [
   { label: "Home", href: "/", icon: <Home size={20} /> },
-  { label: "Products", href: "/products", icon: <Package size={20} /> },
-  { label: "Store Management", href: "/store", icon: <Store size={20} /> },
-  { label: "Reviews", href: "/reviews", icon: <MessageSquare size={20} /> },
-  { label: "Messages", href: "/messages", icon: <MessageSquare size={20} />, badge: 5 },
-  { label: "Profile", href: "/profile", icon: <User size={20} /> },
+  { label: "Products", href: "/store/products", icon: <Package size={20} /> },
+  { label: "Store Management", href: "/store/products", icon: <Store size={20} /> },
+  { label: "Reviews", href: "/store/reviews", icon: <Star size={20} /> },
+  { label: "Messages", href: "/store/messages", icon: <MessageSquare size={20} />, badge: 5 },
+  { label: "Profile", href: "/store/profile", icon: <User size={20} /> },
 ];
 
-export default function Sidebar() {
+export default function StoreSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
