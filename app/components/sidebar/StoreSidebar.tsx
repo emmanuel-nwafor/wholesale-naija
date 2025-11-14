@@ -23,7 +23,7 @@ const MENU_ITEMS: MenuItem[] = [
 
 export default function StoreSidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname();
+  // const pathname = usePathname();
 
   const SidebarContent = (
     <div className="flex flex-col h-full bg-gray-50 text-gray-800">
@@ -41,7 +41,7 @@ export default function StoreSidebar() {
       <nav className="flex-1 p-4">
         <ul className="space-y-1">
           {MENU_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
+            // const isActive = pathname === item.href;
             return (
               <li key={item.label}>
                 <Link

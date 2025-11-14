@@ -2,7 +2,7 @@
 "use client";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, AlertCircle, XCircle, MessageSquare, Store, ShoppingBag, Star, Bell, X } from "lucide-react";
+import { CheckCircle, AlertCircle, XCircle, MessageSquare, Store, Star, X } from "lucide-react";
 
 const mockNotifications = [
   {
