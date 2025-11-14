@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronDown, Image, Plus, Trash2, Edit2, ChevronRight } from 'lucide-react';
+import { ChevronDown, Plus, Trash2, Edit2, ChevronRight, ImageIcon } from 'lucide-react';
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 import AddVariantModal from "@/app/components/modals/AddvariantModal";
@@ -98,7 +98,7 @@ export default function AddProductVariantPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-3">Product Media *</label>
                         <div className="flex items-center gap-4">
                           <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">
-                            <Image className="h-10 w-10 text-gray-400" />
+                            <ImageIcon className="h-10 w-10 text-gray-400" />
                           </div>
                           <div className="text-xs text-gray-600">Media</div>
                         </div>
@@ -182,7 +182,7 @@ export default function AddProductVariantPage() {
                                     <img src={variant.imageUrl} alt={variant.name} className="w-full h-full object-cover" />
                                   ) : (
                                     <div className="w-full h-full bg-gray-200 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">
-                                      <Image className="h-8 w-8 text-gray-400" />
+                                      <ImageIcon className="h-8 w-8 text-gray-400" />
                                     </div>
                                   )}
                                 </div>

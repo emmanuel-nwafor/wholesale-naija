@@ -41,7 +41,7 @@ export default function DeleteModal({ show, onClose, onConfirm }: DeleteModalPro
                 Are you sure you want to delete this conversation?
               </h3>
               <p className="text-sm text-gray-500 mb-6">
-                This will remove it from your inbox but not from the user's.
+                This will remove it from your inbox but not from the user.
               </p>
               <div className="flex gap-3 justify-center">
                 <button

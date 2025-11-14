@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronDown, Image, Upload, X } from 'lucide-react';
+import Image from "next/image";
+import { ChevronDown, ImageIcon, X } from 'lucide-react';
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 import ReviewStatusModal from "@/app/components/modals/ReviewStatusModal";
@@ -46,7 +47,7 @@ export default function StoreManagement() {
                     <div className="relative">
                       {logoUrl ? (
                         <div className="w-24 h-24 rounded-xl overflow-hidden border border-gray-300">
-                          <img src={logoUrl} alt="Store logo" className="w-full h-full object-cover" />
+                          <Image src={logoUrl} alt="Store logo" className="w-full h-full object-cover" />
                           <button type="button" onClick={removeLogo} className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-md hover:bg-gray-100">
                             <X className="h-4 w-4 text-gray-600" />
                           </button>
@@ -54,7 +55,7 @@ export default function StoreManagement() {
                       ) : (
                         <>
                             <label className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
-                                <Image className="h-8 w-8 text-gray-400 mb-1" />
+                                <ImageIcon className="h-8 w-8 text-gray-400 mb-1" />
                                 <span className="text-xs text-gray-600">Media</span>
                                 <input type="file" accept="image/jpeg,image/png" onChange={handleLogoChange} className="hidden" />
                             </label>

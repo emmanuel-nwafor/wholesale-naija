@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronDown, Image } from 'lucide-react';
+import { ChevronDown, ImageIcon } from 'lucide-react';
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 
@@ -25,7 +25,7 @@ export default function AddProductSimplePage() {
                   Product Media *
                 </label>
                 <div className="border-2 border-dashed w-40 h-40 border-gray-300 rounded-2xl p-6 text-center flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
-                  <Image className="h-12 w-12 text-gray-400 mb-2" />
+                  <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
                   <p className="text-xs text-gray-600">Media</p>
                   <input type="file" multiple accept="image/jpeg,image/png" className="hidden" />
                 </div>
