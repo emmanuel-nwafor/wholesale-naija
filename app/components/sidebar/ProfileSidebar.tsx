@@ -1,6 +1,8 @@
-// app/components/profile/ProfileSidebar.tsx
+"use client";
 import React from 'react';
-import { Globe, Bell, Lock, Trash2, LogOut, User, X } from 'lucide-react';
+import { Globe, Bell, Lock, Trash2, LogOut, User, X, Store } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface ProfileSidebarProps {
   isMobile: boolean;
@@ -9,32 +11,42 @@ interface ProfileSidebarProps {
 }
 
 export default function ProfileSidebar({ isMobile, isOpen, setIsOpen }: ProfileSidebarProps) {
+  const pathname = usePathname();
+
   const items = [
-    { icon: User, label: "Profile Info", active: true },
-    { icon: Globe, label: "Country/Region" },
-    { icon: Bell, label: "Notification Settings" },
-    { icon: Lock, label: "Password Settings" },
-    { icon: Trash2, label: "Delete Account", danger: true },
-    { icon: LogOut, label: "Log Out", danger: true },
+    { icon: User, label: "Profile Info", href: "/store/profile" },
+    { icon: Globe, label: "Country/Region", href: "/store/profile/country-region" },
+    { icon: Bell, label: "Notification Settings", href: "/store/profile/notifications" },
+    { icon: Lock, label: "Password Settings", href: "/store/profile/password-settings" },
+    { icon: Store, label: "Verification Request", href: "/store/verification" },
+    { icon: Trash2, label: "Delete Account", href: "/store/profile/delete", danger: true },
+    { icon: LogOut, label: "Log Out", href: "/logout", danger: true },
   ];
+
+  const isActive = (href: string) => pathname === href;
 
   const content = (
     <nav className="space-y-1">
-      {items.map((item, i) => (
-        <button
-          key={i}
-          className={`flex items-center gap-3 px-4 py-3 w-full text-left rounded-xl text-sm font-medium transition-colors ${
-            item.active
-              ? 'bg-gray-100 text-gray-900'
-              : item.danger
-              ? 'text-red-600 hover:bg-red-50'
-              : 'text-gray-600 hover:bg-gray-50'
-          }`}
-        >
-          <item.icon className="w-4 h-4" />
-          {item.label}
-        </button>
-      ))}
+      {items.map((item) => {
+        const active = isActive(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={() => isMobile && setIsOpen(false)}
+            className={`flex cursor-pointer items-center gap-3 px-4 py-3 w-full text-left rounded-xl text-sm font-medium transition-colors ${
+              active
+                ? 'bg-gray-100 text-gray-900'
+                : item.danger
+                ? 'text-red-600 hover:bg-red-50'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <item.icon className="w-4 h-4" />
+            {item.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 
