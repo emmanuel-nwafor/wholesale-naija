@@ -24,7 +24,7 @@ export default function ChooseModal({ isOpen, onClose }: { isOpen: boolean; onCl
       initial="hidden"
       animate="visible"
       exit="exit"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <motion.div
@@ -55,7 +55,7 @@ export default function ChooseModal({ isOpen, onClose }: { isOpen: boolean; onCl
           </Link>
         </div>
 
-        <button className="w-full bg-slate-900 text-white py-3 rounded-full font-medium hover:bg-slate-800 transition">
+        <button className="w-full bg-slate-900 text-white py-3 rounded-2xl font-medium hover:bg-slate-800 transition">
           Next
         </button>
       </motion.div>

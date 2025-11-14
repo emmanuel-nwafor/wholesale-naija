@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Menu, Shield } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
 import DashboardHeader from '@/app/components/header/DashboardHeader';
 import ProfileSidebar from '@/app/components/sidebar/ProfileSidebar';
