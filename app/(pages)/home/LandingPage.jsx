@@ -18,7 +18,7 @@ export default function LandingPage() {
         <Header />
         <CategoriesList />
         <CarouselBanner />
-        <div className="p-8">
+        <div className="">
           <FeaturedGrid />
           <CategoryGrid />
           <NewProducts />
