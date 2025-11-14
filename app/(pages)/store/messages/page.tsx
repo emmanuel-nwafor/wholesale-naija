@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DashboardHeader from '@/app/components/header/DashboardHeader';
 import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
-import { Search, MoreVertical, Paperclip, Send, ArrowLeft, MoreHorizontal, Filter } from 'lucide-react';
+import { Search, Paperclip, Send, ArrowLeft, MoreHorizontal, Filter, Eye, Ban, Trash2, AlertTriangle, X } from 'lucide-react';
 import Image from 'next/image';
 
 interface Message {
@@ -40,21 +40,41 @@ const mockMessages: Message[] = [
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [message, setMessage] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const checkScreenSize = () => setIsMobileOrTablet(window.innerWidth < 1024);
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        setShowActions(false);
+      }
+    };
+    if (showActions) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showActions]);
 
   const handleChatClick = (chat: Chat) => {
     setSelectedChat(chat);
+    setShowActions(false);
   };
 
   const handleBack = () => {
     setSelectedChat(null);
+    setShowActions(false);
+  };
+
+  const toggleActions = () => {
+    setShowActions(prev => !prev);
   };
 
   return (
@@ -64,21 +84,20 @@ export default function ChatPage() {
         <div className="flex-1 flex flex-col">
           <DashboardHeader />
           <main className="flex-1 p-4 md:p-6 lg:p-8 md:ml-64">
-            <div className="flex h-full gap-0">
-              {/* Chat List - Hidden on mobile when chat selected */}
-              <div className={`bg-white flex flex-col overflow-hidden ${isMobile && selectedChat ? 'hidden' : isMobile ? 'w-full' : 'w-96 rounded-xl shadow-sm'}`}>
+            <div className="flex h-full gap-0 relative">
+              {/* Chat List */}
+              <div className={`bg-white flex flex-col overflow-hidden ${isMobileOrTablet && selectedChat ? 'hidden' : isMobileOrTablet ? 'w-full' : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-sm'}`}>
                 <div className="p-4 mb-5 border-gray-200">
                   <div className="flex items-center justify-between">
                     <h1 className="text-xl font-semibold">Messages</h1>
-
-                    <Filter />
+                    <Filter className="w-5 h-5 text-gray-500" />
                   </div>
                   <div className="mt-3 relative">
-                    <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Search className="absolute left-3 top-3 h-6 w-6 text-gray-400" />
                     <input
                       type="text"
                       placeholder="Search"
-                      className="w-full pl-10 pr-16 py-3 border border-gray-300 rounded-2xl text-sm"
+                      className="w-full pl-10 pr-16 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm outline-none"
                     />
                   </div>
                 </div>
@@ -112,12 +131,12 @@ export default function ChatPage() {
                 </div>
               </div>
 
-              {/* Chat Area - Hidden on mobile when no chat selected */}
+              {/* Chat Area */}
               {selectedChat && (
-                <div className={`flex-1 flex flex-col ${isMobile ? 'w-full' : 'ml-4 rounded-xl shadow-sm'} overflow-hidden`}>
+                <div className={`flex-1 flex flex-col ${isMobileOrTablet ? 'w-full' : 'ml-4 rounded-xl shadow-sm'} overflow-hidden`}>
                   {/* Header */}
-                  <div className="px-4 py-3 flex items-center gap-3">
-                    {isMobile && (
+                  <div className="px-4 py-3 flex items-center gap-3 bg-white border-b border-gray-200 relative">
+                    {isMobileOrTablet && (
                       <button onClick={handleBack} className="p-1 hover:bg-gray-100 rounded-lg">
                         <ArrowLeft className="w-5 h-5" />
                       </button>
@@ -132,7 +151,7 @@ export default function ChatPage() {
                         <p className="text-xs text-green-600">Online</p>
                       </div>
                     </div>
-                    <button className="p-2 hover:bg-gray-100 rounded-lg">
+                    <button onClick={toggleActions} className="p-2 hover:bg-gray-100 rounded-lg">
                       <MoreHorizontal className="h-5 w-5" />
                     </button>
                   </div>
@@ -146,7 +165,7 @@ export default function ChatPage() {
                       >
                         <div
                           className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
-                            msg.sender === 'user' ? 'bg-white text-gray-800 shadow-2xs py-4' : 'bg-gray-100'
+                            msg.sender === 'user' ? 'bg-white text-gray-800 shadow-xs' : 'bg-gray-100'
                           }`}
                         >
                           {msg.isImage && (
@@ -160,12 +179,12 @@ export default function ChatPage() {
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-                              <p className={msg.sender === 'user' ? 'text-white' : ''}>{msg.text}</p>
+                              <p className={msg.sender === 'user' ? 'text-gray-800' : ''}>{msg.text}</p>
                             </div>
                           )}
                           {!msg.isImage && <p>{msg.text}</p>}
                           {msg.time !== 'Today' && (
-                            <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-gray-500' : 'text-gray-800'} text-right`}>
+                            <p className={`text-xs mt-1 text-gray-500 text-right`}>
                               {msg.time}
                             </p>
                           )}
@@ -175,9 +194,9 @@ export default function ChatPage() {
                   </div>
 
                   {/* Input */}
-                  <div className="border-t border-gray-200 p-3">
+                  <div className="border-t border-gray-200 p-6 bg-white">
                     <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
+                      <button className="p-2">
                         <Paperclip className="h-5 w-5 text-gray-500" />
                       </button>
                       <input
@@ -185,10 +204,10 @@ export default function ChatPage() {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Message"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none"
+                        className="flex-1 px-3 py-3 rounded-xl text-sm focus:outline-none"
                       />
                       <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <Send className="h-5 w-5 text-blue-600" />
+                        <Send className="h-7 w-7 fill-gray-200 text-gray-600" />
                       </button>
                     </div>
                   </div>
@@ -196,12 +215,76 @@ export default function ChatPage() {
               )}
 
               {/* Empty State - Desktop only */}
-              {!isMobile && !selectedChat && (
-                <div className="flex-1 bg-white rounded-xl shadow-sm flex items-center justify-center ml-4">
+              {!isMobileOrTablet && !selectedChat && (
+                <div className="flex-1 p-5 bg-gray-100 rounded-br-3xl rounded-tr-3xl shadow-sm flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4 opacity-50" />
+                    <Image 
+                      src="/svgs/emptyState-wholesale-svg.svg"
+                      alt='no messages'
+                      height={100}
+                      width={100}
+                      className='mx-auto mb-5'
+                    />
                     <p className="text-gray-500">You have no chat history</p>
-                    <p className="text-gray-400 text-sm mt-2">Select a chat to view conversation</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions Modal - Mobile Bottom Sheet / Desktop Dropdown */}
+              {showActions && selectedChat && (
+                <div className={`fixed inset-0 z-50 flex ${isMobileOrTablet ? 'justify-center items-end' : 'items-start justify-center'}`}>
+                  {/* Backdrop */}
+                  <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowActions(false)} />
+
+                  {/* Modal Content */}
+                  <div
+                    ref={modalRef}
+                    className={`relative bg-white w-full ${isMobileOrTablet ? 'max-w-md rounded-t-3xl' : 'max-w-xs rounded-2xl shadow-2xl'} overflow-hidden`}
+                  >
+                    {/* Mobile Handle */}
+                    {isMobileOrTablet && (
+                      <div className="flex justify-center pt-3 pb-2">
+                        <div className="w-12 h-1 bg-gray-300 rounded-full" />
+                      </div>
+                    )}
+
+                    {/* Header */}
+                    <div className="px-6 py-4 border-b border-gray-100">
+                      <h3 className="font-semibold text-lg">Actions</h3>
+                    </div>
+
+                    {/* Actions List */}
+                    <div className="py-2">
+                      <button className="w-full flex items-center gap-3 px-6 py-3 hover:bg-gray-50 text-left">
+                        <Eye className="w-5 h-5 text-gray-600" />
+                        <span className="text-gray-700">View Profile</span>
+                      </button>
+                      <button className="w-full flex items-center gap-3 px-6 py-3 hover:bg-gray-50 text-left">
+                        <Ban className="w-5 h-5 text-gray-600" />
+                        <span className="text-gray-700">Block User</span>
+                      </button>
+                      <button className="w-full flex items-center gap-3 px-6 py-3 hover:bg-gray-50 text-left">
+                        <Trash2 className="w-5 h-5 text-gray-600" />
+                        <span className="text-gray-700">Delete Conversation</span>
+                      </button>
+                      <button className="w-full flex items-center gap-3 px-6 py-3 hover:bg-gray-50 text-left text-red-600">
+                        <AlertTriangle className="w-5 h-5" />
+                        <span>Report User</span>
+                        <span className="ml-auto">→</span>
+                      </button>
+                    </div>
+
+                    {/* Mobile Close Button */}
+                    {isMobileOrTablet && (
+                      <div className="border-t border-gray-100 p-4">
+                        <button
+                          onClick={() => setShowActions(false)}
+                          className="w-full py-3 text-center text-red-600 font-medium"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
