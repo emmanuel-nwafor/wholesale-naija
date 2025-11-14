@@ -15,7 +15,7 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   { label: "Home", href: "/store/dashboard", icon: <Home size={20} /> },
   { label: "Products", href: "/store/products", icon: <Package size={20} /> },
-  { label: "Store Management", href: "/store/products", icon: <Store size={20} /> },
+  { label: "Store Management", href: "/store/management", icon: <Store size={20} /> },
   { label: "Reviews", href: "/store/reviews", icon: <Star size={20} /> },
   { label: "Messages", href: "/store/messages", icon: <MessageSquare size={20} />, badge: 5 },
   { label: "Profile", href: "/store/profile", icon: <User size={20} /> },
@@ -30,7 +30,7 @@ export default function StoreSidebar() {
       <div className="p-4 border-b border-gray-200">
         <Link href="/">
           <Image
-            src="https://res.cloudinary.com/dqtjja88b/image/upload/v1760218941/wholesaleNaija-removebg-preview_tkw3tv.png"
+          src="/svgs/wholesale-ng-logo.png"
             alt="Wholesale Naija"
             width={170}
             height={48}
@@ -65,8 +65,8 @@ export default function StoreSidebar() {
         </ul>
       </nav>
       <div className="p-4 flex gap-2">
-        <Image src="/google-play.png" alt="Google Play" width={120} height={40} />
-        <Image src="/app-store.png" alt="App Store" width={120} height={40} />
+        <Image src="/svgs/playstore-logo.svg" alt="Google Play" width={120} height={40} />
+        <Image src="/svgs/apple-logo.svg" alt="App Store" width={120} height={40} />
       </div>
     </div>
   );

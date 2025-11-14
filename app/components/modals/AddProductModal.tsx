@@ -3,6 +3,7 @@
 import { X, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import Link from "next/link";
 
 const modalVariants = {
   hidden: { opacity: 0 },
@@ -53,29 +54,39 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
           <p className="text-sm text-gray-600 mb-4">Select product type</p>
 
           <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setSelectedType("simple")}
-              className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${
-                selectedType === "simple"
-                  ? "border-slate-900 bg-slate-50"
-                  : "border-gray-200 hover:border-gray-300 bg-white"
-              }`}
+            <Link 
+              href="/store/products/simple"
+                className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                  selectedType === "simple"
+                    ? "border-slate-900 bg-slate-50"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
+                }`}
             >
-              <ShoppingBag className="w-8 h-8 text-gray-700" />
-              <span className="text-sm font-medium text-gray-900">Simple Product</span>
-            </button>
+              <button
+                onClick={() => setSelectedType("simple")}
+                className="flex flex-col items-center justify-center"
+              >
+                <ShoppingBag className="w-8 h-8 text-gray-700" />
+                <span className="text-sm font-medium text-gray-900">Simple Product</span>
+              </button>
+            </Link>
 
-            <button
-              onClick={() => setSelectedType("variant")}
-              className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${
-                selectedType === "variant"
-                  ? "border-slate-900 bg-slate-50"
-                  : "border-gray-200 hover:border-gray-300 bg-white"
-              }`}
+            <Link 
+              href="/store/products/variant"
+                className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                  selectedType === "variant"
+                    ? "border-slate-900 bg-slate-50"
+                    : "border-gray-200 hover:border-gray-300 bg-white"
+                }`}
             >
-              <ShoppingBag className="w-8 h-8 text-gray-700" />
-              <span className="text-sm font-medium text-gray-900">Variant Product</span>
-            </button>
+              <button
+                onClick={() => setSelectedType("simple")}
+                className="flex flex-col items-center justify-center"
+              >
+                <ShoppingBag className="w-8 h-8 text-gray-700" />
+                <span className="text-sm font-medium text-gray-900">Variant Product</span>
+              </button>
+            </Link>
           </div>
         </div>
 

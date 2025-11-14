@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, Settings, Bell } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -50,8 +51,26 @@ export default function DashboardHeader() {
     <>
       <header className="md:ml-64 bg-white shadow-sm sticky top-0 z-20 border-b border-gray-200">
         <div className="flex items-center justify-between px-4 py-3 md:px-6">
-          <h1 className="text-lg md:text-xl font-semibold text-gray-900 truncate">{title}</h1>
+          {/* Left: Logo (mobile only) + Title (desktop only) */}
+          <div className="flex items-center gap-3">
+            {/* Logo - visible only on mobile */}
+            <div className="md:hidden">
+              <Image
+                src="/svgs/wholesale-ng-logo.png"
+                alt="Wholesale Naija"
+                width={100}
+                height={100}
+                className="ml-10"
+              />
+            </div>
 
+            {/* Title - visible only on desktop */}
+            <h1 className="hidden md:block text-lg md:text-xl font-semibold text-gray-900 truncate">
+              {title}
+            </h1>
+          </div>
+
+          {/* Right: Bell + Profile */}
           <div className="flex items-center gap-3">
             {/* Bell Icon */}
             <button
@@ -62,22 +81,22 @@ export default function DashboardHeader() {
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
-            {/* Profile Dropdown */}
-            <div className="relative" ref={profileRef}>
+            {/* Profile Dropdown - hidden on mobile, visible on md+ */}
+            <div className="hidden md:block relative" ref={profileRef}>
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 rounded-lg p-2 hover:bg-gray-100 transition"
               >
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-green-100 flex items-center justify-center overflow-hidden">
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center overflow-hidden">
                   <Image
-                    src="https://res.cloudinary.com/dqtjja88b/image/upload/v1760219419/Screenshot_2025-10-11_224658_q8bjy2.png"
+                    src="/svgs/wholesale-ng-logo.png"
                     alt="Store"
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-cover"
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-contain"
                   />
                 </div>
-                <span className="hidden sm:block text-sm font-medium text-gray-700 max-w-[140px] truncate">
+                <span className="text-sm font-medium text-gray-700 max-w-[140px] truncate">
                   {sellerName}
                 </span>
                 <ChevronDown className="w-4 h-4 text-gray-600" />
@@ -111,7 +130,6 @@ export default function DashboardHeader() {
         isOpen={notificationsOpen}
         onClose={() => setNotificationsOpen(false)}
       />
-
     </>
   );
 }
