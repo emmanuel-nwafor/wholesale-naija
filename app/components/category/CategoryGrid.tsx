@@ -22,7 +22,7 @@ export default function CategoryGrid() {
             alt={cat.name}
             width={cat.span.includes('col-span-2') ? 800 : 400}
             height={300}
-            className="w-full h-60 object-cover transition-transform group-hover:scale-105"
+            className="w-full h-24 sm:h-24 md:h-60 lg:h-40 object-cover transition-transform group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-black/20 bg-opacity-40 flex items-end p-4">
             <h3 className="text-white text-sm font-medium">{cat.name}</h3>

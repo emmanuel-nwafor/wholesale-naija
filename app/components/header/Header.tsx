@@ -34,47 +34,31 @@ export default function Header() {
           {/* Logo - Always visible */}
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/svgs/wholesale-ng-logo.png"
+              src="/svgs/logo.svg"
               alt="Wholesale Naija"
               width={170}
               height={48}
               className="h-12 sm:h-14 md:h-16 w-auto"
             />
-            {/* Page Title - Hidden on mobile */}
-            {pageTitle && (
-              <h1 className="hidden md:block text-white text-xl font-bold">
-                {pageTitle}
-              </h1>
-            )}
           </Link>
 
-          {/* App Store Buttons - Desktop only */}
+          {/* Store Buttons - Desktop only */}
           <div className="hidden md:flex space-x-2">
-            <button className="bg-white text-black p-2 rounded-2xl flex items-center space-x-1 text-xs sm:text-sm">
+            <button>
               <Image
-                src="https://th.bing.com/th/id/OIP.8LeaM8UJ_yM4QPfb3wrecgHaHa?w=212&h=212&c=7&r=0&o=7&cb=12&pid=1.7&rm=3"
-                alt="Google Play"
-                width={24}
-                height={24}
-                className="h-5 sm:h-6"
-              />
-              <span className="text-left">
-                <p className="text-xs">GET IT ON</p>
-                <p className="font-semibold text-sm">Google Play</p>
-              </span>
+                src="/svgs/playstore.svg"
+                alt="play store"
+                height={130}
+                width={130}
+               />
             </button>
-            <button className="bg-white text-black p-2 rounded-2xl flex items-center space-x-1 text-xs sm:text-sm">
+            <button>
               <Image
-                src="data:image/webp;base64,UklGRnwDAABXRUJQVlA4IHADAACwGACdASqjALQAPp1Mo00lpCMiI3Eo8LATiWlu4W8RtHXYx/jccj1ZiOnM7hpU7mF+Xjm2/M/9D/3fcI6IX7hew9+u4rfFwAbEZtp+4ANiM2bY1Zhm5WPT+cNYAJJiptjcZoNLtj5d7YDyRDRQaX32TSGH0fyXVSLE5Ypl80xfuT0QjOOIH3/yxDkZkbPQTXE2Pb10ynTnFj9+rxdWhx6TFoAZpJbbLC/zNTcvMK3YISWhgPSmkxV8CIWZ3dvTOHmB0e4uADYjNtP3ABsPgAD+/kGACde0TF6L88ZwNYFacFE/kXwKmhSNxPHPD6nybS0Dwj+IplM8MjAu7nvKxp38JsujTdKfT0dyEz1KW3+673BhlJWji8hsVcQ+X3yiU0m7BxXTucYtGjzAixx/bm/+RvfnotcB0f666xj6LrIOJwBCW1ykSXgyDlfSsFzFoSeVQzNkff/mBASvqK9t+lOB1fLghNG6+DZoFT8kZXT3tQBakk9lG4yX/Zn0JYPGZV7RuuHbLB9g7JXkQsQCkt4b3UfIyDxGTj751NL16gOmcPtrdDHL5kRlgtWnKxgjuzFDqB6CZfQ6g48RmLS4mg1QAiQcPaiH72rTK13ZvERwPGLO9J6yWFptPcbVsiHt0jqnKJxr6boHSM98t+Jt5svUuG/kvqavXiay9Ou+OUW+nYLS+x4hvhw/HBo8SqQDeMT46G7fppB7N1pYmV86wjap0ndNa+LRI3Dlj6i3n1S91gNOx/oN/0hLyI5dhfyb7WnX/isqky2/3fCp4jFXb46Jmz1tYtq/psX73pW8p6DGqTRnCXsfnWZiIm6m8tbYG3Ka2i2A64i99eC6OuyfpzLtI3+9dMsHsZXBO7S1T1w0FQ73Sk42dwM1+SRoo/yfYSt3zmX2IAu+RyETpCsySQdU9UPiP4B48x3RpcrZnHdboSQmsLBQcFd20Hb1dn9UkSt3IL54R4SghD3ScHj8LONSOOFP4Y56PcqH/9m97sXZaFnqAj0Y/sdUSgcS579XtkrUmv/3tLXNxRRphGgJUYgTzZw8j43C9uXal3CleqDlK4+OHelUaVvvGw12Z0PkOsF769R6P1OCpEyonF/5bm9zfUchyUaSsuyQGwqDBpbXkAefy/ZhSXvAOENS1YIY6c+JTy2cdqK7SLVhrRMAAAA"
-                alt="App Store"
-                width={24}
-                height={24}
-                className="h-5 sm:h-6"
-              />
-              <span className="text-left">
-                <p className="text-xs">Download on the</p>
-                <p className="font-semibold text-sm">App Store</p>
-              </span>
+                src="/svgs/apple.svg"
+                alt="play store"
+                height={130}
+                width={130}
+               />
             </button>
           </div>
 

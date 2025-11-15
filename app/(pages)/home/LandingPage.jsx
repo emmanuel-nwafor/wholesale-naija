@@ -18,14 +18,15 @@ export default function LandingPage() {
         <Header />
         <CategoriesList />
         <CarouselBanner />
-        <div className="">
+        <div className="p-5">
           <FeaturedGrid />
           <CategoryGrid />
           <NewProducts />
+          <FeaturedGrid />
           <LandingPageBanner />
-          <NewsLetter />
-          <Footer />
         </div>
+        <NewsLetter />
+        <Footer />
       </div>
     </>
   );
