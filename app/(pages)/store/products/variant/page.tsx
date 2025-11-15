@@ -4,6 +4,7 @@ import { ChevronDown, Plus, Trash2, Edit2, ChevronRight, ImageIcon } from 'lucid
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 import AddVariantModal from "@/app/components/modals/AddvariantModal";
+import Image from "next/image"
 import ReviewStatusModal from "@/app/components/modals/ReviewStatusModal";
 
 interface VariantData {
@@ -179,7 +180,7 @@ export default function AddProductVariantPage() {
                               <div className="flex items-center gap-4 flex-1">
                                 <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-300">
                                   {variant.imageUrl ? (
-                                    <img src={variant.imageUrl} alt={variant.name} className="w-full h-full object-cover" />
+                                    <Image src={variant.imageUrl} alt={variant.name} className="w-full h-full object-cover" />
                                   ) : (
                                     <div className="w-full h-full bg-gray-200 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">
                                       <ImageIcon className="h-8 w-8 text-gray-400" />

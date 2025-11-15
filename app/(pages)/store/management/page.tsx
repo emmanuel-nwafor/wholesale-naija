@@ -7,21 +7,19 @@ import DashboardHeader from "@/app/components/header/DashboardHeader";
 import ReviewStatusModal from "@/app/components/modals/ReviewStatusModal";
 
 export default function StoreManagement() {
-  const [logo, setLogo] = useState<File | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [reviewModal, setReviewModal] = useState(false);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setLogo(file);
+      if (logoUrl) URL.revokeObjectURL(logoUrl);
       setLogoUrl(URL.createObjectURL(file));
     }
   };
 
   const removeLogo = () => {
     if (logoUrl) URL.revokeObjectURL(logoUrl);
-    setLogo(null);
     setLogoUrl(null);
   };
 
@@ -47,7 +45,7 @@ export default function StoreManagement() {
                     <div className="relative">
                       {logoUrl ? (
                         <div className="w-24 h-24 rounded-xl overflow-hidden border border-gray-300">
-                          <Image src={logoUrl} alt="Store logo" className="w-full h-full object-cover" />
+                          <Image src={logoUrl} alt="Store logo" fill className="object-cover" />
                           <button type="button" onClick={removeLogo} className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-md hover:bg-gray-100">
                             <X className="h-4 w-4 text-gray-600" />
                           </button>
