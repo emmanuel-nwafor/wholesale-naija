@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from 'react';
-import { ChevronDown, ImageIcon } from 'lucide-react';
+import React, { useState } from "react";
+import { ChevronDown, ImageIcon } from "lucide-react";
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 
@@ -8,23 +8,25 @@ export default function AddProductSimplePage() {
   const [isActive, setIsActive] = useState(false);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen">
+      {/* Sidebar */}
       <StoreSidebar />
-      
+
+      {/* Main content */}
       <div className="flex-1 flex flex-col">
         <DashboardHeader />
-        
-        <main className="flex-1 p-4 md:p-10 lg:p-10 md:ml-64 bg-gray-50">
-          <div className="max-w-5xl">
+
+        <main className="flex-1 p-4 md:p-10 bg-gray-50 w-full">
+          <div className="w-full max-w-full md:max-w-5xl mx-auto">
             <h1 className="text-2xl font-semibold mb-6">Add Product</h1>
-            
+
             <form className="gap-6 flex flex-col">
               {/* Media Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Product Media *
                 </label>
-                <div className="border-2 border-dashed w-40 h-40 border-gray-300 rounded-2xl p-6 text-center flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                <div className="border-2 border-dashed w-full sm:w-40 h-40 border-gray-300 rounded-2xl p-6 text-center flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
                   <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
                   <p className="text-xs text-gray-600">Media</p>
                   <input type="file" multiple accept="image/jpeg,image/png" className="hidden" />
@@ -49,7 +51,7 @@ export default function AddProductSimplePage() {
               </div>
 
               {/* Category & Sub-category */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Category *
@@ -61,7 +63,7 @@ export default function AddProductSimplePage() {
                     <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Sub-category
@@ -135,12 +137,12 @@ export default function AddProductSimplePage() {
                     type="button"
                     onClick={() => setIsActive(!isActive)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      isActive ? 'bg-blue-600' : 'bg-gray-200'
+                      isActive ? "bg-blue-600" : "bg-gray-200"
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        isActive ? 'translate-x-6' : 'translate-x-1'
+                        isActive ? "translate-x-6" : "translate-x-1"
                       }`}
                     />
                   </button>
@@ -148,16 +150,16 @@ export default function AddProductSimplePage() {
               </div>
 
               {/* Buttons */}
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
                 <button
                   type="button"
-                  className="px-6 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50"
+                  className="px-6 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800"
+                  className="px-6 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 w-full sm:w-auto"
                 >
                   Add Product
                 </button>

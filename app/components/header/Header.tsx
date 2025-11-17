@@ -2,12 +2,19 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { Search, Menu } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, Menu, X } from "lucide-react";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { AnimatePresence } from "framer-motion";
 import ChooseModal from "../auth/modals/ChooseModal";
 import { usePathname } from "next/navigation";
+
+const suggestions = [
+  "iPhone 15 Pro Max",
+  "iPhone 14 Pro",
+  "iPhone Chargers",
+  "iPhone Cases",
+];
 
 const getPageTitle = (path: string) => {
   const map: Record<string, string> = {
@@ -23,15 +30,21 @@ const getPageTitle = (path: string) => {
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const pageTitle = getPageTitle(pathname);
+
+  const filtered = suggestions.filter((s) =>
+    s.toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
     <>
       {/* Hero Banner */}
       <div className="bg-[url('https://res.cloudinary.com/dqtjja88b/image/upload/v1760883994/3680b6919f2237dd1d7bcfe119a8522af6738e96_2_gtqmc2.jpg')] bg-cover bg-center h-24 sm:h-28 md:h-32 relative overflow-hidden">
         <div className="relative z-10 flex items-center justify-between px-2 sm:px-4 md:px-10 h-full">
-          {/* Logo - Always visible */}
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/svgs/logo.svg"
@@ -42,27 +55,15 @@ export default function Header() {
             />
           </Link>
 
-          {/* Store Buttons - Desktop only */}
           <div className="hidden md:flex space-x-2">
             <button>
-              <Image
-                src="/svgs/playstore.svg"
-                alt="play store"
-                height={130}
-                width={130}
-               />
+              <Image src="/svgs/playstore.svg" alt="play store" height={130} width={130} />
             </button>
             <button>
-              <Image
-                src="/svgs/apple.svg"
-                alt="play store"
-                height={130}
-                width={130}
-               />
+              <Image src="/svgs/apple.svg" alt="apple store" height={130} width={130} />
             </button>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setSidebarOpen(true)}
             className="md:hidden p-1 sm:p-2 text-white"
@@ -76,13 +77,43 @@ export default function Header() {
       <div className="bg-slate-800 px-2 sm:px-4 md:px-10 py-3 sm:py-4 flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="relative flex-1 w-full md:max-w-md">
           <input
+            ref={inputRef}
             type="text"
             placeholder="Search for products"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => setFocused(true)}
             className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white rounded-xl sm:rounded-2xl text-sm sm:text-base text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 pr-10 sm:pr-12"
           />
           <div className="absolute right-3 sm:right-4 top-3.5 sm:top-4 text-gray-500">
             <Search className="w-4 sm:w-5 h-4 sm:h-5" />
           </div>
+
+          {/* Suggestions Dropdown */}
+          {focused && query && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
+              {filtered.length ? (
+                filtered.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => {
+                      setQuery(item);
+                      setFocused(false);
+                      inputRef.current?.blur();
+                    }}
+                    className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <Search className="w-4 h-4 text-gray-400" />
+                    {item}
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-500">
+                  No results
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 w-full md:w-auto justify-stretch md:justify-start">
@@ -105,6 +136,14 @@ export default function Header() {
       <AnimatePresence>
         <ChooseModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </AnimatePresence>
+
+      {/* Close dropdown on outside click */}
+      {focused && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setFocused(false)}
+        />
+      )}
     </>
   );
 }
