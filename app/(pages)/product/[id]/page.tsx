@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Heart, Star, Share2, ChevronLeft, ChevronRight, MessageCircle, Store, Package, Verified } from 'lucide-react';
+import { Heart, Star, Share2, ChevronLeft, ChevronRight, MessageCircle, Store, Package, Verified, HeartIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/app/components/header/Header';
 import ProductCard from '@/app/components/product-card/ProductCard';
@@ -89,7 +89,7 @@ export default function ProductDetailsPage() {
             {/* Right: Info */}
             <div className="space-y-6">
               <div>
-                <h1 className="text-2xl font-medium text-gray-900">{product.name}</h1>
+                <h1 className="text-2xl font-medium flex gap-6 text-gray-900">{product.name}<HeartIcon height={27} width={27} className='p-1 bg-gray-100 rounded-full' /> <Share2  height={27} width={27} className='p-1 bg-gray-100 rounded-full' /></h1>
                 <div className="flex items-center gap-6 mt-2 text-sm text-gray-600">
                   <span className='flex items-center'>{product.seller} <Verified className="w-4 h-4 fill-green-400 text-white" /></span>
                   <span className="flex items-center gap-1">

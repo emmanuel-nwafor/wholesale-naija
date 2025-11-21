@@ -10,7 +10,7 @@ interface ProfileSidebarProps {
   setIsOpen: (v: boolean) => void;
 }
 
-export default function ProfileSidebar({ isMobile, isOpen, setIsOpen }: ProfileSidebarProps) {
+export default function SellersProfileSidebar({ isMobile, isOpen, setIsOpen }: ProfileSidebarProps) {
   const pathname = usePathname();
 
   const items = [

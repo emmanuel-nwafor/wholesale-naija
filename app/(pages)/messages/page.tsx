@@ -2,13 +2,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import DashboardHeader from '@/app/components/header/DashboardHeader';
-import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
 import { Paperclip, Send, ArrowLeft, MoreHorizontal } from 'lucide-react';
 import Image from 'next/image';
 import ChatSidebar from '@/app/components/chat/ChatSidebar';
-import ActionsModal from '@/app/components/chat/StoresActionsModal';
+import ActionsModal from '@/app/components/chat/BuyersActionsModal';
 import DeleteModal from '@/app/components/modals/DeleteModal';
+import Header from '@/app/components/header/Header';
 
 interface Message {
   id: string;
@@ -41,7 +40,7 @@ const mockMessages: Message[] = [
   { id: '4', text: 'What are the main points in this document?', time: '03:49 PM', sender: 'user' },
 ];
 
-export default function StoresChatPage() {
+export default function BuyersChatPage() {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [message, setMessage] = useState('');
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
@@ -83,10 +82,10 @@ export default function StoresChatPage() {
   return (
     <>
       <div className="flex min-h-screen">
-        <StoreSidebar />
+        {/* <StoreSidebar /> */}
         <div className="flex-1 flex flex-col">
-          <DashboardHeader />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 md:ml-64">
+          <Header />
+          <main className="flex-1 md:p-10 p-3">
             <div className="flex h-full gap-0 relative">
               <ChatSidebar
                 chats={mockChats}

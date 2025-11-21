@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, Menu, Camera } from 'lucide-react';
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
-import ProfileSidebar from '@/app/components/sidebar/ProfileSidebar';
+import ProfileSidebar from '@/app/components/sidebar/SellersProfileSidebar';
 
 export default function SellerProfilePage() {
   const [isMobile, setIsMobile] = useState(false);

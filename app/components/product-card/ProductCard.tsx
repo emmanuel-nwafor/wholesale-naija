@@ -7,7 +7,7 @@ export default function ProductCard() {
   return (
     <>
     <Link href={`/product/:id`}>
-      <div className="overflow-hidden hover:cursor-pointer">
+      <div className="overflow-hidden hover:cursor-pointer z-10">
         <div className="aspect-square bg-gray-50 rounded-xl flex items-center justify-center p-8">
           <Image
             src="/svgs/blender.svg"

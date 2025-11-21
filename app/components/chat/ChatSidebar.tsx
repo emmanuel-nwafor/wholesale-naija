@@ -49,7 +49,7 @@ export default function ChatSidebar({
           />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto mb-80">
         {chats.map((chat) => (
           <motion.div
             key={chat.id}

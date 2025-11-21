@@ -1,4 +1,4 @@
-// /components/chat/ActionsModal.tsx
+// /components/chat/StoresActionsModal.tsx
 'use client';
 
 import React, { useRef } from 'react';
@@ -12,7 +12,7 @@ interface ActionsModalProps {
   onDeleteClick: () => void;
 }
 
-export default function ActionsModal({ show, onClose, isMobileOrTablet, onDeleteClick }: ActionsModalProps) {
+export default function StoresActionsModal({ show, onClose, isMobileOrTablet, onDeleteClick }: ActionsModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   return (

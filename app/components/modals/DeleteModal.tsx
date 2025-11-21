@@ -41,18 +41,18 @@ export default function DeleteModal({ show, onClose, onConfirm }: DeleteModalPro
                 Are you sure you want to delete this conversation?
               </h3>
               <p className="text-sm text-gray-500 mb-6">
-                This will remove it from your inbox but not from the user.
+                This will remove it from your inbox but not from the other user.
               </p>
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={onClose}
-                  className="px-8 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                  className="px-8 py-3 bg-gray-100 hover:cursor-pointer text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={onConfirm}
-                  className="px-8 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                  className="px-8 py-3 bg-red-600 hover:cursor-pointer text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
                 >
                   Delete
                 </button>

@@ -86,7 +86,7 @@ export default function Header() {
             className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white rounded-xl sm:rounded-2xl text-sm sm:text-base text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 pr-10 sm:pr-12"
           />
           <div className="absolute right-3 sm:right-4 top-3.5 sm:top-4 text-gray-500">
-            <Search className="w-4 sm:w-5 h-4 sm:h-5" />
+            <Search className="w-4 sm:w-5 h-4 sm:h-5 bg-slate-900 text-white rounded-full" />
           </div>
 
           {/* Suggestions Dropdown */}
