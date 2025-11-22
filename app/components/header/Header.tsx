@@ -1,13 +1,17 @@
-// Header.tsx 
 "use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
-import { Search, Menu, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { Search, Menu } from "lucide-react";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { AnimatePresence } from "framer-motion";
 import ChooseModal from "../auth/modals/ChooseModal";
+import SignupWithPhoneModal from "../auth/modals/signup/SignupWithPhoneModal";
+import SignupWithEmailModal from "../auth/modals/signup/SignupWithEmailModal";
+import VerifyPhoneOrEmailOtpModal from "../auth/modals/VerifyPhoneOrEmailOtpModal";
 import { usePathname } from "next/navigation";
+import CompleteProfileModal from "../auth/modals/signup/CompleteProfileModal";
 
 const suggestions = [
   "iPhone 15 Pro Max",
@@ -16,29 +20,55 @@ const suggestions = [
   "iPhone Cases",
 ];
 
-const getPageTitle = (path: string) => {
-  const map: Record<string, string> = {
-    "/": "Home",
-    "/products": "Products",
-    "/store/dashboard": "Dashboard",
-    "/store/products": "Products",
-    "/store/messages": "Messages",
-  };
-  return map[path] || "";
-};
-
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [signupPhoneOpen, setSignupPhoneOpen] = useState(false);
+  const [signupEmailOpen, setSignupEmailOpen] = useState(false);
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [otpType, setOtpType] = useState<"phone" | "email">("phone");
+  const [otpIdentifier, setOtpIdentifier] = useState("");
+  const [completeProfileOpen, setCompleteProfileOpen] = useState(false); // <-- new
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
-  const pageTitle = getPageTitle(pathname);
 
   const filtered = suggestions.filter((s) =>
     s.toLowerCase().includes(query.toLowerCase())
   );
+
+  const openPhoneModal = () => {
+    setSignupPhoneOpen(true);
+    setSignupEmailOpen(false);
+  };
+
+  const openEmailModal = () => {
+    setSignupPhoneOpen(false);
+    setSignupEmailOpen(true);
+  };
+
+  const handleContinueWithPhone = (fullPhone: string) => {
+    setOtpIdentifier(fullPhone);
+    setOtpType("phone");
+    setSignupPhoneOpen(false);
+    setOtpModalOpen(true);
+  };
+
+  const handleContinueWithEmail = (email: string) => {
+    setOtpIdentifier(email);
+    setOtpType("email");
+    setSignupEmailOpen(false);
+    setOtpModalOpen(true);
+  };
+
+  // Called after OTP verification
+  const handleOtpVerified = () => {
+    setOtpModalOpen(false);
+    // open the complete profile modal
+    setCompleteProfileOpen(true);
+  };
 
   return (
     <>
@@ -85,64 +115,81 @@ export default function Header() {
             onFocus={() => setFocused(true)}
             className="w-full px-3 sm:px-4 py-3 sm:py-4 bg-white rounded-xl sm:rounded-2xl text-sm sm:text-base text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 pr-10 sm:pr-12"
           />
-          <div className="absolute right-3 sm:right-4 top-3.5 sm:top-4 text-gray-500">
-            <Search className="w-4 sm:w-5 h-4 sm:h-5 bg-slate-900 text-white rounded-full" />
-          </div>
-
-          {/* Suggestions Dropdown */}
-          {focused && query && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
-              {filtered.length ? (
-                filtered.map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => {
-                      setQuery(item);
-                      setFocused(false);
-                      inputRef.current?.blur();
-                    }}
-                    className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    <Search className="w-4 h-4 text-gray-400" />
-                    {item}
-                  </button>
-                ))
-              ) : (
-                <div className="px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-500">
-                  No results
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
-        <div className="flex gap-2 w-full md:w-auto justify-stretch md:justify-start">
+        <div className="flex gap-3 w-full md:w-auto">
           <button
-            onClick={() => setModalOpen(true)}
-            className="flex-1 md:flex-initial bg-transparent border border-white text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl hover:bg-white hover:text-slate-800 transition text-sm sm:text-base"
+            onClick={() => setLoginModalOpen(true)}
+            className="flex-1 md:flex-initial border border-white text-white px-6 py-3 rounded-xl hover:cursor-pointer hover:bg-white hover:text-slate-800 transition"
           >
             Login
           </button>
-          <Link href="/signup" className="flex-1 md:flex-initial">
-            <button className="w-full bg-white text-slate-800 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-100 transition text-sm sm:text-base">
-              Create Account
-            </button>
-          </Link>
+
+          <button
+            onClick={openPhoneModal}
+            className="flex-1 md:flex-initial bg-white text-slate-800 px-6 py-3 rounded-xl font-semibold hover:cursor-pointer hover:bg-gray-100 transition"
+          >
+            Create Account
+          </button>
         </div>
       </div>
 
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-      <AnimatePresence>
-        <ChooseModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
-      </AnimatePresence>
-
-      {/* Close dropdown on outside click */}
-      {focused && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setFocused(false)}
+    <AnimatePresence>
+      {loginModalOpen && (
+        <ChooseModal
+          isOpen={loginModalOpen}
+          onClose={() => setLoginModalOpen(false)}
+          onSelectBuyer={() => {
+            setLoginModalOpen(false);
+            setSignupPhoneOpen(true);
+          }}
+          onSelectSeller={() => {
+            setLoginModalOpen(false);
+            setSignupEmailOpen(true);
+          }}
         />
+      )}
+
+      {signupPhoneOpen && (
+        <SignupWithPhoneModal
+          isOpen={signupPhoneOpen}
+          onClose={() => setSignupPhoneOpen(false)}
+          onSwitchToEmail={openEmailModal}
+          onContinue={handleContinueWithPhone}
+        />
+      )}
+
+      {signupEmailOpen && (
+        <SignupWithEmailModal
+          isOpen={signupEmailOpen}
+          onClose={() => setSignupEmailOpen(false)}
+          onSwitchToPhone={openPhoneModal}
+          onContinue={handleContinueWithEmail}
+        />
+      )}
+
+      {otpModalOpen && (
+        <VerifyPhoneOrEmailOtpModal
+          isOpen={otpModalOpen}
+          type={otpType}
+          identifier={otpIdentifier}
+          onClose={() => setOtpModalOpen(false)}
+          onVerified={handleOtpVerified}
+        />
+      )}
+
+      {completeProfileOpen && (
+        <CompleteProfileModal
+          isOpen={completeProfileOpen}
+          onClose={() => setCompleteProfileOpen(false)}
+        />
+      )}
+    </AnimatePresence>
+
+      {focused && (
+        <div className="fixed inset-0 z-40" onClick={() => setFocused(false)} />
       )}
     </>
   );

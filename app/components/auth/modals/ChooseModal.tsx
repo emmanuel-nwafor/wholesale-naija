@@ -1,8 +1,6 @@
-// components/auth/modals/ChooseModal.tsx
 "use client";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 
 const modalVariants = {
   hidden: { opacity: 0 },
@@ -15,7 +13,19 @@ const contentVariants = {
   visible: { y: 0, opacity: 1, transition: { delay: 0.1 } },
 };
 
-export default function ChooseModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+interface ChooseModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectBuyer: () => void;
+  onSelectSeller: () => void;
+}
+
+export default function ChooseModal({
+  isOpen,
+  onClose,
+  onSelectBuyer,
+  onSelectSeller,
+}: ChooseModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -40,19 +50,25 @@ export default function ChooseModal({ isOpen, onClose }: { isOpen: boolean; onCl
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="border border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition cursor-pointer">
+          {/* Buyer */}
+          <div
+            onClick={onSelectBuyer}
+            className="border border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition cursor-pointer"
+          >
             <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-3" />
             <h3 className="font-medium text-gray-900">I am a buyer</h3>
             <p className="text-xs text-gray-500 mt-1">Browse and connect with sellers</p>
           </div>
 
-          <Link href="/store/dashboard">
-            <div className="border border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition cursor-pointer">
-                <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-3" />
-                <h3 className="font-medium text-gray-900">I am a seller</h3>
-                <p className="text-xs text-gray-500 mt-1">List your product/services and reach buyers</p>
-            </div>
-          </Link>
+          {/* Seller */}
+          <div
+            onClick={onSelectSeller}
+            className="border border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition cursor-pointer"
+          >
+            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-3" />
+            <h3 className="font-medium text-gray-900">I am a seller</h3>
+            <p className="text-xs text-gray-500 mt-1">List your product/services and reach buyers</p>
+          </div>
         </div>
 
         <button className="w-full bg-slate-900 text-white py-3 rounded-2xl font-medium hover:bg-slate-800 transition">

@@ -1,26 +1,26 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { X, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 
-interface LoginWithPhoneModalProps {
+interface LoginWithEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSwitchToEmail?: () => void;
-  onLogin?: (phone: string, password: string) => void;
+  onSwitchToPhone?: () => void;
+  onLogin?: (email: string, password: string) => void;
 }
 
 const overlayVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
 const contentVariants = { hidden: { y: -50, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { delay: 0.05 } } };
 
-export default function LoginWithPhoneModal({
+export default function LoginWithEmailModal({
   isOpen,
   onClose,
-  onSwitchToEmail,
+  onSwitchToPhone,
   onLogin,
-}: LoginWithPhoneModalProps) {
-  const [phone] = useState("+234");
+}: LoginWithEmailModalProps) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   if (!isOpen) return null;
@@ -43,12 +43,12 @@ export default function LoginWithPhoneModal({
           <ArrowLeft size={28} className="text-gray-700" />
         </button>
 
-        {onSwitchToEmail && (
+        {onSwitchToPhone && (
           <button
-            onClick={onSwitchToEmail}
+            onClick={onSwitchToPhone}
             className="absolute top-4 right-4 text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-xl"
           >
-            Use email instead
+            Use phone instead
           </button>
         )}
 
@@ -61,12 +61,14 @@ export default function LoginWithPhoneModal({
 
         <div className="mt-8 space-y-6">
           <div>
-            <label className="text-sm font-medium text-gray-700">Phone Number</label>
-            <div className="mt-2 flex items-center bg-gray-100 rounded-2xl px-4 py-4">
-              <span className="text-lg mr-3">🇳🇬 +234</span>
-              <div className="h-6 w-px bg-gray-400" />
-              {/* Phone input can be added here if needed */}
-            </div>
+            <label className="text-sm font-medium text-gray-700">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="mt-2 w-full px-4 py-4 bg-gray-100 rounded-2xl text-lg focus:outline-none"
+            />
           </div>
 
           <div>
@@ -75,8 +77,8 @@ export default function LoginWithPhoneModal({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 w-full px-4 py-4 bg-gray-100 rounded-2xl text-lg focus:outline-none"
               placeholder="••••••••••••"
+              className="mt-2 w-full px-4 py-4 bg-gray-100 rounded-2xl text-lg focus:outline-none"
             />
           </div>
 
@@ -86,7 +88,7 @@ export default function LoginWithPhoneModal({
         </div>
 
         <button
-          onClick={() => onLogin?.(phone, password)}
+          onClick={() => onLogin?.(email, password)}
           className="mt-8 w-full bg-[#0f172a] text-white py-4 rounded-full text-lg font-medium"
         >
           Log In
