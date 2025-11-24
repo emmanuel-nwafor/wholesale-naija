@@ -1,6 +1,8 @@
 "use client";
-import { X } from "lucide-react";
+import { ShoppingCartIcon, Store, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import Image from "next/image";
 
 const modalVariants = {
   hidden: { opacity: 0 },
@@ -18,6 +20,7 @@ interface ChooseModalProps {
   onClose: () => void;
   onSelectBuyer: () => void;
   onSelectSeller: () => void;
+  onOpenLogin: () => void; 
 }
 
 export default function ChooseModal({
@@ -25,8 +28,20 @@ export default function ChooseModal({
   onClose,
   onSelectBuyer,
   onSelectSeller,
+  onOpenLogin,
 }: ChooseModalProps) {
+  const [selectedRole, setSelectedRole] = useState<"buyer" | "seller" | null>(null);
+
   if (!isOpen) return null;
+
+  const handleNext = () => {
+    if (!selectedRole) return;
+    localStorage.setItem("selectedRole", selectedRole);
+    if (selectedRole === "buyer") onSelectBuyer();
+    if (selectedRole === "seller") onSelectSeller();
+    onClose();
+    onOpenLogin();
+  };
 
   return (
     <motion.div
@@ -52,26 +67,46 @@ export default function ChooseModal({
         <div className="grid grid-cols-2 gap-4 mb-8">
           {/* Buyer */}
           <div
-            onClick={onSelectBuyer}
-            className="border border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition cursor-pointer"
+            onClick={() => setSelectedRole("buyer")}
+            className={`border rounded-xl p-6 text-center cursor-pointer transition ${
+              selectedRole === "buyer"
+                ? "border-green-500 bg-green-50"
+                : "border-gray-300 hover:border-green-500"
+            }`}
           >
-            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-3" />
+            <div className="rounded-xl mx-auto mb-3">
+              <ShoppingCartIcon className="mx-auto" height={40} width={40} />
+            </div>
             <h3 className="font-medium text-gray-900">I am a buyer</h3>
             <p className="text-xs text-gray-500 mt-1">Browse and connect with sellers</p>
           </div>
 
           {/* Seller */}
           <div
-            onClick={onSelectSeller}
-            className="border border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition cursor-pointer"
+            onClick={() => setSelectedRole("seller")}
+            className={`border rounded-xl p-6 text-center cursor-pointer transition ${
+              selectedRole === "seller"
+                ? "border-green-500 bg-green-50"
+                : "border-gray-300 hover:border-green-500"
+            }`}
           >
-            <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mx-auto mb-3" />
+            <div className="rounded-xl mx-auto mb-3">
+              <Store className="mx-auto" height={40} width={40} />
+            </div>
             <h3 className="font-medium text-gray-900">I am a seller</h3>
             <p className="text-xs text-gray-500 mt-1">List your product/services and reach buyers</p>
           </div>
         </div>
 
-        <button className="w-full bg-slate-900 text-white py-3 rounded-2xl font-medium hover:bg-slate-800 transition">
+        <button
+          onClick={handleNext}
+          disabled={!selectedRole}
+          className={`w-full py-3 hover:cursor-pointer rounded-2xl font-medium transition ${
+            selectedRole
+              ? "bg-slate-900 text-white hover:bg-slate-800"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+        >
           Next
         </button>
       </motion.div>

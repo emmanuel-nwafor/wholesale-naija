@@ -21,6 +21,8 @@ const contentVariants = {
   visible: { y: 0, opacity: 1, transition: { duration: 0.3 } },
 };
 
+const API_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/complete-profile`;
+
 export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfileModalProps) {
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -30,14 +32,63 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
     flag: "🇳🇬",
   });
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   if (!isOpen) return null;
 
-  const handleCreateAccount = () => {
-    // Here you would normally handle API call and validation
-    // For demo, we'll just simulate success
-    onClose(); // close profile modal
-    setShowWelcomeModal(true); // open welcome bonus modal
+  const handleCreateAccount = async () => {
+    setError("");
+
+    if (!phone || !email || !firstName || !lastName || !password || !confirmPassword) {
+      setError("All fields are required.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    const role = localStorage.getItem("selectedRole") || "buyer"; // fetch role from localStorage
+
+    const body = {
+      key: email,
+      password,
+      phone,
+      fullName: `${firstName} ${lastName}`,
+      firstName,
+      lastName,
+      role,
+    };
+
+    setLoading(true);
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Failed to complete profile");
+
+      // Success → close profile modal and show welcome modal
+      onClose();
+      setShowWelcomeModal(true);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,7 +107,6 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
           className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 relative overflow-y-auto max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close button */}
           <button
             onClick={onClose}
             className="absolute top-4 left-4 hover:cursor-pointer text-gray-500 hover:text-gray-700"
@@ -64,9 +114,7 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
             <ArrowLeft size={28} />
           </button>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8">
-            Complete Profile
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8">Complete Profile</h2>
           <p className="text-sm text-gray-600 mb-6">
             Create your account to start exploring trusted sellers.
           </p>
@@ -83,7 +131,9 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
                 <input
                   type="tel"
                   placeholder="901247XXXX"
-                  className="flex-1 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="flex-1 py-3 focus:outline-none rounded-2xl"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
             </div>
@@ -95,6 +145,8 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
                 type="email"
                 placeholder="johndoe@gmail.com"
                 className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
@@ -106,14 +158,18 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
                   type="text"
                   placeholder="John"
                   className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
                 />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-gray-700">Last Name *</label>
                 <input
                   type="text"
-                  placeholder="Adeleke"
+                  placeholder="Doe"
                   className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                 />
               </div>
             </div>
@@ -126,6 +182,8 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
                   type={showPass ? "text" : "password"}
                   placeholder="Use at least 8 characters"
                   className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-2xl focus:outline-none"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -145,6 +203,8 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
                   type={showConfirm ? "text" : "password"}
                   placeholder="Olamide@1234"
                   className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-2xl focus:outline-none"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -157,11 +217,16 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
             </div>
           </div>
 
+          {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
+
           <button
             onClick={handleCreateAccount}
-            className="w-full mt-8 bg-gray-900 text-white py-4 rounded-2xl font-semibold text-md hover:bg-gray-800 transition"
+            disabled={loading}
+            className={`w-full mt-8 py-4 rounded-2xl text-lg font-medium ${
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800"
+            }`}
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </motion.div>
       </motion.div>

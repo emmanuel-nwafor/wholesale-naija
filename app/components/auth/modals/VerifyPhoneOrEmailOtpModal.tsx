@@ -8,33 +8,21 @@ interface VerifyOtpModalProps {
   onClose?: () => void;
   type: "phone" | "email";
   identifier: string;
-  onVerified?: () => void; // NEW: called after OTP verification
+  onVerified?: () => void; 
 }
 
-const overlayVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-  exit: { opacity: 0 },
-};
+const overlayVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 }, exit: { opacity: 0 } };
+const contentVariants = { hidden: { y: -50, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { delay: 0.05 } } };
 
-const contentVariants = {
-  hidden: { y: -50, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { delay: 0.05 } },
-};
+const API_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/verify-otp`;
 
-export default function VerifyPhoneOrEmailOtpModal({
-  isOpen,
-  onClose,
-  type,
-  identifier,
-  onVerified,
-}: VerifyOtpModalProps) {
-  const [code, setCode] = useState(["", "", "", ""]); // 4-digit code
+export default function VerifyPhoneOrEmailOtpModal({ isOpen, onClose, type, identifier, onVerified }: VerifyOtpModalProps) {
+  const [code, setCode] = useState(["", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  useEffect(() => {
-    inputRefs.current = Array(4).fill(null);
-  }, []);
+  useEffect(() => { inputRefs.current = Array(4).fill(null); }, []);
 
   if (!isOpen) return null;
 
@@ -61,13 +49,32 @@ export default function VerifyPhoneOrEmailOtpModal({
 
   const lastFour = maskedIdentifier.slice(-4);
 
-  // NEW: handle OTP submission
-  const handleVerify = () => {
-    if (code.every((digit) => digit !== "")) {
-      // Trigger parent callback
+  const handleVerify = async () => {
+    if (!code.every((digit) => digit !== "")) {
+      setError("Please enter all 4 digits.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: identifier, code: code.join("") }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "OTP verification failed");
+
+      // Success → trigger parent callback
       onVerified?.();
-    } else {
-      alert("Please enter all 4 digits.");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,15 +92,11 @@ export default function VerifyPhoneOrEmailOtpModal({
         className="w-full max-w-[28rem] bg-white rounded-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-        >
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
           <X size={24} />
         </button>
 
-        <div className="text-center mt-6">
+        <div className="mt-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Confirm your {type === "phone" ? "phone number" : "email address"}
           </h2>
@@ -105,35 +108,37 @@ export default function VerifyPhoneOrEmailOtpModal({
             <span className="font-medium">{lastFour}</span>
           </p>
 
-          {/* OTP Inputs */}
-<div className="flex gap-3 mt-8 justify-center">
-  {Array.from({ length: 4 }).map((_, i) => (
-    <input
-      key={i}
-      ref={(el) => { inputRefs.current[i] = el; }} // <-- fix
-      type="text"
-      maxLength={1}
-      value={code[i]}
-      onChange={(e) => handleChange(i, e.target.value)}
-      onKeyDown={(e) => handleKeyDown(i, e)}
-      className="w-[90px] h-[90px] text-center text-2xl font-medium bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900"
-    />
-  ))}
-</div>
+          <div className="flex gap-3 mt-8 justify-center">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <input
+                key={i}
+                ref={(el) => { inputRefs.current[i] = el; }}
+                type="text"
+                maxLength={1}
+                value={code[i]}
+                onChange={(e) => handleChange(i, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(i, e)}
+                className="w-[90px] h-[90px] text-center text-2xl font-medium bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900"
+              />
+            ))}
+          </div>
 
+          {error && <p className="text-red-500 text-sm text-center mt-2">{error}</p>}
+
+          <button
+            onClick={handleVerify}
+            disabled={loading}
+            className={`w-full mt-8 py-4 rounded-2xl text-lg font-medium ${
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800"
+            }`}
+          >
+            {loading ? "Verifying..." : "Verify Code"}
+          </button>
 
           <button className="text-sm text-gray-600 mt-4 block">
             Didn't get the code? Resend in 30s
           </button>
         </div>
-
-        {/* Submit */}
-        <button
-          onClick={handleVerify} // call new handler
-          className="w-full hover:cursor-pointer bg-gray-900 text-white py-4 rounded-2xl text-lg font-medium mt-8"
-        >
-          Verify Code
-        </button>
       </motion.div>
     </motion.div>
   );

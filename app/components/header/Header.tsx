@@ -3,13 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef } from "react";
-import { Search, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { AnimatePresence } from "framer-motion";
 import ChooseModal from "../auth/modals/ChooseModal";
-import SignupWithPhoneModal from "../auth/modals/signup/SignupWithPhoneModal";
 import SignupWithEmailModal from "../auth/modals/signup/SignupWithEmailModal";
 import VerifyPhoneOrEmailOtpModal from "../auth/modals/VerifyPhoneOrEmailOtpModal";
+import LoginWithEmailModal from "../auth/modals/login/LoginWithEmailModal";
 import { usePathname } from "next/navigation";
 import CompleteProfileModal from "../auth/modals/signup/CompleteProfileModal";
 
@@ -22,13 +22,21 @@ const suggestions = [
 
 export default function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [signupPhoneOpen, setSignupPhoneOpen] = useState(false);
+
+  // Signup states
   const [signupEmailOpen, setSignupEmailOpen] = useState(false);
   const [otpModalOpen, setOtpModalOpen] = useState(false);
-  const [otpType, setOtpType] = useState<"phone" | "email">("phone");
   const [otpIdentifier, setOtpIdentifier] = useState("");
-  const [completeProfileOpen, setCompleteProfileOpen] = useState(false); // <-- new
+  const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
+
+  // Login states
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [loginEmailOpen, setLoginEmailOpen] = useState(false);
+
+  // Create Account ChooseModal state
+  const [signupChooseModalOpen, setSignupChooseModalOpen] = useState(false);
+  const [isTokenExist, setIsTokenExist] = useState(false);
+
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
 
@@ -39,34 +47,21 @@ export default function Header() {
     s.toLowerCase().includes(query.toLowerCase())
   );
 
-  const openPhoneModal = () => {
-    setSignupPhoneOpen(true);
-    setSignupEmailOpen(false);
-  };
-
+  // Signup helpers
   const openEmailModal = () => {
-    setSignupPhoneOpen(false);
-    setSignupEmailOpen(true);
-  };
-
-  const handleContinueWithPhone = (fullPhone: string) => {
-    setOtpIdentifier(fullPhone);
-    setOtpType("phone");
-    setSignupPhoneOpen(false);
-    setOtpModalOpen(true);
+    const token = localStorage.getItem("token");
+    setIsTokenExist(!!token); // check token
+    setSignupChooseModalOpen(true); // open ChooseModal for Create Account
   };
 
   const handleContinueWithEmail = (email: string) => {
     setOtpIdentifier(email);
-    setOtpType("email");
-    setSignupEmailOpen(false);
     setOtpModalOpen(true);
+    setSignupEmailOpen(false);
   };
 
-  // Called after OTP verification
   const handleOtpVerified = () => {
     setOtpModalOpen(false);
-    // open the complete profile modal
     setCompleteProfileOpen(true);
   };
 
@@ -126,7 +121,7 @@ export default function Header() {
           </button>
 
           <button
-            onClick={openPhoneModal}
+            onClick={openEmailModal}
             className="flex-1 md:flex-initial bg-white text-slate-800 px-6 py-3 rounded-xl font-semibold hover:cursor-pointer hover:bg-gray-100 transition"
           >
             Create Account
@@ -136,57 +131,80 @@ export default function Header() {
 
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-    <AnimatePresence>
-      {loginModalOpen && (
-        <ChooseModal
-          isOpen={loginModalOpen}
-          onClose={() => setLoginModalOpen(false)}
-          onSelectBuyer={() => {
-            setLoginModalOpen(false);
-            setSignupPhoneOpen(true);
-          }}
-          onSelectSeller={() => {
-            setLoginModalOpen(false);
-            setSignupEmailOpen(true);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {/* Login Choose Buyer/Seller */}
+        {loginModalOpen && (
+          <ChooseModal
+            isOpen={loginModalOpen}
+            onClose={() => setLoginModalOpen(false)}
+            onSelectBuyer={() => {}}
+            onSelectSeller={() => {}}
+            onOpenLogin={() => {
+              setLoginEmailOpen(true); 
+              setLoginModalOpen(false); 
+            }}
+          />
+        )}
 
-      {signupPhoneOpen && (
-        <SignupWithPhoneModal
-          isOpen={signupPhoneOpen}
-          onClose={() => setSignupPhoneOpen(false)}
-          onSwitchToEmail={openEmailModal}
-          onContinue={handleContinueWithPhone}
-        />
-      )}
+        {/* Create Account ChooseModal */}
+        {signupChooseModalOpen && (
+          <ChooseModal
+            isOpen={signupChooseModalOpen}
+            onClose={() => setSignupChooseModalOpen(false)}
+            onSelectBuyer={() => {
+              localStorage.setItem("selectedRole", "buyer");
+              setSignupChooseModalOpen(false);
+              isTokenExist ? setLoginModalOpen(true) : setSignupEmailOpen(true);
+            }}
+            onSelectSeller={() => {
+              localStorage.setItem("selectedRole", "seller");
+              setSignupChooseModalOpen(false);
+              isTokenExist ? setLoginModalOpen(true) : setSignupEmailOpen(true);
+            }}
+            onOpenLogin={() => {}}
+          />
+        )}
 
-      {signupEmailOpen && (
-        <SignupWithEmailModal
-          isOpen={signupEmailOpen}
-          onClose={() => setSignupEmailOpen(false)}
-          onSwitchToPhone={openPhoneModal}
-          onContinue={handleContinueWithEmail}
-        />
-      )}
+        {/* Login Email */}
+        {loginEmailOpen && (
+          <LoginWithEmailModal
+            isOpen={loginEmailOpen}
+            onClose={() => setLoginEmailOpen(false)}
+            onSwitchToPhone={undefined} 
+            onLogin={(email: string, password: string) => {
+              console.log("Login with email:", email, password);
+            }}
+          />
+        )}
 
-      {otpModalOpen && (
-        <VerifyPhoneOrEmailOtpModal
-          isOpen={otpModalOpen}
-          type={otpType}
-          identifier={otpIdentifier}
-          onClose={() => setOtpModalOpen(false)}
-          onVerified={handleOtpVerified}
-        />
-      )}
+        {/* Signup Email */}
+        {signupEmailOpen && (
+          <SignupWithEmailModal
+            isOpen={signupEmailOpen}
+            onClose={() => setSignupEmailOpen(false)}
+            onContinue={handleContinueWithEmail}
+          />
+        )}
 
-      {completeProfileOpen && (
-        <CompleteProfileModal
-          isOpen={completeProfileOpen}
-          onClose={() => setCompleteProfileOpen(false)}
-        />
-      )}
-    </AnimatePresence>
+        {/* OTP */}
+        {otpModalOpen && (
+          <VerifyPhoneOrEmailOtpModal
+            isOpen={otpModalOpen}
+            type="email"
+            identifier={otpIdentifier}
+            onClose={() => setOtpModalOpen(false)}
+            onVerified={handleOtpVerified}
+          />
+        )}
+
+        {/* Complete Profile */}
+        {completeProfileOpen && (
+          <CompleteProfileModal
+            isOpen={completeProfileOpen}
+            onClose={() => setCompleteProfileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {focused && (
         <div className="fixed inset-0 z-40" onClick={() => setFocused(false)} />
