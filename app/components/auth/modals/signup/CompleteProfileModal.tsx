@@ -4,6 +4,7 @@ import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import SelectCountryDropdown from "../SelectCountryDropdown";
 import WelcomeBonusModal from "@/app/components/modals/WelcomeBonusModal";
+import { useRouter } from "next/navigation";
 
 interface CompleteProfileModalProps {
   isOpen: boolean;
@@ -24,6 +25,8 @@ const contentVariants = {
 const API_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/complete-profile`;
 
 export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfileModalProps) {
+  const router = useRouter();
+
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState({
@@ -32,6 +35,7 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
     flag: "🇳🇬",
   });
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [pendingRedirectRole, setPendingRedirectRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -57,7 +61,7 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
       return;
     }
 
-    const role = localStorage.getItem("selectedRole") || "buyer"; // fetch role from localStorage
+    const role = localStorage.getItem("selectedRole") || "buyer";
 
     const body = {
       key: email,
@@ -81,13 +85,22 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
 
       if (!res.ok) throw new Error(data.message || "Failed to complete profile");
 
-      // Success → close profile modal and show welcome modal
       onClose();
-      setShowWelcomeModal(true);
+      setPendingRedirectRole(role); 
+      setShowWelcomeModal(true); 
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleWelcomeModalClose = () => {
+    setShowWelcomeModal(false);
+    if (pendingRedirectRole === "seller" || pendingRedirectRole === "buyer") {
+      router.push("/login");
+    } else {
+      router.push("/login");
     }
   };
 
@@ -222,7 +235,7 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
           <button
             onClick={handleCreateAccount}
             disabled={loading}
-            className={`w-full mt-8 py-4 rounded-2xl text-lg font-medium ${
+            className={`w-full mt-8 py-4 rounded-2xl text-sm hover:cursor-pointer font-medium ${
               loading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800"
             }`}
           >
@@ -234,8 +247,8 @@ export default function CompleteProfileModal({ isOpen, onClose }: CompleteProfil
       {/* Welcome Bonus Modal */}
       <WelcomeBonusModal
         isOpen={showWelcomeModal}
-        onClose={() => setShowWelcomeModal(false)}
-        onStartBrowsing={() => setShowWelcomeModal(false)}
+        onClose={handleWelcomeModalClose}
+        onStartBrowsing={handleWelcomeModalClose}
       />
     </>
   );

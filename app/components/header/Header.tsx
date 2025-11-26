@@ -50,8 +50,8 @@ export default function Header() {
   // Signup helpers
   const openEmailModal = () => {
     const token = localStorage.getItem("token");
-    setIsTokenExist(!!token); // check token
-    setSignupChooseModalOpen(true); // open ChooseModal for Create Account
+    setIsTokenExist(!!token);
+    setSignupChooseModalOpen(true); 
   };
 
   const handleContinueWithEmail = (email: string) => {

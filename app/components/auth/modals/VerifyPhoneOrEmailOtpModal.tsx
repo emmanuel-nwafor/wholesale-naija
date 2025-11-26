@@ -27,13 +27,30 @@ export default function VerifyPhoneOrEmailOtpModal({ isOpen, onClose, type, iden
   if (!isOpen) return null;
 
   const handleChange = (index: number, value: string) => {
+    // Only allow digits
     if (!/^\d?$/.test(value)) return;
 
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
 
-    if (value && index < 3) inputRefs.current[index + 1]?.focus();
+    if (value && index < 3) {
+      inputRefs.current[index + 1]?.focus();
+    }
+
+    // Automatically trigger verify if last input filled
+    // if (index === 3 && value) {
+    //   handleVerify();
+    // }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const paste = e.clipboardData.getData("text").trim().slice(0, 4);
+    if (/^\d{1,4}$/.test(paste)) {
+      const newCode = paste.split("");
+      setCode([...newCode, "", "", "", ""].slice(0, 4));
+      newCode.forEach((_, i) => inputRefs.current[i]?.focus());
+    }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -114,10 +131,12 @@ export default function VerifyPhoneOrEmailOtpModal({ isOpen, onClose, type, iden
                 key={i}
                 ref={(el) => { inputRefs.current[i] = el; }}
                 type="text"
+                inputMode="numeric"
                 maxLength={1}
                 value={code[i]}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
+                onPaste={handlePaste}
                 className="w-[90px] h-[90px] text-center text-2xl font-medium bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900"
               />
             ))}
@@ -128,7 +147,7 @@ export default function VerifyPhoneOrEmailOtpModal({ isOpen, onClose, type, iden
           <button
             onClick={handleVerify}
             disabled={loading}
-            className={`w-full mt-8 py-4 rounded-2xl text-lg font-medium ${
+            className={`w-full mt-8 py-4 rounded-2xl text-sm hover:cursor-pointer font-medium ${
               loading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800"
             }`}
           >

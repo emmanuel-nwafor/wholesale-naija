@@ -1,3 +1,4 @@
+// utils/fetchWithToken.ts
 export interface FetchWithTokenOptions extends RequestInit {
   headers?: Record<string, string>;
 }
@@ -16,7 +17,7 @@ export async function fetchWithToken<T = unknown>(
 
   const BASE_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL ||
-    "https://wholesalenaija-backend-production.up.railway.app/api";
+    "https://wholesalenaija-backend-9k01.onrender.com/api";
 
   const isFormData = options.body instanceof FormData;
 

@@ -44,7 +44,7 @@ export default function DashboardHeader() {
 
   const handleLogout = () => {
     localStorage.clear();
-    router.push("/login");
+    router.push("/");
   };
 
   return (

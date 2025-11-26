@@ -10,6 +10,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'wholesalenaija-backend-9k01.onrender.com',
+        pathname: '/api/uploads/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'th.bing.com',
         pathname: '/**',
       },

@@ -1,9 +1,9 @@
-// app/components/modals/AddProductModal.tsx
 "use client";
+
 import { X, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const modalVariants = {
   hidden: { opacity: 0 },
@@ -23,8 +23,20 @@ interface AddProductModalProps {
 
 export default function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
   const [selectedType, setSelectedType] = useState<"simple" | "variant" | null>(null);
+  const router = useRouter();
 
   if (!isOpen) return null;
+
+  const handleNext = () => {
+    if (!selectedType) return;
+
+    if (selectedType === "simple") {
+      router.push("/store/products/simple");
+    } else if (selectedType === "variant") {
+      router.push("/store/products/variant");
+    }
+    onClose();
+  };
 
   return (
     <motion.div
@@ -37,68 +49,74 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
     >
       <motion.div
         variants={contentVariants}
-        className="w-full max-w-lg bg-white rounded-2xl p-6 shadow-xl"
+        className="w-full max-w-lg bg-white rounded-2xl p-8 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Add Product</h2>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Add Product</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-100 transition text-red-600"
+            className="p-2 rounded-lg hover:bg-gray-100 transition text-gray-500 hover:text-gray-700"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="mb-6">
-          <p className="text-sm text-gray-600 mb-4">Select product type</p>
+        <div className="mb-10">
+          <p className="text-sm text-gray-600 mb-6 text-center">Choose the type of product you want to add</p>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Link 
-              href="/store/products/simple"
-                className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${
-                  selectedType === "simple"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                }`}
+          <div className="grid grid-cols-2 gap-6">
+            {/* Simple Product */}
+            <button
+              onClick={() => setSelectedType("simple")}
+              className={`flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 transition-all duration-200 ${
+                selectedType === "simple"
+                  ? "border-slate-900 bg-slate-50 shadow-lg scale-105"
+                  : "border-gray-200 hover:border-gray-300 bg-white hover:shadow-md"
+              }`}
             >
-              <button
-                onClick={() => setSelectedType("simple")}
-                className="flex flex-col items-center justify-center"
-              >
-                <ShoppingBag className="w-8 h-8 text-gray-700" />
-                <span className="text-sm font-medium text-gray-900">Simple Product</span>
-              </button>
-            </Link>
+              <div className="p-4 bg-slate-100 rounded-full">
+                <ShoppingBag className="w-10 h-10 text-slate-700" />
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-gray-900">Simple Product</h3>
+                <p className="text-xs text-gray-500 mt-1">One price, one variant</p>
+              </div>
+            </button>
 
-            <Link 
-              href="/store/products/variant"
-                className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all ${
-                  selectedType === "variant"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                }`}
+            {/* Variant Product */}
+            <button
+              onClick={() => setSelectedType("variant")}
+              className={`flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 transition-all duration-200 ${
+                selectedType === "variant"
+                  ? "border-slate-900 bg-slate-50 shadow-lg scale-105"
+                  : "border-gray-200 hover:border-gray-300 bg-white hover:shadow-md"
+              }`}
             >
-              <button
-                onClick={() => setSelectedType("simple")}
-                className="flex flex-col items-center justify-center"
-              >
-                <ShoppingBag className="w-8 h-8 text-gray-700" />
-                <span className="text-sm font-medium text-gray-900">Variant Product</span>
-              </button>
-            </Link>
+              <div className="p-4 bg-slate-100 rounded-full">
+                <ShoppingBag className="w-10 h-10 text-slate-700" />
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-gray-900">Variant Product</h3>
+                <p className="text-xs text-gray-500 mt-1">Multiple sizes, colors, etc.</p>
+              </div>
+            </button>
           </div>
         </div>
 
         <button
+          onClick={handleNext}
           disabled={!selectedType}
-          className={`w-full py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+          className={`w-full py-4 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
             selectedType
-              ? "bg-slate-900 text-white hover:bg-slate-800"
+              ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
               : "bg-gray-200 text-gray-500 cursor-not-allowed"
           }`}
         >
           Next
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </button>
       </motion.div>
     </motion.div>
