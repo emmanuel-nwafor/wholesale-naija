@@ -24,18 +24,30 @@ interface AddVariantModalProps {
   initialData?: VariantData;
 }
 
-export default function AddVariantModal({ isOpen, onClose, onSave, initialData }: AddVariantModalProps) {
+export default function AddVariantModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialData,
+}: AddVariantModalProps) {
   const [name, setName] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [rows, setRows] = useState<VariantRow[]>([{ minQty: '', maxQty: '', price: '' }]);
+  const [rows, setRows] = useState<VariantRow[]>([
+    { minQty: '', maxQty: '', price: '' },
+  ]);
 
+  // Reset form when modal opens/closes or editing
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         setName(initialData.name);
         setImagePreview(initialData.imageUrl || null);
-        setRows(initialData.rows.length > 0 ? initialData.rows : [{ minQty: '', maxQty: '', price: '' }]);
+        setRows(
+          initialData.rows.length > 0
+            ? initialData.rows
+            : [{ minQty: '', maxQty: '', price: '' }]
+        );
       } else {
         setName('');
         setImage(null);
@@ -50,38 +62,43 @@ export default function AddVariantModal({ isOpen, onClose, onSave, initialData }
     if (file) {
       setImage(file);
       const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
       reader.readAsDataURL(file);
     }
   };
 
   const updateRow = (index: number, field: keyof VariantRow, value: string) => {
-    const newRows = [...rows];
-    newRows[index][field] = value;
-    setRows(newRows);
+    setRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+    );
   };
 
   const addRow = () => {
-    setRows([...rows, { minQty: '', maxQty: '', price: '' }]);
+    setRows((prev) => [...prev, { minQty: '', maxQty: '', price: '' }]);
   };
 
   const removeRow = (index: number) => {
     if (rows.length === 1) return;
-    setRows(rows.filter((_, i) => i !== index));
+    setRows((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = () => {
     if (!name.trim()) {
-      alert("Variant name is required");
-      return;
-    }
-    if (rows.every(r => !r.minQty && !r.price)) {
-      alert("Add at least one pricing tier");
+      alert('Variant name is required');
       return;
     }
 
-    // We still pass image for preview, but backend ignores it — that's fine!
-    onSave({ name, image, rows });
+    const hasValidTier = rows.some(
+      (r) => r.minQty.trim() !== '' && r.price.trim() !== ''
+    );
+    if (!hasValidTier) {
+      alert('Please add at least one pricing tier with Min Qty and Price');
+      return;
+    }
+
+    onSave({ name: name.trim(), image, rows });
     onClose();
   };
 
@@ -89,38 +106,49 @@ export default function AddVariantModal({ isOpen, onClose, onSave, initialData }
 
   return (
     <motion.div
-      variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 }, exit: { opacity: 0 } }}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <motion.div
-        variants={{ hidden: { y: -50, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
         className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900">
             {initialData ? 'Edit Variant' : 'Add New Variant'}
           </h2>
-          <button onClick={onClose} className="p-3 hover:bg-gray-100 rounded-xl transition">
+          <button
+            onClick={onClose}
+            className="p-3 hover:bg-gray-100 rounded-xl transition"
+          >
             <X className="w-6 h-6 text-gray-500" />
           </button>
         </div>
 
+        {/* Body */}
         <div className="p-6 space-y-8">
-          {/* Variant Image (for preview only) */}
+          {/* Variant Image */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-4">
-              Variant Image <span className="text-gray-500 font-normal">(Optional - for preview)</span>
+              Variant Image{' '}
+              <span className="text-gray-500 font-normal">(Optional - for preview only)</span>
             </label>
             <div className="flex items-center gap-6">
               <label htmlFor="variant-image" className="cursor-pointer">
                 <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center hover:border-gray-400 transition">
                   {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-2xl" />
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
                   ) : (
                     <>
                       <Upload className="w-10 h-10 text-gray-400 mb-2" />
@@ -128,31 +156,54 @@ export default function AddVariantModal({ isOpen, onClose, onSave, initialData }
                     </>
                   )}
                 </div>
-                <input id="variant-image" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                <input
+                  id="variant-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
               </label>
+
               {imagePreview && (
-                <button onClick={() => { setImage(null); setImagePreview(null); }} className="text-sm text-red-600 hover:text-red-700 font-medium">
-                  Remove
+                <button
+                  onClick={() => {
+                    setImage(null);
+                    setImagePreview(null);
+                  }}
+                  className="text-sm text-red-600 hover:text-red-700 font-medium"
+                >
+                  Remove Image
                 </button>
               )}
             </div>
           </div>
 
+          {/* Variant Name */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Variant Name *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Variant Name *
+            </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Red, Large, 64GB"
+              placeholder="e.g. 256GB, Black Titanium, Large"
               className="w-full px-5 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
+          {/* Pricing Tiers */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-semibold text-gray-700">Pricing Tiers</label>
-              <button type="button" onClick={addRow} className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+              <label className="text-sm font-semibold text-gray-700">
+                Pricing Tiers
+              </label>
+              <button
+                type="button"
+                onClick={addRow}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              >
                 <Plus className="w-4 h-4" /> Add Row
               </button>
             </div>
@@ -177,20 +228,24 @@ export default function AddVariantModal({ isOpen, onClose, onSave, initialData }
                     type="number"
                     value={row.maxQty}
                     onChange={(e) => updateRow(index, 'maxQty', e.target.value)}
-                    placeholder="20 (optional)"
+                    placeholder="50 (optional)"
                     className="px-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <div className="relative flex items-center">
-                    <span className="absolute left-4 text-gray-600">₦</span>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600">₦</span>
                     <input
                       type="number"
                       value={row.price}
                       onChange={(e) => updateRow(index, 'price', e.target.value)}
-                      placeholder="24000"
-                      className="w-full pl-10 pr-10 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="120000"
+                      className="w-full pl-10 pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {rows.length > 1 && (
-                      <button type="button" onClick={() => removeRow(index)} className="absolute right-3 text-red-500 hover:text-red-700">
+                      <button
+                        type="button"
+                        onClick={() => removeRow(index)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700"
+                      >
                         <Trash2 className="w-5 h-5" />
                       </button>
                     )}
@@ -201,11 +256,18 @@ export default function AddVariantModal({ isOpen, onClose, onSave, initialData }
           </div>
         </div>
 
+        {/* Footer */}
         <div className="flex justify-end gap-4 p-6 border-t border-gray-200 bg-gray-50 rounded-b-3xl">
-          <button onClick={onClose} className="px-8 py-3.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition">
+          <button
+            onClick={onClose}
+            className="px-8 py-3.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-medium transition"
+          >
             Cancel
           </button>
-          <button onClick={handleSave} className="px-10 py-3.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-medium transition shadow-lg">
+          <button
+            onClick={handleSave}
+            className="px-10 py-3.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-medium transition shadow-lg"
+          >
             {initialData ? 'Update Variant' : 'Save Variant'}
           </button>
         </div>

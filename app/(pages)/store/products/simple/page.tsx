@@ -23,9 +23,9 @@ export default function AddProductSimplePage() {
   const [isActive, setIsActive] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCat, setSelectedCat] = useState("");
-  const [selectedSub, setSelectedSub] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCat, setSelectedCat] = useState<Category | null>(null);
+  const [selectedSub, setSelectedSub] = useState<Subcategory | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [images, setImages] = useState<File[]>([]);
@@ -37,6 +37,7 @@ export default function AddProductSimplePage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [moq, setMoq] = useState("");
+  const [unit, setUnit] = useState("pieces"); // optional: customize unit
 
   // Fetch categories
   useEffect(() => {
@@ -48,71 +49,74 @@ export default function AddProductSimplePage() {
   // Update subcategories
   useEffect(() => {
     if (selectedCat) {
-      const cat = categories.find((c) => c._id === selectedCat);
-      setSubcategories(cat?.subcategories || []);
-      setSelectedSub("");
-      setSelectedBrand("");
+      setSubcategories(selectedCat.subcategories || []);
+      setSelectedSub(null);
+      setSelectedBrand(null);
       setBrands([]);
     }
-  }, [selectedCat, categories]);
+  }, [selectedCat]);
 
   // Update brands
   useEffect(() => {
     if (selectedSub) {
-      const sub = subcategories.find((s) => s.name === selectedSub);
-      setBrands(sub?.brands || []);
-      setSelectedBrand("");
+      setBrands(selectedSub.brands || []);
+      setSelectedBrand(null);
     }
-  }, [selectedSub, subcategories]);
+  }, [selectedSub]);
 
-  // Handle image change
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + images.length > 4) {
       alert("Maximum 4 images allowed");
       return;
     }
-    const newImages = [...images, ...files];
-    setImages(newImages);
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrls((prev) => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
+    setImages(prev => [...prev, ...files]);
+    files.forEach(file => {
+      const url = URL.createObjectURL(file);
+      setPreviewUrls(prev => [...prev, url]);
     });
   };
 
   const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-    setPreviewUrls(previewUrls.filter((_, i) => i !== index));
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !selectedCat || !description || !price || images.length === 0) {
-      alert("Please fill all required fields and upload at least one image");
-      return;
-    }
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("type", "Simple");
-    formData.append("price", price);
-    formData.append("moq", moq || "1");
-    formData.append("categories", selectedCat);
-    formData.append("description", description);
-    images.forEach((img) => formData.append("images", img));
-    if (selectedBrand) formData.append("brand", selectedBrand);
+    if (!name.trim()) return alert("Product name is required");
+    if (!selectedCat) return alert("Please select a category");
+    if (!description.trim()) return alert("Description is required");
+    if (!price) return alert("Price is required");
+    if (images.length === 0) return alert("Upload at least one image");
+
+    const cleanPrice = price.replace(/[₦,\s]/g, "");
+    const moqValue = moq ? parseInt(moq, 10) : 1;
+    const moqString = moqValue > 0 ? `${moqValue} ${unit}` : "1 piece";
 
     try {
+      // Match your exact payload structure
       await fetchWithToken("/v1/seller/products", {
         method: "POST",
-        body: formData,
+        body: JSON.stringify({
+          media: images,
+          additionalFields: {
+            name: name.trim(),
+            type: "Simple",
+            price: cleanPrice,
+            moq: moqString,
+            description: description.trim(),
+            categories: selectedCat._id,
+            subcategory: selectedSub?.name || undefined,
+            brand: selectedBrand?.name || undefined,
+          },
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
-      // Show Review Modal instead of Success
       setShowReviewModal(true);
 
       // Reset form
@@ -122,10 +126,11 @@ export default function AddProductSimplePage() {
       setMoq("");
       setImages([]);
       setPreviewUrls([]);
-      setSelectedCat("");
-      setSelectedSub("");
-      setSelectedBrand("");
+      setSelectedCat(null);
+      setSelectedSub(null);
+      setSelectedBrand(null);
     } catch (err: any) {
+      console.error(err);
       alert(err.message || "Failed to add product");
     }
   };
@@ -143,6 +148,7 @@ export default function AddProductSimplePage() {
           <main className="flex-1 p-4 md:p-10 w-full">
             <div className="w-full max-w-full md:max-w-6xl mx-auto">
               <h1 className="text-2xl md:text-3xl font-semibold mb-6">Add Product</h1>
+
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 {/* Image Upload */}
                 <div>
@@ -206,8 +212,11 @@ export default function AddProductSimplePage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                     <select
-                      value={selectedCat}
-                      onChange={(e) => setSelectedCat(e.target.value)}
+                      value={selectedCat?._id || ""}
+                      onChange={(e) => {
+                        const cat = categories.find(c => c._id === e.target.value);
+                        setSelectedCat(cat || null);
+                      }}
                       className="w-full px-4 py-3 bg-gray-100 rounded-2xl"
                       required
                     >
@@ -219,17 +228,23 @@ export default function AddProductSimplePage() {
                       ))}
                     </select>
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Sub-category</label>
                     <select
-                      value={selectedSub}
-                      onChange={(e) => setSelectedSub(e.target.value)}
+                      value={selectedSub?.name || ""}
+                      onChange={(e) => {
+                        const sub = subcategories.find(s => s.name === e.target.value);
+                        setSelectedSub(sub || null);
+                      }}
                       disabled={!selectedCat}
                       className="w-full px-4 py-3 bg-gray-100 rounded-2xl disabled:opacity-50"
                     >
                       <option value="">Select subcategory</option>
                       {subcategories.map((s) => (
-                        <option key={s.name}>{s.name}</option>
+                        <option key={s.name} value={s.name}>
+                          {s.name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -238,14 +253,19 @@ export default function AddProductSimplePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Brand (Optional)</label>
                   <select
-                    value={selectedBrand}
-                    onChange={(e) => setSelectedBrand(e.target.value)}
+                    value={selectedBrand?.name || ""}
+                    onChange={(e) => {
+                      const brand = brands.find(b => b.name === e.target.value);
+                      setSelectedBrand(brand || null);
+                    }}
                     disabled={!selectedSub}
                     className="w-full px-4 py-3 bg-gray-100 rounded-2xl disabled:opacity-50"
                   >
                     <option value="">Select brand</option>
                     {brands.map((b) => (
-                      <option key={b.name}>{b.name}</option>
+                      <option key={b.name} value={b.name}>
+                        {b.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -263,10 +283,10 @@ export default function AddProductSimplePage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Price (₦) *</label>
                     <input
-                      type="number"
+                      type="text"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      placeholder="0.00"
+                      placeholder="e.g. 550,000"
                       className="w-full px-4 py-3 bg-gray-100 rounded-2xl"
                       required
                     />
@@ -309,7 +329,6 @@ export default function AddProductSimplePage() {
         </div>
       </div>
 
-      {/* Updated to use ReviewStatusModal */}
       <ReviewStatusModal
         isOpen={showReviewModal}
         onClose={() => setShowReviewModal(false)}

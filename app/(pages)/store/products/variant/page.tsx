@@ -1,12 +1,13 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Plus, Trash2, Edit2, ChevronRight, ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Edit2, ChevronRight, ChevronLeft, ImageIcon } from 'lucide-react';
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 import AddVariantModal from "@/app/components/modals/AddvariantModal";
 import Image from "next/image";
 import ReviewStatusModal from "@/app/components/modals/ReviewStatusModal";
 import { fetchWithToken } from "@/app/utils/fetchWithToken";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Category {
   _id: string;
@@ -36,20 +37,18 @@ export default function AddProductVariantPage() {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
-  // Form Fields
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [mainImageUrl, setMainImageUrl] = useState<string>("");
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedCat, setSelectedCat] = useState("");
-  const [selectedSub, setSelectedSub] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCat, setSelectedCat] = useState<Category | null>(null);
+  const [selectedSub, setSelectedSub] = useState<Subcategory | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch categories
   useEffect(() => {
     fetchWithToken<{ categories: Category[] }>("/v1/categories")
       .then(data => setCategories(data.categories))
@@ -58,21 +57,19 @@ export default function AddProductVariantPage() {
 
   useEffect(() => {
     if (selectedCat) {
-      const cat = categories.find(c => c._id === selectedCat);
-      setSubcategories(cat?.subcategories || []);
-      setSelectedSub("");
-      setSelectedBrand("");
+      setSubcategories(selectedCat.subcategories || []);
+      setSelectedSub(null);
+      setSelectedBrand(null);
       setBrands([]);
     }
-  }, [selectedCat, categories]);
+  }, [selectedCat]);
 
   useEffect(() => {
     if (selectedSub) {
-      const sub = subcategories.find(s => s.name === selectedSub);
-      setBrands(sub?.brands || []);
-      setSelectedBrand("");
+      setBrands(selectedSub.brands || []);
+      setSelectedBrand(null);
     }
-  }, [selectedSub, subcategories]);
+  }, [selectedSub]);
 
   const handleMainImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -114,60 +111,68 @@ export default function AddProductVariantPage() {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
+  // EXACTLY MATCHES YOUR BACKEND PAYLOAD
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!productName || !selectedCat || !description || !mainImage || variants.length === 0) {
-      alert("Please fill all required fields and add at least one variant");
-      return;
-    }
+    if (!productName.trim()) return alert("Product name is required");
+    if (!selectedCat) return alert("Please select a category");
+    if (!description.trim()) return alert("Description is required");
+    if (!mainImage) return alert("Main product image is required");
+    if (variants.length === 0) return alert("Add at least one variant");
 
-    const formData = new FormData();
-
-    formData.append("name", productName);
-    formData.append("type", "Variant");
-    formData.append("description", description);
-    formData.append("categories", selectedCat);
-    if (selectedBrand) formData.append("brand", selectedBrand);
-    formData.append("images", mainImage);
-
-    // Required top-level price
-    let basePrice = "0";
-    for (const variant of variants) {
-      const firstTier = variant.rows.find(r => r.price && r.price.trim() !== "");
-      if (firstTier?.price) {
-        basePrice = firstTier.price;
+    // Find base price from first valid tier
+    let basePrice = "10000";
+    for (const v of variants) {
+      const firstPrice = v.rows.find(r => r.price?.trim())?.price?.trim();
+      if (firstPrice) {
+        basePrice = firstPrice.replace(/[₦,\s]/g, "");
         break;
       }
     }
-    formData.append("price", basePrice);
 
-    // Variants
-    variants.forEach((variant, i) => {
-      formData.append(`variants[${i}][name]`, variant.name);
-      const sku = `${productName.slice(0, 8).toUpperCase().replace(/\s/g, '-')}-${variant.name.slice(0, 8).toUpperCase().replace(/\s/g, '-')}`;
-      formData.append(`variants[${i}][sku]`, sku);
-
-      const firstTier = variant.rows.find(r => r.price);
-      if (firstTier) formData.append(`variants[${i}][price]`, firstTier.price);
-
-      formData.append(`variants[${i}][stock]`, "100");
-      formData.append(`variants[${i}][MOQ]`, "1");
-
-      variant.rows
-        .filter(row => row.minQty && row.price)
-        .forEach((row, j) => {
-          formData.append(`variants[${i}][pricingTiers][${j}][minQty]`, row.minQty);
-          if (row.maxQty) formData.append(`variants[${i}][pricingTiers][${j}][maxQty]`, row.maxQty);
-          formData.append(`variants[${i}][pricingTiers][${j}][price]`, row.price);
-        });
-    });
+    // First valid MOQ
+    let moqValue = 1;
+    let unit = "pieces";
+    for (const v of variants) {
+      const firstMinQty = v.rows.find(r => r.minQty?.trim())?.minQty?.trim();
+      if (firstMinQty) {
+        moqValue = parseInt(firstMinQty, 10);
+        break;
+      }
+    }
 
     try {
       await fetchWithToken("/v1/seller/products", {
         method: "POST",
-        body: formData,
+        body: JSON.stringify({
+          media: [mainImage, ...variants.map(v => v.image).filter(Boolean)], // All images
+          additionalFields: {
+            name: productName.trim(),
+            type: "Variant",
+            price: basePrice,
+            moq: `${moqValue} ${unit}`,
+            description: description.trim(),
+            categories: selectedCat._id,
+            subcategory: selectedSub?.name || undefined,
+            brand: selectedBrand?.name || undefined,
+            variants: variants.map(variant => ({
+              name: variant.name.trim(),
+              pricingTiers: variant.rows
+                .filter(row => row.minQty && row.maxQty && row.price)
+                .map(row => ({
+                  minQty: parseInt(row.minQty.trim(), 10),
+                  maxQty: parseInt(row.maxQty.trim(), 10),
+                  price: parseFloat(row.price.replace(/[₦,\s]/g, "")),
+                })),
+            })),
+          },
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+
       setShowReviewModal(true);
     } catch (err: any) {
       console.error(err);
@@ -185,158 +190,226 @@ export default function AddProductVariantPage() {
             <div className="max-w-5xl mx-auto">
               <h1 className="text-2xl font-semibold mb-6">Add Product</h1>
 
-              {/* Progress Bar - Mobile Friendly */}
               <div className="mb-10">
                 <div className="flex items-center justify-between text-sm font-medium text-gray-700">
-                  <span className={step === 1 ? "text-slate-900" : "text-gray-500"}>Product details</span>
-                  <span className={step === 2 ? "text-slate-900" : "text-gray-500"}>Variant Setup</span>
+                  <span className={step === 1 ? "text-slate-900 font-bold" : "text-gray-500"}>Product details</span>
+                  <span className={step === 2 ? "text-slate-900 font-bold" : "text-gray-500"}>Variant Setup</span>
                 </div>
                 <div className="mt-3 relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="absolute left-0 top-0 h-full bg-slate-900 transition-all duration-500"
-                    style={{ width: step === 1 ? "50%" : "100%" }}
+                  <motion.div
+                    className="absolute left-0 top-0 h-full bg-slate-900"
+                    animate={{ width: step === 1 ? "50%" : "100%" }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
                   />
                 </div>
               </div>
 
-              {/* Responsive Form - No Horizontal Sliding */}
-              <form onSubmit={handleSubmit} className="space-y-10">
-                {/* Step 1: Product Details */}
-                <div className={step === 1 ? "block" : "hidden"}>
-                  <h2 className="text-lg font-medium text-gray-900 mb-2">Product details</h2>
-                  <p className="text-sm text-gray-600 mb-8">Add basic info about the product.</p>
-
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">Product Media *</label>
-                      <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer">
-                        {mainImageUrl ? (
-                          <img src={mainImageUrl} alt="main" className="w-full max-w-44 h-44 object-cover rounded-xl border" />
-                        ) : (
-                          <div className="w-full max-w-44 h-44 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center">
-                            <ImageIcon className="w-16 h-16 text-gray-400 mb-3" />
-                            <p className="text-sm text-gray-600">Click to upload</p>
-                          </div>
-                        )}
-                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleMainImage} className="hidden" />
-                      </div>
-                    </div>
-
-                    <input
-                      type="text"
-                      value={productName}
-                      onChange={(e) => setProductName(e.target.value)}
-                      placeholder="Product name *"
-                      className="w-full px-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="relative overflow-hidden">
+                <AnimatePresence mode="wait">
+                  {step === 1 && (
+                    <motion.div
+                      key="step1"
+                      initial={{ x: 300, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -300, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className="space-y-10"
+                    >
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                        <select value={selectedCat} onChange={(e) => setSelectedCat(e.target.value)} className="w-full px-4 py-3 bg-gray-100 rounded-xl">
-                          <option value="">Select category</option>
-                          {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Sub-category</label>
-                        <select value={selectedSub} onChange={(e) => setSelectedSub(e.target.value)} disabled={!selectedCat} className="w-full px-4 py-3 bg-gray-100 rounded-xl disabled:opacity-50">
-                          <option value="">Select subcategory</option>
-                          {subcategories.map(s => <option key={s.name}>{s.name}</option>)}
-                        </select>
-                      </div>
-                    </div>
+                        <h2 className="text-lg font-medium text-gray-900 mb-2">Product details</h2>
+                        <p className="text-sm text-gray-600 mb-8">Add basic info about the product.</p>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Brand / Nested Category</label>
-                      <select value={selectedBrand} onChange={(e) => setSelectedBrand(e.target.value)} disabled={!selectedSub} className="w-full px-4 py-3 bg-gray-100 rounded-xl disabled:opacity-50">
-                        <option value="">Select brand</option>
-                        {brands.map(b => <option key={b.name}>{b.name}</option>)}
-                      </select>
-                    </div>
-
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Product description *"
-                      rows={4}
-                      className="w-full px-4 py-3 bg-gray-100 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-
-                    <div className="flex justify-end">
-                      <button type="button" onClick={() => setStep(2)} className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 flex items-center gap-2">
-                        Next <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 2: Variant Setup */}
-                <div className={step === 2 ? "block" : "hidden"}>
-                  <h2 className="text-lg font-medium text-gray-900 mb-2">Variant Setup</h2>
-                  <p className="text-sm text-gray-600 mb-8">Add product options or variations</p>
-
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-700">Variants</h3>
-                      <button type="button" onClick={addVariant} className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50">
-                        <Plus className="h-4 w-4" /> Add variant
-                      </button>
-                    </div>
-
-                    {variants.map((variant, index) => (
-                      <div key={index} className="bg-gray-50 rounded-xl overflow-hidden">
-                        <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100" onClick={() => toggleExpand(index)}>
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-300">
-                              {variant.imageUrl ? (
-                                <Image src={variant.imageUrl} alt={variant.name} width={64} height={64} className="w-full h-full object-cover" />
+                        <div className="space-y-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-3">Product Media *</label>
+                            <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer">
+                              {mainImageUrl ? (
+                                <img src={mainImageUrl} alt="main" className="w-full max-w-44 h-44 object-cover rounded-xl border" />
                               ) : (
-                                <div className="w-full h-full bg-gray-200 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center">
-                                  <ImageIcon className="h-8 w-8 text-gray-400" />
+                                <div className="w-full max-w-44 h-44 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center hover:border-gray-400 transition">
+                                  <ImageIcon className="w-16 h-16 text-gray-400 mb-3" />
+                                  <p className="text-sm text-gray-600">Click to upload</p>
+                                </div>
+                              )}
+                              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleMainImage} className="hidden" />
+                            </div>
+                          </div>
+
+                          <input
+                            type="text"
+                            value={productName}
+                            onChange={(e) => setProductName(e.target.value)}
+                            placeholder="Product name *"
+                            className="w-full px-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                              <select
+                                value={selectedCat?._id || ""}
+                                onChange={(e) => {
+                                  const cat = categories.find(c => c._id === e.target.value);
+                                  setSelectedCat(cat || null);
+                                }}
+                                className="w-full px-4 py-3 bg-gray-100 rounded-xl"
+                              >
+                                <option value="">Select category</option>
+                                {categories.map(c => (
+                                  <option key={c._id} value={c._id}>{c.name}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Sub-category</label>
+                              <select
+                                value={selectedSub?.name || ""}
+                                onChange={(e) => {
+                                  const sub = subcategories.find(s => s.name === e.target.value);
+                                  setSelectedSub(sub || null);
+                                }}
+                                disabled={!selectedCat}
+                                className="w-full px-4 py-3 bg-gray-100 rounded-xl disabled:opacity-50"
+                              >
+                                <option value="">Select subcategory</option>
+                                {subcategories.map(s => (
+                                  <option key={s.name} value={s.name}>{s.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Brand / Nested Category</label>
+                            <select
+                              value={selectedBrand?.name || ""}
+                              onChange={(e) => {
+                                const brand = brands.find(b => b.name === e.target.value);
+                                setSelectedBrand(brand || null);
+                              }}
+                              disabled={!selectedSub}
+                              className="w-full px-4 py-3 bg-gray-100 rounded-xl disabled:opacity-50"
+                            >
+                              <option value="">Select brand</option>
+                              {brands.map(b => (
+                                <option key={b.name} value={b.name}>{b.name}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Product description *"
+                            rows={4}
+                            className="w-full px-4 py-3 bg-gray-100 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => setStep(2)}
+                              className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 flex items-center gap-2 transition"
+                            >
+                              Next <ChevronRight className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {step === 2 && (
+                    <motion.div
+                      key="step2"
+                      initial={{ x: 300, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -300, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      className="space-y-10"
+                    >
+                      <div>
+                        <h2 className="text-lg font-medium text-gray-900 mb-2">Variant Setup</h2>
+                        <p className="text-sm text-gray-600 mb-8">Add product options or variations</p>
+
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-gray-700">Variants</h3>
+                            <button
+                              type="button"
+                              onClick={addVariant}
+                              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                              <Plus className="h-4 w-4" /> Add variant
+                            </button>
+                          </div>
+
+                          {variants.map((variant, index) => (
+                            <div key={index} className="bg-gray-50 rounded-xl overflow-hidden">
+                              <div
+                                className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition"
+                                onClick={() => toggleExpand(index)}
+                              >
+                                <div className="flex items-center gap-4 flex-1">
+                                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-300">
+                                    {variant.imageUrl ? (
+                                      <Image src={variant.imageUrl} alt={variant.name} width={64} height={64} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full bg-gray-200 border-2 border-dashed rounded-xl flex items-center justify-center">
+                                        <ImageIcon className="h-8 w-8 text-gray-400" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="px-3 py-2 bg-white rounded-lg text-sm font-medium">{variant.name}</div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button type="button" onClick={(e) => { e.stopPropagation(); handleEditVariant(index); }} className="p-2 text-gray-500 hover:text-gray-700">
+                                    <Edit2 className="h-4 w-4" />
+                                  </button>
+                                  <button type="button" onClick={(e) => { e.stopPropagation(); removeVariant(index); }} className="p-2 text-red-500 hover:text-red-700">
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                  <ChevronRight className={`h-5 w-5 text-gray-500 transition-transform ${expandedIndex === index ? 'rotate-90' : ''}`} />
+                                </div>
+                              </div>
+
+                              {expandedIndex === index && (
+                                <div className="border-t border-gray-200 px-4 py-3 bg-white">
+                                  <div className="space-y-2">
+                                    {variant.rows.map((row, i) => (
+                                      <div key={i} className="grid grid-cols-3 gap-2 text-sm">
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.minQty || '-'}</div>
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.maxQty || '-'}</div>
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">₦{row.price || '-'}</div>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               )}
                             </div>
-                            <div className="flex-1">
-                              <div className="px-3 py-2 bg-white rounded-lg text-sm font-medium">{variant.name}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" onClick={(e) => { e.stopPropagation(); handleEditVariant(index); }} className="p-2 text-gray-500 hover:text-gray-700">
-                              <Edit2 className="h-4 w-4" />
-                            </button>
-                            <button type="button" onClick={(e) => { e.stopPropagation(); removeVariant(index); }} className="p-2 text-red-500 hover:text-red-700">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                            <ChevronRight className={`h-5 w-5 text-gray-500 transition-transform ${expandedIndex === index ? 'rotate-90' : ''}`} />
-                          </div>
+                          ))}
                         </div>
-                        {expandedIndex === index && (
-                          <div className="border-t border-gray-200 px-4 py-3 bg-white">
-                            <div className="space-y-2">
-                              {variant.rows.map((row, i) => (
-                                <div key={i} className="grid grid-cols-3 gap-2 text-sm">
-                                  <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.minQty || '-'}</div>
-                                  <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.maxQty || '-'}</div>
-                                  <div className="px-3 py-2 bg-gray-50 rounded-lg">₦{row.price || '-'}</div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
 
-                  <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
-                    <button type="button" onClick={() => setStep(1)} className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 order-2 sm:order-1">
-                      Back
-                    </button>
-                    <button type="submit" className="px-8 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-medium order-1 sm:order-2">
-                      Add Product
-                    </button>
-                  </div>
-                </div>
+                        <div className="flex flex-col sm:flex-row justify-between gap-4 pt-8">
+                          <button
+                            type="button"
+                            onClick={() => setStep(1)}
+                            className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition"
+                          >
+                            <ChevronLeft className="w-5 h-5" /> Back
+                          </button>
+                          <button
+                            type="submit"
+                            className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-medium transition"
+                          >
+                            Add Product
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </form>
             </div>
           </main>

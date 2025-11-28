@@ -50,18 +50,36 @@ export default function LoginWithEmailModal({ isOpen, onClose, onSwitchToPhone }
 
       if (!response.ok) {
         setError(data.message || "Login failed");
-      } else if (data.user.role === "admin") {
-        setError("Admin users are not allowed to log in here.");
-      } else {
-        // Save token and user info
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        setUserRole(data.user.role);
-        setShowSuccess(true);
+        return;
       }
+
+      if (data.user.role === "admin") {
+        setError("Admin users are not allowed to log in here.");
+        return;
+      }
+
+      // EXTRACT USER ID (from both JWT payload and user object)
+      const userId = data.user.id || data.user._id;
+
+      if (!userId) {
+        console.error("User ID not found in login response");
+        setError("Login failed: Invalid user data");
+        return;
+      }
+
+      // Saving of users info to localstorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("sellerId", userId);
+      localStorage.setItem("userRole", data.user.role);
+
+      console.log("Login successful! Seller ID saved:", userId);
+
+      setUserRole(data.user.role);
+      setShowSuccess(true);
     } catch (err) {
-      console.error(err);
-      setError("Something went wrong. Please try again.");
+      console.error("Login error:", err);
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -70,8 +88,11 @@ export default function LoginWithEmailModal({ isOpen, onClose, onSwitchToPhone }
   const handleRedirect = () => {
     setShowSuccess(false);
     onClose();
-    if (userRole === "seller") router.push("/store/dashboard");
-    else router.push("/profile");
+    if (userRole === "seller") {
+      router.push("/store/dashboard");
+    } else {
+      router.push("/profile");
+    }
   };
 
   return (
@@ -103,11 +124,11 @@ export default function LoginWithEmailModal({ isOpen, onClose, onSwitchToPhone }
           )}
 
           <div className="mt-10 mb-3">
-            <h2 className="text-2xl font-bold text-gray-900">Welcome back! 👍</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Welcome back!</h2>
             <p className="text-gray-600 text-sm">Securely login to continue</p>
           </div>
 
-          <div className="mt- space-y-6">
+          <div className="mt-6 space-y-6">
             <div>
               <label className="text-sm font-medium text-gray-700">Email Address</label>
               <input
@@ -130,7 +151,7 @@ export default function LoginWithEmailModal({ isOpen, onClose, onSwitchToPhone }
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 text-gray-500"
+                className="absolute right-3 top-10 text-gray-500"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -140,15 +161,14 @@ export default function LoginWithEmailModal({ isOpen, onClose, onSwitchToPhone }
             <a href="#" className="block text-sm text-gray-600 text-left -mt-4">
               Forgot Password? Reset it.
             </a>
-
           </div>
 
-          {error && <p className="text-red-500 text-[10px] mt-4">{error}</p>}
+          {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
 
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="mt-2 w-full bg-[#0f172a] text-white py-3 rounded-2xl text-sm hover:cursor-pointer font-medium disabled:opacity-50"
+            className="mt-6 w-full bg-[#0f172a] text-white py-3 rounded-2xl text-sm font-medium disabled:opacity-50 hover:bg-slate-800 transition"
           >
             {loading ? "Logging in..." : "Log In"}
           </button>
@@ -160,7 +180,7 @@ export default function LoginWithEmailModal({ isOpen, onClose, onSwitchToPhone }
             <span className="relative bg-white px-4 text-sm">Or</span>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 justify-center">
             <button>
               <Image
                 src={`/svgs/google-auth-svg.svg`}
@@ -188,7 +208,6 @@ export default function LoginWithEmailModal({ isOpen, onClose, onSwitchToPhone }
         </motion.div>
       </motion.div>
 
-      {/* Auto-redirect success modal */}
       <SuccessModal
         isOpen={showSuccess}
         userRole={userRole}

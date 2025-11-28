@@ -17,31 +17,43 @@ export default function StoreManagement() {
   const [loading, setLoading] = useState(true);
 
   const [store, setStore] = useState({
-    name: "Not set",
-    location: "Not set",
-    address: "Not set",
-    description: "No description",
-    phone: "Not set",
-    whatsapp: "Not set",
-    openingDays: "Not set",
+    name: "",
+    location: "",
+    address: "",
+    description: "",
+    phone: "",
+    whatsapp: "",
+    openingDays: "",
     bannerUrl: null as string | null,
   });
 
   const loadStore = async () => {
+    const sellerId = getCurrentSellerId();
+    if (!sellerId) {
+      console.error("No sellerId found");
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      console.log("Loading store...");
-      const res = await fetchWithToken<{ store: any }>("/v1/seller/store");
-      console.log("Store loaded:", res);
+      console.log("Loading store for seller:", sellerId);
+
+      // GET: sellerId in path
+      const res = await fetchWithToken<any>(`/v1/seller/store/${sellerId}`);
 
       if (!res?.store) {
-        console.log("No store found");
+        console.log("No store data");
         return;
       }
 
       const s = res.store;
 
-      const street = typeof s.address === "object" ? s.address?.street || "" : s.address || "";
+      const street = typeof s.address === "object" && s.address?.street
+        ? s.address.street
+        : typeof s.address === "string"
+        ? s.address
+        : "";
 
       const banner = s.bannerUrl
         ? s.bannerUrl.startsWith("http")
@@ -62,7 +74,7 @@ export default function StoreManagement() {
 
       setBannerUrl(banner);
     } catch (err: any) {
-      console.error("Failed to load store:", err.message || err);
+      console.error("Failed to load store:", err);
     } finally {
       setLoading(false);
     }
@@ -84,44 +96,35 @@ export default function StoreManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("SAVE BUTTON CLICKED");
-
-    const sellerId = await getCurrentSellerId();
-
-    console.log("SELLER ID FROM TOKEN:", sellerId);
-
+    const sellerId = getCurrentSellerId();
     if (!sellerId) {
-      alert("No seller ID found! Please log out and log in again.");
-      console.error("SELLER ID IS NULL - CHECK YOUR JWT TOKEN");
+      alert("Error: Seller not found. Please log in again.");
       return;
     }
 
-    console.log("Sending update for sellerId:", sellerId);
-
     const formData = new FormData();
-    formData.append("sellerId", sellerId);
-    formData.append("name", store.name);
-    formData.append("description", store.description);
-    formData.append("location", store.location);
-    formData.append("contactPhone", store.phone);
-    formData.append("whatsapp", store.whatsapp);
-    formData.append("openingDays", store.openingDays);
+    formData.append("name", store.name === "Not set" ? "" : store.name);
+    formData.append("description", store.description === "No description" ? "" : store.description);
+    formData.append("location", store.location === "Not set" ? "" : store.location);
+    formData.append("contactPhone", store.phone === "Not set" ? "" : store.phone);
+    formData.append("whatsapp", store.whatsapp === "Not set" ? "" : store.whatsapp);
+    formData.append("openingDays", store.openingDays === "Not set" ? "" : store.openingDays);
 
     if (store.address && store.address !== "Not set") {
       formData.append("address[street]", store.address);
     }
-    if (bannerFile) {
-      formData.append("banner", bannerFile);
-      console.log("Banner file attached:", bannerFile.name);
-    }
+    if (bannerFile) formData.append("banner", bannerFile);
 
     try {
-      const response = await fetchWithToken("/v1/seller/store", {
+      // PUT: sellerId in query params
+      const url = `/v1/seller/store?sellerId=${sellerId}`;
+
+      await fetchWithToken(url, {
         method: "PUT",
         body: formData,
       });
 
-      console.log("UPDATE SUCCESS:", response);
+      console.log("Store updated successfully");
 
       await loadStore();
 
@@ -129,7 +132,7 @@ export default function StoreManagement() {
       setBannerFile(null);
       setReviewModal(true);
     } catch (err: any) {
-      console.error("UPDATE FAILED:", err);
+      console.error("Update failed:", err);
       alert("Update failed. Check console.");
     }
   };

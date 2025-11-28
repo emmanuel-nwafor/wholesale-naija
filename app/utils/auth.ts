@@ -1,61 +1,69 @@
 // utils/auth.ts
+
 let cachedSellerId: string | null = null;
-let tokenValidated = false;
 
-const validateToken = async (): Promise<boolean> => {
-  try {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (!token) return false;
-
-    const res = await fetch(
-      "https://wholesalenaija-backend-9k01.onrender.com/api/auth/check",
-      {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    if (!res.ok) return false;
-    const data = await res.json();
-    return data.valid === true;
-  } catch {
-    return false;
+/**
+ * Get the current seller ID from localStorage (saved on login)
+ * Super fast, no network, no JWT parsing
+ */
+export const getCurrentSellerId = (): string | null => {
+  // Return cached value if already loaded
+  if (cachedSellerId !== null) {
+    return cachedSellerId;
   }
-};
 
-export const getCurrentSellerId = async (): Promise<string | null> => {
-  if (cachedSellerId && tokenValidated) return cachedSellerId;
+  // Only run in browser
+  if (typeof window === "undefined") {
+    return null;
+  }
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  if (!token) {
+  // Try to get from direct sellerId key first (most reliable)
+  const directId = localStorage.getItem("sellerId");
+  if (directId) {
+    cachedSellerId = directId;
+    return directId;
+  }
+
+  // Fallback: read from full user object
+  const userStr = localStorage.getItem("user");
+  if (!userStr) {
     cachedSellerId = null;
-    tokenValidated = false;
     return null;
   }
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const id = payload.id || payload._id || payload.userId || payload.sellerId;
+    const user = JSON.parse(userStr);
+    const id = user?.id || user?._id || user?.sellerId;
 
-    if (!id) return null;
-
-    const isValid = await validateToken();
-    if (!isValid) {
-      localStorage.removeItem("token");
-      cachedSellerId = null;
-      tokenValidated = false;
-      return null;
+    if (id) {
+      cachedSellerId = id;
+      return id;
     }
-
-    cachedSellerId = id;
-    tokenValidated = true;
-    return id;
   } catch (err) {
-    console.error("JWT decode failed:", err);
-    return null;
+    console.error("Failed to parse user from localStorage:", err);
   }
+
+  cachedSellerId = null;
+  return null;
 };
 
+/**
+ * Clear cache (use on logout)
+ */
 export const clearSellerIdCache = () => {
   cachedSellerId = null;
-  tokenValidated = false;
+};
+
+/**
+ * Optional: Get full user object
+ */
+export const getCurrentUser = () => {
+  if (typeof window === "undefined") return null;
+  const userStr = localStorage.getItem("user");
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr);
+  } catch {
+    return null;
+  }
 };
