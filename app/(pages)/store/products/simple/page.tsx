@@ -20,7 +20,6 @@ interface Brand {
 }
 
 export default function AddProductSimplePage() {
-  const [isActive, setIsActive] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCat, setSelectedCat] = useState<Category | null>(null);
@@ -32,21 +31,17 @@ export default function AddProductSimplePage() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form fields
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [moq, setMoq] = useState("");
-  const [unit, setUnit] = useState("pieces"); // optional: customize unit
 
-  // Fetch categories
   useEffect(() => {
     fetchWithToken<{ categories: Category[] }>("/v1/categories")
       .then((data) => setCategories(data.categories))
       .catch(() => alert("Failed to load categories"));
   }, []);
 
-  // Update subcategories
   useEffect(() => {
     if (selectedCat) {
       setSubcategories(selectedCat.subcategories || []);
@@ -56,7 +51,6 @@ export default function AddProductSimplePage() {
     }
   }, [selectedCat]);
 
-  // Update brands
   useEffect(() => {
     if (selectedSub) {
       setBrands(selectedSub.brands || []);
@@ -72,8 +66,7 @@ export default function AddProductSimplePage() {
     }
     setImages(prev => [...prev, ...files]);
     files.forEach(file => {
-      const url = URL.createObjectURL(file);
-      setPreviewUrls(prev => [...prev, url]);
+      setPreviewUrls(prev => [...prev, URL.createObjectURL(file)]);
     });
   };
 
@@ -82,73 +75,83 @@ export default function AddProductSimplePage() {
     setPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!name.trim()) return alert("Product name is required");
-    if (!selectedCat) return alert("Please select a category");
-    if (!description.trim()) return alert("Description is required");
-    if (!price) return alert("Price is required");
-    if (images.length === 0) return alert("Upload at least one image");
+  if (!name.trim() || !selectedCat || !description.trim() || !price || images.length === 0) {
+    alert("Please fill all required fields and upload at least one image");
+    return;
+  }
 
-    const cleanPrice = price.replace(/[₦,\s]/g, "");
+  try {
+    // Upload images
+    const formData = new FormData();
+    images.forEach(file => formData.append("files", file)); 
+
+    const uploadRes = await fetchWithToken<{ uploaded: { url: string }[] }>("/uploads/multiple", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!uploadRes?.uploaded) throw new Error("Image upload failed");
+
+    const uploadedUrls = uploadRes.uploaded.map(u => u.url);
+
+    const cleanPrice = price.replace(/[₦,\s]/g, "").trim();
     const moqValue = moq ? parseInt(moq, 10) : 1;
-    const moqString = moqValue > 0 ? `${moqValue} ${unit}` : "1 piece";
 
-    try {
-      // Match your exact payload structure
-      await fetchWithToken("/v1/seller/products", {
-        method: "POST",
-        body: JSON.stringify({
-          media: images,
-          additionalFields: {
-            name: name.trim(),
-            type: "Simple",
-            price: cleanPrice,
-            moq: moqString,
-            description: description.trim(),
-            categories: selectedCat._id,
-            subcategory: selectedSub?.name || undefined,
-            brand: selectedBrand?.name || undefined,
-          },
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // Request payload
+    const productPayload = {
+      name: name.trim(),
+      type: "Simple",
+      price: Number(cleanPrice),
+      moq: `${moqValue} pcs`,
+      categories: selectedCat._id,
+      subcategory: selectedSub?.name || "",
+      brand: selectedBrand?.name || "",
+      description: description.trim(),
+      images: uploadedUrls,
+      pricingTiers: [
+        { minQty: 10, maxQty: 50, price: 14000 },
+        { minQty: 51, price: 13000 },
+      ],
+    };
 
-      setShowReviewModal(true);
+    await fetchWithToken("/v1/seller/products", {
+      method: "POST",
+      body: JSON.stringify(productPayload),
+      headers: { "Content-Type": "application/json" },
+    });
 
-      // Reset form
-      setName("");
-      setDescription("");
-      setPrice("");
-      setMoq("");
-      setImages([]);
-      setPreviewUrls([]);
-      setSelectedCat(null);
-      setSelectedSub(null);
-      setSelectedBrand(null);
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message || "Failed to add product");
-    }
-  };
+    setShowReviewModal(true);
+
+    // Reset form
+    setName("");
+    setDescription("");
+    setPrice("");
+    setMoq("");
+    setImages([]);
+    setPreviewUrls([]);
+    setSelectedCat(null);
+    setSelectedSub(null);
+    setSelectedBrand(null);
+
+  } catch (err: any) {
+    console.log("Submit error:", err);
+    alert(err.message || "Failed to add product");
+  }
+};
+
 
   return (
     <>
       <div className="flex flex-col min-h-screen bg-gray-50">
-        <header className="w-full">
-          <DashboardHeader />
-        </header>
+        <header className="w-full"><DashboardHeader /></header>
         <div className="flex flex-col md:flex-row flex-1">
-          <div className="flex-shrink-0 w-full md:w-64">
-            <StoreSidebar />
-          </div>
+          <div className="flex-shrink-0 w-full md:w-64"><StoreSidebar /></div>
           <main className="flex-1 p-4 md:p-10 w-full">
             <div className="w-full max-w-full md:max-w-6xl mx-auto">
               <h1 className="text-2xl md:text-3xl font-semibold mb-6">Add Product</h1>
-
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 {/* Image Upload */}
                 <div>
@@ -171,10 +174,7 @@ export default function AddProductSimplePage() {
                             <img src={url} alt="preview" className="w-full h-32 object-cover rounded-lg" />
                             <button
                               type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeImage(i);
-                              }}
+                              onClick={(e) => { e.stopPropagation(); removeImage(i); }}
                               className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 text-xs opacity-0 group-hover:opacity-100 transition"
                             >
                               ×
@@ -222,13 +222,10 @@ export default function AddProductSimplePage() {
                     >
                       <option value="">Select category</option>
                       {categories.map((c) => (
-                        <option key={c._id} value={c._id}>
-                          {c.name}
-                        </option>
+                        <option key={c._id} value={c._id}>{c.name}</option>
                       ))}
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Sub-category</label>
                     <select
@@ -236,15 +233,14 @@ export default function AddProductSimplePage() {
                       onChange={(e) => {
                         const sub = subcategories.find(s => s.name === e.target.value);
                         setSelectedSub(sub || null);
+                        if (!e.target.value) setSelectedBrand(null);
                       }}
                       disabled={!selectedCat}
                       className="w-full px-4 py-3 bg-gray-100 rounded-2xl disabled:opacity-50"
                     >
                       <option value="">Select subcategory</option>
                       {subcategories.map((s) => (
-                        <option key={s.name} value={s.name}>
-                          {s.name}
-                        </option>
+                        <option key={s.name} value={s.name}>{s.name}</option>
                       ))}
                     </select>
                   </div>
@@ -263,9 +259,7 @@ export default function AddProductSimplePage() {
                   >
                     <option value="">Select brand</option>
                     {brands.map((b) => (
-                      <option key={b.name} value={b.name}>
-                        {b.name}
-                      </option>
+                      <option key={b.name} value={b.name}>{b.name}</option>
                     ))}
                   </select>
                 </div>
@@ -292,7 +286,7 @@ export default function AddProductSimplePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">MOQ (Minimum Order Quantity)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">MOQ</label>
                     <input
                       type="number"
                       value={moq}
@@ -303,23 +297,11 @@ export default function AddProductSimplePage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="font-medium text-gray-700">Status</span>
-                  <button
-                    type="button"
-                    onClick={() => setIsActive(!isActive)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isActive ? "bg-blue-600" : "bg-gray-300"}`}
-                  >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isActive ? "translate-x-6" : "translate-x-1"}`} />
-                  </button>
-                  <span className="text-sm text-gray-600">{isActive ? "Active" : "Inactive"}</span>
-                </div>
-
                 <div className="flex justify-end gap-3 pt-4">
                   <button type="button" className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50">
                     Cancel
                   </button>
-                  <button type="submit" className="px-6 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800">
+                  <button type="submit" className="px-6 py-3 bg-slate-900 text-white rounded-xl hover:cursor-pointer hover:bg-slate-800">
                     Add Product
                   </button>
                 </div>

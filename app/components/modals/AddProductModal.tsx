@@ -63,7 +63,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
         </div>
 
         <div className="mb-10">
-          <p className="text-sm text-gray-600 mb-6 text-center">Choose the type of product you want to add</p>
+          <p className="text-sm text-gray-600 mb-6">Choose the type of product you want to add</p>
 
           <div className="grid grid-cols-2 gap-6">
             {/* Simple Product */}
@@ -71,8 +71,8 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
               onClick={() => setSelectedType("simple")}
               className={`flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 transition-all duration-200 ${
                 selectedType === "simple"
-                  ? "border-slate-900 bg-slate-50 shadow-lg scale-105"
-                  : "border-gray-200 hover:border-gray-300 bg-white hover:shadow-md"
+                  ? "border-slate-900 bg-slate-50"
+                  : "border-gray-200 hover:border-gray-300 bg-white hover:cursor-pointer"
               }`}
             >
               <div className="p-4 bg-slate-100 rounded-full">
@@ -89,8 +89,8 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
               onClick={() => setSelectedType("variant")}
               className={`flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 transition-all duration-200 ${
                 selectedType === "variant"
-                  ? "border-slate-900 bg-slate-50 shadow-lg scale-105"
-                  : "border-gray-200 hover:border-gray-300 bg-white hover:shadow-md"
+                  ? "border-slate-900 bg-slate-50"
+                  : "border-gray-200 hover:border-gray-300 bg-white hover:cursor-pointer"
               }`}
             >
               <div className="p-4 bg-slate-100 rounded-full">

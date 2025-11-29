@@ -1,6 +1,13 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Edit2, ChevronRight, ChevronLeft, ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  ChevronRight,
+  ChevronLeft,
+  ImageIcon,
+} from "lucide-react";
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 import AddVariantModal from "@/app/components/modals/AddvariantModal";
@@ -8,6 +15,7 @@ import Image from "next/image";
 import ReviewStatusModal from "@/app/components/modals/ReviewStatusModal";
 import { fetchWithToken } from "@/app/utils/fetchWithToken";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 interface Category {
   _id: string;
@@ -21,7 +29,6 @@ interface Subcategory {
 interface Brand {
   name: string;
 }
-
 interface VariantData {
   name: string;
   image: File | null;
@@ -29,13 +36,17 @@ interface VariantData {
   rows: { minQty: string; maxQty: string; price: string }[];
 }
 
+const inputStyles = "w-full px-4 py-3 bg-gray-100 rounded-xl focus:outline-none";
+
 export default function AddProductVariantPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [variants, setVariants] = useState<VariantData[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [mainImageUrl, setMainImageUrl] = useState<string>("");
@@ -47,14 +58,17 @@ export default function AddProductVariantPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Fetch categories
   useEffect(() => {
     fetchWithToken<{ categories: Category[] }>("/v1/categories")
-      .then(data => setCategories(data.categories))
+      .then((d) => setCategories(d.categories))
       .catch(() => {});
   }, []);
 
+  // Sync subcategories & brands
   useEffect(() => {
     if (selectedCat) {
       setSubcategories(selectedCat.subcategories || []);
@@ -71,9 +85,17 @@ export default function AddProductVariantPage() {
     }
   }, [selectedSub]);
 
+  // Revoke main image URL on change/unmount
+  useEffect(() => {
+    return () => {
+      if (mainImageUrl) URL.revokeObjectURL(mainImageUrl);
+    };
+  }, [mainImageUrl]);
+
   const handleMainImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (mainImageUrl) URL.revokeObjectURL(mainImageUrl);
       setMainImage(file);
       setMainImageUrl(URL.createObjectURL(file));
     }
@@ -84,99 +106,135 @@ export default function AddProductVariantPage() {
     setModalOpen(true);
   };
 
-  const handleSaveVariant = (data: { name: string; image: File | null; rows: VariantData['rows'] }) => {
+  const handleSaveVariant = (data: {
+    name: string;
+    image: File | null;
+    rows: VariantData["rows"];
+  }) => {
     const imageUrl = data.image ? URL.createObjectURL(data.image) : null;
     const newVariant = { ...data, imageUrl };
+
     if (editingIndex !== null) {
-      setVariants(prev => prev.map((v, i) => i === editingIndex ? newVariant : v));
+      // Revoke old image URL if exists
+      const old = variants[editingIndex];
+      if (old.imageUrl) URL.revokeObjectURL(old.imageUrl);
+
+      setVariants((prev) =>
+        prev.map((v, i) => (i === editingIndex ? newVariant : v))
+      );
     } else {
-      setVariants(prev => [...prev, newVariant]);
+      setVariants((prev) => [...prev, newVariant]);
     }
     setModalOpen(false);
   };
 
-  const handleEditVariant = (index: number) => {
-    setEditingIndex(index);
+  const handleEditVariant = (i: number) => {
+    setEditingIndex(i);
     setModalOpen(true);
   };
 
-  const removeVariant = (index: number) => {
-    const variant = variants[index];
+  const removeVariant = (i: number) => {
+    const variant = variants[i];
     if (variant.imageUrl) URL.revokeObjectURL(variant.imageUrl);
-    setVariants(prev => prev.filter((_, i) => i !== index));
-    if (expandedIndex === index) setExpandedIndex(null);
+    setVariants((prev) => prev.filter((_, idx) => idx !== i));
+    if (expandedIndex === i) setExpandedIndex(null);
   };
 
-  const toggleExpand = (index: number) => {
-    setExpandedIndex(expandedIndex === index ? null : index);
+  const toggleExpand = (i: number) => {
+    setExpandedIndex(expandedIndex === i ? null : i);
   };
 
-  // EXACTLY MATCHES YOUR BACKEND PAYLOAD
+  // Submit & Reset Form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!productName.trim()) return alert("Product name is required");
-    if (!selectedCat) return alert("Please select a category");
-    if (!description.trim()) return alert("Description is required");
-    if (!mainImage) return alert("Main product image is required");
+    if (!productName.trim()) return alert("Product name required");
+    if (!selectedCat) return alert("Select a category");
+    if (!mainImage) return alert("Main image required");
+    if (!description.trim()) return alert("Description required");
     if (variants.length === 0) return alert("Add at least one variant");
 
-    // Find base price from first valid tier
-    let basePrice = "10000";
-    for (const v of variants) {
-      const firstPrice = v.rows.find(r => r.price?.trim())?.price?.trim();
-      if (firstPrice) {
-        basePrice = firstPrice.replace(/[₦,\s]/g, "");
-        break;
-      }
-    }
-
-    // First valid MOQ
-    let moqValue = 1;
-    let unit = "pieces";
-    for (const v of variants) {
-      const firstMinQty = v.rows.find(r => r.minQty?.trim())?.minQty?.trim();
-      if (firstMinQty) {
-        moqValue = parseInt(firstMinQty, 10);
-        break;
-      }
-    }
-
+    setIsSubmitting(true);
     try {
-      await fetchWithToken("/v1/seller/products", {
-        method: "POST",
-        body: JSON.stringify({
-          media: [mainImage, ...variants.map(v => v.image).filter(Boolean)], // All images
-          additionalFields: {
-            name: productName.trim(),
-            type: "Variant",
-            price: basePrice,
-            moq: `${moqValue} ${unit}`,
-            description: description.trim(),
-            categories: selectedCat._id,
-            subcategory: selectedSub?.name || undefined,
-            brand: selectedBrand?.name || undefined,
-            variants: variants.map(variant => ({
-              name: variant.name.trim(),
-              pricingTiers: variant.rows
-                .filter(row => row.minQty && row.maxQty && row.price)
-                .map(row => ({
-                  minQty: parseInt(row.minQty.trim(), 10),
-                  maxQty: parseInt(row.maxQty.trim(), 10),
-                  price: parseFloat(row.price.replace(/[₦,\s]/g, "")),
-                })),
-            })),
-          },
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const uploadForm = new FormData();
+      uploadForm.append("files", mainImage);
+      variants.forEach((v) => v.image && uploadForm.append("files", v.image));
+
+      const uploadRes = await fetchWithToken<{ uploaded: { url: string }[] }>(
+        "/uploads/multiple",
+        { method: "POST", body: uploadForm }
+      );
+
+      if (!uploadRes?.uploaded) throw new Error("Image upload failed");
+
+      const uploadedUrls = uploadRes.uploaded.map((u) => u.url);
+      const mainImageUrlFromServer = uploadedUrls[0];
+      const variantImageUrls = uploadedUrls.slice(1);
+
+      if (uploadedUrls.length !== 1 + variants.filter((v) => v.image).length) {
+        throw new Error("Some images failed to upload");
+      }
+
+      const productVariants = variants.map((v, index) => {
+        const validRows = v.rows
+          .map((r) => ({
+            minQty: Number(r.minQty),
+            maxQty: r.maxQty ? Number(r.maxQty) : undefined,
+            price: Number(r.price),
+          }))
+          .filter((r) => r.minQty > 0 && r.price > 0)
+          .sort((a, b) => a.minQty - b.minQty);
+
+        if (validRows.length === 0)
+          throw new Error(`Variant "${v.name}" must have at least one pricing tier`);
+
+        return {
+          name: v.name,
+          image: variantImageUrls[index] || null,
+          price: validRows[0].price,
+          minQty: validRows[0].minQty,
+          maxQty: validRows[0].maxQty,
+          pricingTiers: validRows,
+        };
       });
 
-      setShowReviewModal(true);
+      const topLevelPrice = productVariants[0].price;
+
+      const productPayload = {
+        name: productName.trim(),
+        type: "Variant",
+        description: description.trim(),
+        categories: selectedCat._id,
+        subcategory: selectedSub?.name || null,
+        brand: selectedBrand?.name || null,
+        mainImage: mainImageUrlFromServer,
+        price: topLevelPrice,
+        variants: productVariants,
+        images: [mainImageUrlFromServer, ...variantImageUrls],
+      };
+
+      await fetchWithToken("/v1/seller/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productPayload),
+      });
+
+      // SUCCESS → FULL RESET + REDIRECT
+      setProductName("");
+      setDescription("");
+      setMainImage(null);
+      if (mainImageUrl) URL.revokeObjectURL(mainImageUrl);
+      setMainImageUrl("");
+      setVariants([]);
+      setSelectedCat(null);
+      setSelectedSub(null);
+      setSelectedBrand(null);
+      setStep(1);
+
+      router.push("/store/products");
     } catch (err: any) {
-      console.error(err);
-      alert(err.message || "Failed to create product");
+      alert(err.message || "Product upload failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -192,8 +250,12 @@ export default function AddProductVariantPage() {
 
               <div className="mb-10">
                 <div className="flex items-center justify-between text-sm font-medium text-gray-700">
-                  <span className={step === 1 ? "text-slate-900 font-bold" : "text-gray-500"}>Product details</span>
-                  <span className={step === 2 ? "text-slate-900 font-bold" : "text-gray-500"}>Variant Setup</span>
+                  <span className={step === 1 ? "text-slate-900 font-bold" : "text-gray-500"}>
+                    Product details
+                  </span>
+                  <span className={step === 2 ? "text-slate-900 font-bold" : "text-gray-500"}>
+                    Variant Setup
+                  </span>
                 </div>
                 <div className="mt-3 relative h-2 bg-gray-200 rounded-full overflow-hidden">
                   <motion.div
@@ -235,13 +297,7 @@ export default function AddProductVariantPage() {
                             </div>
                           </div>
 
-                          <input
-                            type="text"
-                            value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
-                            placeholder="Product name *"
-                            className="w-full px-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
+                          <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="Product name *" className={inputStyles} />
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -249,31 +305,30 @@ export default function AddProductVariantPage() {
                               <select
                                 value={selectedCat?._id || ""}
                                 onChange={(e) => {
-                                  const cat = categories.find(c => c._id === e.target.value);
+                                  const cat = categories.find((c) => c._id === e.target.value);
                                   setSelectedCat(cat || null);
                                 }}
-                                className="w-full px-4 py-3 bg-gray-100 rounded-xl"
+                                className={`${inputStyles} disabled:opacity-50`}
                               >
                                 <option value="">Select category</option>
-                                {categories.map(c => (
+                                {categories.map((c) => (
                                   <option key={c._id} value={c._id}>{c.name}</option>
                                 ))}
                               </select>
                             </div>
-
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">Sub-category</label>
                               <select
                                 value={selectedSub?.name || ""}
                                 onChange={(e) => {
-                                  const sub = subcategories.find(s => s.name === e.target.value);
+                                  const sub = subcategories.find((s) => s.name === e.target.value);
                                   setSelectedSub(sub || null);
                                 }}
                                 disabled={!selectedCat}
-                                className="w-full px-4 py-3 bg-gray-100 rounded-xl disabled:opacity-50"
+                                className={`${inputStyles} disabled:opacity-50`}
                               >
                                 <option value="">Select subcategory</option>
-                                {subcategories.map(s => (
+                                {subcategories.map((s) => (
                                   <option key={s.name} value={s.name}>{s.name}</option>
                                 ))}
                               </select>
@@ -285,14 +340,14 @@ export default function AddProductVariantPage() {
                             <select
                               value={selectedBrand?.name || ""}
                               onChange={(e) => {
-                                const brand = brands.find(b => b.name === e.target.value);
+                                const brand = brands.find((b) => b.name === e.target.value);
                                 setSelectedBrand(brand || null);
                               }}
                               disabled={!selectedSub}
-                              className="w-full px-4 py-3 bg-gray-100 rounded-xl disabled:opacity-50"
+                              className={`${inputStyles} disabled:opacity-50`}
                             >
                               <option value="">Select brand</option>
-                              {brands.map(b => (
+                              {brands.map((b) => (
                                 <option key={b.name} value={b.name}>{b.name}</option>
                               ))}
                             </select>
@@ -303,15 +358,11 @@ export default function AddProductVariantPage() {
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Product description *"
                             rows={4}
-                            className="w-full px-4 py-3 bg-gray-100 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className={`${inputStyles} resize-none`}
                           />
 
                           <div className="flex justify-end">
-                            <button
-                              type="button"
-                              onClick={() => setStep(2)}
-                              className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 flex items-center gap-2 transition"
-                            >
+                            <button type="button" onClick={() => setStep(2)} className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 flex items-center gap-2 transition">
                               Next <ChevronRight className="w-5 h-5" />
                             </button>
                           </div>
@@ -335,22 +386,15 @@ export default function AddProductVariantPage() {
 
                         <div className="space-y-6">
                           <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-gray-700">Variants</h3>
-                            <button
-                              type="button"
-                              onClick={addVariant}
-                              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50"
-                            >
+                            <h3 className="text-sm font-medium text-gray-700">Variants ({variants.length})</h3>
+                            <button type="button" onClick={addVariant} className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50">
                               <Plus className="h-4 w-4" /> Add variant
                             </button>
                           </div>
 
                           {variants.map((variant, index) => (
-                            <div key={index} className="bg-gray-50 rounded-xl overflow-hidden">
-                              <div
-                                className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition"
-                                onClick={() => toggleExpand(index)}
-                              >
+                            <div key={`${variant.name}-${index}`} className="bg-gray-50 rounded-xl overflow-hidden">
+                              <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition" onClick={() => toggleExpand(index)}>
                                 <div className="flex items-center gap-4 flex-1">
                                   <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-300">
                                     {variant.imageUrl ? (
@@ -370,7 +414,7 @@ export default function AddProductVariantPage() {
                                   <button type="button" onClick={(e) => { e.stopPropagation(); removeVariant(index); }} className="p-2 text-red-500 hover:text-red-700">
                                     <Trash2 className="h-4 w-4" />
                                   </button>
-                                  <ChevronRight className={`h-5 w-5 text-gray-500 transition-transform ${expandedIndex === index ? 'rotate-90' : ''}`} />
+                                  <ChevronRight className={`h-5 w-5 text-gray-500 transition-transform ${expandedIndex === index ? "rotate-90" : ""}`} />
                                 </div>
                               </div>
 
@@ -379,9 +423,9 @@ export default function AddProductVariantPage() {
                                   <div className="space-y-2">
                                     {variant.rows.map((row, i) => (
                                       <div key={i} className="grid grid-cols-3 gap-2 text-sm">
-                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.minQty || '-'}</div>
-                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.maxQty || '-'}</div>
-                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">₦{row.price || '-'}</div>
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.minQty || "-"}</div>
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.maxQty || "-"}</div>
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">₦{row.price || "-"}</div>
                                       </div>
                                     ))}
                                   </div>
@@ -392,18 +436,15 @@ export default function AddProductVariantPage() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row justify-between gap-4 pt-8">
-                          <button
-                            type="button"
-                            onClick={() => setStep(1)}
-                            className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition"
-                          >
+                          <button type="button" onClick={() => setStep(1)} className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition">
                             <ChevronLeft className="w-5 h-5" /> Back
                           </button>
                           <button
                             type="submit"
-                            className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-medium transition"
+                            disabled={isSubmitting || variants.length === 0}
+                            className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-medium transition disabled:opacity-70 disabled:cursor-not-allowed"
                           >
-                            Add Product
+                            {isSubmitting ? "Adding Product..." : "Add Product"}
                           </button>
                         </div>
                       </div>
@@ -418,7 +459,10 @@ export default function AddProductVariantPage() {
 
       <AddVariantModal
         isOpen={modalOpen}
-        onClose={() => { setModalOpen(false); setEditingIndex(null); }}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingIndex(null);
+        }}
         onSave={handleSaveVariant}
         initialData={editingIndex !== null ? variants[editingIndex] : undefined}
       />

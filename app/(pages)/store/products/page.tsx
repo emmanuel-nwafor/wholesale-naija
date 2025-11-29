@@ -10,6 +10,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { fetchWithToken } from "@/app/utils/fetchWithToken";
 import { getCurrentSellerId } from "@/app/utils/auth";
 
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface Variant {
+  pricingTiers?: { minQty: number; maxQty?: number; price: number }[];
+}
+
 interface Product {
   _id: string;
   name: string;
@@ -18,14 +27,17 @@ interface Product {
   moq?: string | number;
   status: "active" | "archived" | "approved" | "pending" | "rejected";
   type: string;
-  categories: { _id: string; name: string }[];
+  categories?: string[];
+  category?: string;
   subcategory?: string;
   brand?: string;
+  variants?: Variant[]; // Added for MOQ logic
 }
 
 export default function VendorProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "active" | "archived">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,6 +46,43 @@ export default function VendorProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchWithToken<{ categories: Category[] }>("/v1/categories")
+      .then((res) => setCategories(res.categories || []))
+      .catch(() => setCategories([]));
+  }, []);
+
+  const getCategoryName = (product: Product): string => {
+    const id = product.categories?.[0] || product.category;
+    if (!id) return "—";
+    const cat = categories.find((c) => c._id === id);
+    return cat?.name || "Uncategorized";
+  };
+
+  // Extract the lowest MOQ from variants, fallback to product.moq
+  const getMOQ = (product: Product): string => {
+    if (product.type === "Variant" && product.variants && product.variants.length > 0) {
+      let lowestMinQty = Infinity;
+
+      product.variants.forEach((variant) => {
+        if (variant.pricingTiers && variant.pricingTiers.length > 0) {
+          variant.pricingTiers.forEach((tier) => {
+            if (tier.minQty < lowestMinQty) {
+              lowestMinQty = tier.minQty;
+            }
+          });
+        }
+      });
+
+      if (lowestMinQty !== Infinity) {
+        return `${lowestMinQty} pcs`;
+      }
+    }
+
+    // Fallback to top-level moq
+    return product.moq ? String(product.moq) : "—";
+  };
 
   const fetchProducts = async () => {
     const sellerId = getCurrentSellerId();
@@ -99,7 +148,6 @@ export default function VendorProductsPage() {
     router.push(`/store/products/${id}`);
   };
 
-  // Fixed: Now correctly navigates to edit page using product._id
   const handleEditProduct = (productId: string) => {
     setDropdownOpen(null);
     router.push(`/store/products/${productId}/edit`);
@@ -150,7 +198,7 @@ export default function VendorProductsPage() {
                 </div>
                 <button
                   onClick={() => setModalOpen(true)}
-                  className="bg-blue-900 text-white px-6 py-3 rounded-2xl text-sm font-medium hover:bg-blue-800 transition w-full sm:w-auto"
+                  className="bg-slate-900 hover:cursor-pointer text-white px-6 py-3 rounded-2xl text-sm font-medium hover:bg-slate-600 transition w-full sm:w-auto"
                 >
                   Add Product
                 </button>
@@ -169,15 +217,7 @@ export default function VendorProductsPage() {
                   {/* Mobile Cards */}
                   <div className="block lg:hidden space-y-4">
                     {paginatedProducts.map((product, idx) => (
-                      <motion.div
-                        key={product._id}
-                        layout
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3, delay: idx * 0.05 }}
-                        className="relative bg-white rounded-2xl border border-gray-200 p-5 shadow-sm"
-                      >
+                      <motion.div key={product._id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3, delay: idx * 0.05 }} className="relative bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
                         <div className="flex gap-4">
                           <div className="flex-shrink-0">
                             {product.images[0] ? (
@@ -191,9 +231,9 @@ export default function VendorProductsPage() {
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
                             <div className="mt-2 grid grid-cols-2 gap-3 text-sm">
-                              <div><span className="text-gray-500">Category</span><p className="font-medium truncate">{product.categories?.[0]?.name || "—"}</p></div>
+                              <div><span className="text-gray-500">Category</span><p className="font-medium truncate">{getCategoryName(product)}</p></div>
                               <div><span className="text-gray-500">Type</span><p className="font-medium capitalize">{product.type || "Simple"}</p></div>
-                              <div><span className="text-gray-500">MOQ</span><p className="font-medium">{product.moq || "—"}</p></div>
+                              <div><span className="text-gray-500">MOQ</span><p className="font-medium">{getMOQ(product)}</p></div>
                               <div><span className="text-gray-500">Price</span><p className="font-medium text-gray-900">₦{product.price.toLocaleString()}</p></div>
                             </div>
                             <div className="mt-3 flex items-center justify-between">
@@ -206,7 +246,6 @@ export default function VendorProductsPage() {
                             </div>
                           </div>
                         </div>
-
                         <AnimatePresence>
                           {dropdownOpen === product._id && (
                             <motion.div
@@ -247,13 +286,7 @@ export default function VendorProductsPage() {
                         </thead>
                         <tbody>
                           {paginatedProducts.map((product, idx) => (
-                            <motion.tr
-                              key={product._id}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3, delay: idx * 0.05 }}
-                              className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                            >
+                            <motion.tr key={product._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: idx * 0.05 }} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                               <td className="px-6 py-5">
                                 <div className="flex items-center gap-4">
                                   {product.images[0] ? (
@@ -266,9 +299,9 @@ export default function VendorProductsPage() {
                                   <span className="font-medium text-gray-900">{product.name}</span>
                                 </div>
                               </td>
-                              <td className="px-6 py-5 text-gray-600">{product.categories?.[0]?.name || "—"}</td>
+                              <td className="px-6 py-5 text-gray-600">{getCategoryName(product)}</td>
                               <td className="px-6 py-5 text-gray-600 capitalize">{product.type || "Simple"}</td>
-                              <td className="px-6 py-5 text-gray-600">{product.moq || "—"}</td>
+                              <td className="px-6 py-5 text-gray-600 font-medium">{getMOQ(product)}</td>
                               <td className="px-6 py-5 font-medium text-gray-900">₦{product.price.toLocaleString()}</td>
                               <td className="px-6 py-5">
                                 <span className={`inline-flex px-3 py-1.5 rounded-full text-xs font-medium ${getStatusStyle(product.status)}`}>
@@ -279,26 +312,25 @@ export default function VendorProductsPage() {
                                 <button onClick={() => toggleDropdown(product._id)} className="p-2 hover:bg-gray-100 rounded-lg transition">
                                   <MoreVertical className="w-5 h-5 text-gray-500" />
                                 </button>
-
-                                <AnimatePresence>
-                                  {dropdownOpen === product._id && (
-                                    <motion.div
-                                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                      transition={{ duration: 0.15 }}
-                                      className="absolute right-6 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-200 py-2 z-50"
-                                    >
-                                      <button onClick={() => handleViewProduct(product._id)} className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                        View Product
-                                      </button>
-                                      <button onClick={() => handleEditProduct(product._id)} className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                        Edit Product
-                                      </button>
-                                      <button className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50">Delete Product</button>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
+                                  <AnimatePresence>
+                                    {dropdownOpen === product._id && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute right-6 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-200 py-2 z-50"
+                                      >
+                                        <button onClick={() => handleViewProduct(product._id)} className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                          View Product
+                                        </button>
+                                        <button onClick={() => handleEditProduct(product._id)} className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                          Edit Product
+                                        </button>
+                                        <button className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50">Delete Product</button>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
                               </td>
                             </motion.tr>
                           ))}
@@ -309,7 +341,6 @@ export default function VendorProductsPage() {
                 </div>
               )}
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
                   <p className="text-gray-600">
@@ -353,13 +384,7 @@ export default function VendorProductsPage() {
         </div>
       </div>
 
-      <AddProductModal
-        isOpen={modalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          refreshProducts();
-        }}
-      />
+      <AddProductModal isOpen={modalOpen} onClose={() => { setModalOpen(false); refreshProducts(); }} />
     </>
   );
 }

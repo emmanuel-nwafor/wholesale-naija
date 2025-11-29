@@ -1,4 +1,3 @@
-// components/modals/AddvariantModal.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -37,7 +36,6 @@ export default function AddVariantModal({
     { minQty: '', maxQty: '', price: '' },
   ]);
 
-  // Reset form when modal opens/closes or editing
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
@@ -62,9 +60,7 @@ export default function AddVariantModal({
     if (file) {
       setImage(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -75,30 +71,20 @@ export default function AddVariantModal({
     );
   };
 
-  const addRow = () => {
-    setRows((prev) => [...prev, { minQty: '', maxQty: '', price: '' }]);
-  };
-
+  const addRow = () => setRows((prev) => [...prev, { minQty: '', maxQty: '', price: '' }]);
   const removeRow = (index: number) => {
     if (rows.length === 1) return;
     setRows((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = () => {
-    if (!name.trim()) {
-      alert('Variant name is required');
-      return;
-    }
+    if (!name.trim()) return alert('Variant name is required');
 
-    const hasValidTier = rows.some(
-      (r) => r.minQty.trim() !== '' && r.price.trim() !== ''
-    );
-    if (!hasValidTier) {
-      alert('Please add at least one pricing tier with Min Qty and Price');
-      return;
-    }
+    const validRows = rows.filter((r) => r.minQty.trim() !== '' && r.price.trim() !== '');
+    if (validRows.length === 0)
+      return alert('Please add at least one pricing tier with Min Qty and Price');
 
-    onSave({ name: name.trim(), image, rows });
+    onSave({ name: name.trim(), image, rows: validRows });
     onClose();
   };
 
