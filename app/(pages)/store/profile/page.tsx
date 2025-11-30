@@ -97,11 +97,11 @@ export default function SellerProfilePage() {
           firstName: form.firstName,
           lastName: form.lastName,
           phone: form.phone,
-          profilePicture: form.profilePicture.replace(/\?.*$/, ""), // send clean URL
+          profilePicture: form.profilePicture.replace(/\?.*$/, ""), 
         }),
       });
 
-      // Update form with fresh data from server (important!)
+      // Update form
       const u = response.user;
       setForm({
         fullName: u.fullName || "",
@@ -128,17 +128,17 @@ export default function SellerProfilePage() {
     .slice(0, 2)
     .toUpperCase() || "JJ";
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen">
-        <StoreSidebar />
-        <div className="flex-1 flex flex-col">
-          <DashboardHeader />
-          <main className="flex-1 p-8 text-center text-gray-500">Loading profile...</main>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex min-h-screen">
+  //       <StoreSidebar />
+  //       <div className="flex-1 flex flex-col">
+  //         <DashboardHeader />
+  //         <main className="flex-1 p-8 text-center text-gray-500">Loading profile...</main>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="flex min-h-screen">
@@ -168,7 +168,7 @@ export default function SellerProfilePage() {
                   {!isEditing && (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50"
+                      className="px-4 py-2 border hover:cursor-pointer border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50"
                     >
                       Edit Profile
                     </button>
@@ -285,14 +285,14 @@ export default function SellerProfilePage() {
                         setIsEditing(false);
                         loadProfile();
                       }}
-                      className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50"
+                      className="px-6 py-3 hover:cursor-pointer border border-gray-300 rounded-xl hover:bg-gray-50"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="px-8 py-3 bg-slate-900 text-white rounded-xl disabled:opacity-70"
+                      className="px-8 py-3 hover:cursor-pointer bg-slate-900 text-white rounded-xl disabled:opacity-70"
                     >
                       {saving ? "Saving..." : "Save Changes"}
                     </button>

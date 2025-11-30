@@ -1,4 +1,3 @@
-// components/DeleteModal.tsx
 'use client';
 
 import React from 'react';
@@ -11,7 +10,7 @@ interface DeleteModalProps {
   onConfirm: () => void;
   title?: string;
   message?: string;
-  itemName?: string; // e.g., "this product", "Samsung S24 Ultra", etc.
+  itemName?: string;
   loading?: boolean;
 }
 
@@ -54,11 +53,11 @@ export default function DeleteModal({
                 {title}
               </h3>
 
-              {itemName && (
+              {/* {itemName && (
                 <p className="text-lg font-medium text-gray-800 mb-2">
                   {itemName}
                 </p>
-              )}
+              )} */}
 
               <p className="text-sm text-gray-600 mb-8 max-w-xs mx-auto">
                 {message}
