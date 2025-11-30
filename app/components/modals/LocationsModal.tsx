@@ -1,7 +1,8 @@
 // app/components/modals/LocationsModal.tsx
 "use client";
+
 import React from "react";
-import { X, Search, ChevronRight, MapPin } from "lucide-react";
+import { X, ChevronRight, Search, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
@@ -11,8 +12,7 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   isMobile: boolean;
-  stepIndex: number;
-  currentStep: number;
+  currentStep: "state" | "lga" | "area" | null;
 }
 
 export const Modal = ({
@@ -22,14 +22,9 @@ export const Modal = ({
   title,
   children,
   isMobile,
-  stepIndex,
   currentStep,
 }: ModalProps) => {
   if (!isOpen) return null;
-
-  const isActive = stepIndex === currentStep;
-  const isPast = stepIndex < currentStep;
-  const isFuture = stepIndex > currentStep;
 
   return (
     <AnimatePresence>
@@ -38,34 +33,35 @@ export const Modal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] flex items-center justify-center"
-          style={{ backdropFilter: "blur(4px)", backgroundColor: "rgba(0,0,0,0.25)" }}
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={onClose}
         >
           <motion.div
-            initial={{ x: isFuture ? "100%" : "-100%", scale: 0.95, opacity: 0 }}
-            animate={{
-              x: isActive ? 0 : isPast ? "-100%" : "100%",
-              scale: isActive ? 1 : 0.95,
-              opacity: isActive ? 1 : 0,
-            }}
-            exit={{ x: isPast ? "-100%" : "100%", scale: 0.95, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="relative w-full max-w-md bg-white rounded-2xl shadow-xl"
-            style={{ height: "32rem", zIndex: 70 + stepIndex }}
+            initial={isMobile ? { y: "100%" } : { scale: 0.95, opacity: 0 }}
+            animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1 }}
+            exit={isMobile ? { y: "100%" } : { scale: 0.95, opacity: 0 }}
+            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+            className="relative w-full max-w-md bg-white rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-gray-100">
-              {stepIndex > 0 && (
-                <button onClick={onBack} className="p-1 mr-2">
-                  <ChevronRight className="w-5 h-5 rotate-180 text-gray-700" />
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              {onBack && (
+                <button onClick={onBack} className="p-2 -ml-2">
+                  <ChevronRight className="w-6 h-6 rotate-180 text-gray-700" />
                 </button>
               )}
-              <h3 className="text-lg font-medium flex-1">{title}</h3>
-              <button onClick={onClose} className="p-1">
-                <X className="w-5 h-5" />
+              <h3 className="text-lg font-semibold flex-1 text-center md:text-left">
+                {title}
+              </h3>
+              <button onClick={onClose} className="p-2">
+                <X className="w-6 h-6 text-gray-600" />
               </button>
             </div>
-            <div className="space-y-3 overflow-y-auto p-4" style={{ maxHeight: "calc(32rem - 80px)" }}>
-              {children}
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto" style={{ maxHeight: "calc(90vh - 80px)" }}>
+              <div className="p-5 pb-10">{children}</div>
             </div>
           </motion.div>
         </motion.div>
@@ -88,33 +84,30 @@ export const StateSelection = ({ onSelect }: { onSelect: (state: string) => void
   ];
 
   return (
-    <>
-      <motion.button
-        whileTap={{ scale: 0.98 }}
-        className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-gray-50 text-left"
+    <div className="space-y-4">
+      <button
         onClick={() => onSelect("current")}
+        className="w-full flex items-center gap-3 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition"
       >
         <MapPin className="w-5 h-5 text-blue-600" />
-        <span className="text-sm">Use your current location</span>
-      </motion.button>
+        <span className="font-medium text-blue-900">Use current location</span>
+      </button>
 
-      <div className="text-xs font-medium text-gray-500 uppercase pt-2">All Nigeria</div>
+      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+        All States in Nigeria
+      </div>
 
-      {states.map((state, i) => (
-        <motion.button
+      {states.map((state) => (
+        <button
           key={state}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.02 }}
-          whileTap={{ scale: 0.98 }}
           onClick={() => onSelect(state)}
-          className="flex items-center justify-between w-full p-3 rounded-lg hover:bg-gray-50 text-left"
+          className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition"
         >
-          <span className="text-sm">{state}</span>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-        </motion.button>
+          <span className="text-gray-800">{state}</span>
+          <ChevronRight className="w-5 h-5 text-gray-400" />
+        </button>
       ))}
-    </>
+    </div>
   );
 };
 
@@ -142,58 +135,36 @@ export const LGASelection = ({ state, onSelect }: { state: string; onSelect: (lg
     ],
   };
 
-  const popular = (lgas[state] || []).slice(0, 5);
-  const all = lgas[state] || [];
+  const items = lgas[state] || [];
 
   return (
-    <>
-      <div className="sticky top-0 pb-2 bg-white z-10">
-        <motion.div layout className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-          <Search className="w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Search city or region" className="flex-1 text-sm bg-transparent outline-none placeholder:text-gray-400" />
-        </motion.div>
+    <div className="space-y-4">
+      <div className="sticky top-0 bg-white pt-2 pb-3 z-10">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search LGA..."
+            className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
+          />
+        </div>
       </div>
 
-      {popular.length > 0 && (
-        <>
-          <div className="text-xs font-medium text-gray-500 uppercase pt-2">Popular</div>
-          {popular.map((lga, i) => (
-            <motion.button
-              key={lga}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onSelect(lga)}
-              className="flex items-center justify-between w-full p-3 rounded-lg hover:bg-gray-50 text-left"
-            >
-              <span className="text-sm">{lga}</span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-            </motion.button>
-          ))}
-        </>
+      {items.length === 0 ? (
+        <p className="text-center text-gray-500 py-8">No LGAs found for this state</p>
+      ) : (
+        items.map((lga) => (
+          <button
+            key={lga}
+            onClick={() => onSelect(lga)}
+            className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition"
+          >
+            <span>{lga}</span>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+        ))
       )}
-
-      {all.length > 0 && (
-        <>
-          <div className="text-xs font-medium text-gray-500 uppercase pt-3">All Locations</div>
-          {all.map((lga, i) => (
-            <motion.button
-              key={lga}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: (popular.length + i) * 0.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onSelect(lga)}
-              className="flex items-center justify-between w-full p-3 rounded-lg hover:bg-gray-50 text-left"
-            >
-              <span className="text-sm">{lga}</span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-            </motion.button>
-          ))}
-        </>
-      )}
-    </>
+    </div>
   );
 };
 
@@ -202,73 +173,45 @@ export const AreaSelection = ({ lga, onSelect }: { lga: string; onSelect: (area:
   const areas: Record<string, string[]> = {
     Ikeja: [
       "Adeniyi Jones", "Agidingbi", "Airport Road", "Alausa", "Allen Avenue", "Awolowo Way",
-      "Balogun", "Computer Village", "Ikeja GRA", "Opebi", "Oregun", "Maryland", "Anthony",
-      "Omole", "Magodo",
+      "Computer Village", "Ikeja GRA", "Opebi", "Oregun", "Maryland", "Anthony", "Omole", "Magodo",
     ],
     Surulere: [
       "Adelabu", "Aguda", "Bode Thomas", "Coker", "Ijesha", "Masha", "Ogunlana Drive",
       "Stadium", "Tejuosho", "Western Avenue", "Lawanson", "Itire", "Ojuelegba", "Yaba",
-      "Ebute Metta",
     ],
-    Agege: [
-      "Orile Agege", "Dopemu", "Iju Ishaga", "Oko Oba", "Mulero", "Tabon Tabon",
-      "Abule Egba", "Fagba", "Ijaiye", "Pen Cinema",
-    ],
-    Alimosho: [
-      "Igando", "Ikotun", "Egbeda", "Ipaja", "Ayobo", "Akowonjo", "Shasha", "Idimu",
-      "Isheri", "Abule Egba",
-    ],
+    Agege: ["Orile Agege", "Dopemu", "Iju Ishaga", "Oko Oba", "Abule Egba", "Pen Cinema"],
+    Alimosho: ["Igando", "Ikotun", "Egbeda", "Ipaja", "Ayobo", "Shasha", "Idimu"],
+    // Add more as needed
   };
 
-  const popular = (areas[lga] || []).slice(0, 5);
-  const all = areas[lga] || [];
+  const items = areas[lga] || [];
 
   return (
-    <>
-      <div className="sticky top-0 pb-2 bg-white z-10">
-        <motion.div layout className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-          <Search className="w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Search area or street" className="flex-1 text-sm bg-transparent outline-none placeholder:text-gray-400" />
-        </motion.div>
+    <div className="space-y-4">
+      <div className="sticky top-0 bg-white pt-2 pb-3 z-10">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search area or street..."
+            className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900"
+          />
+        </div>
       </div>
 
-      {popular.length > 0 && (
-        <>
-          <div className="text-xs font-medium text-gray-500 uppercase pt-2">Popular</div>
-          {popular.map((area, i) => (
-            <motion.button
-              key={area}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onSelect(area)}
-              className="flex items-center w-full p-3 rounded-lg hover:bg-gray-50 text-left text-sm"
-            >
-              {area}
-            </motion.button>
-          ))}
-        </>
+      {items.length === 0 ? (
+        <p className="text-center text-gray-500 py-8">No areas found for this LGA</p>
+      ) : (
+        items.map((area) => (
+          <button
+            key={area}
+            onClick={() => onSelect(area)}
+            className="w-full text-left p-4 rounded-xl hover:bg-gray-50 transition font-medium"
+          >
+            {area}
+          </button>
+        ))
       )}
-
-      {all.length > 0 && (
-        <>
-          <div className="text-xs font-medium text-gray-500 uppercase pt-3">All Areas</div>
-          {all.map((area, i) => (
-            <motion.button
-              key={area}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: (popular.length + i) * 0.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onSelect(area)}
-              className="flex items-center w-full p-3 rounded-lg hover:bg-gray-50 text-left text-sm"
-            >
-              {area}
-            </motion.button>
-          ))}
-        </>
-      )}
-    </>
+    </div>
   );
 };

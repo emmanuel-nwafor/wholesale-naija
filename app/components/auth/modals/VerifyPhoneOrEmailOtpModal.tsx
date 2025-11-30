@@ -38,10 +38,6 @@ export default function VerifyPhoneOrEmailOtpModal({ isOpen, onClose, type, iden
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Automatically trigger verify if last input filled
-    // if (index === 3 && value) {
-    //   handleVerify();
-    // }
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
