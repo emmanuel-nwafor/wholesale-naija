@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useRef } from "react";
-import { Menu } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Menu, ChevronRight } from "lucide-react";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { AnimatePresence } from "framer-motion";
 import ChooseModal from "../auth/modals/ChooseModal";
 import SignupWithEmailModal from "../auth/modals/signup/SignupWithEmailModal";
 import VerifyPhoneOrEmailOtpModal from "../auth/modals/VerifyPhoneOrEmailOtpModal";
 import LoginWithEmailModal from "../auth/modals/login/LoginWithEmailModal";
-import { usePathname } from "next/navigation";
 import CompleteProfileModal from "../auth/modals/signup/CompleteProfileModal";
+import { fetchWithToken } from "@/app/utils/fetchWithToken";
+import { useRouter } from "next/navigation";
 
 const suggestions = [
   "iPhone 15 Pro Max",
@@ -20,7 +21,25 @@ const suggestions = [
   "iPhone Cases",
 ];
 
+interface UserProfile {
+  fullName: string;
+  role: "buyer" | "seller";
+  profilePicture?: {
+    url: string;
+  };
+  store?: {
+    name: string;
+    bannerUrl: string;
+    contactPhone: string;
+    location: string;
+    address: { street: string };
+    openingDays: string;
+  };
+}
+
 export default function Header() {
+  const router = useRouter();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Signup states
@@ -35,23 +54,46 @@ export default function Header() {
 
   // Create Account ChooseModal state
   const [signupChooseModalOpen, setSignupChooseModalOpen] = useState(false);
-  const [isTokenExist, setIsTokenExist] = useState(false);
 
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
 
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const pathname = usePathname();
 
   const filtered = suggestions.filter((s) =>
     s.toLowerCase().includes(query.toLowerCase())
   );
 
+  // Load token and user profile
+  useEffect(() => {
+    const t = localStorage.getItem("token");
+    setToken(t);
+
+    if (t) {
+      loadUserProfile(t);
+    }
+  }, []);
+
+  const loadUserProfile = async (authToken: string) => {
+    try {
+      const res = await fetchWithToken<{ user: UserProfile }>("/auth/profile");
+
+      if (res?.user) {
+        setUser(res.user);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user profile:", err);
+    }
+  };
+
   // Signup helpers
   const openEmailModal = () => {
-    const token = localStorage.getItem("token");
-    setIsTokenExist(!!token);
-    setSignupChooseModalOpen(true); 
+    const t = localStorage.getItem("token");
+    setToken(t);
+    setSignupChooseModalOpen(true);
   };
 
   const handleContinueWithEmail = (email: string) => {
@@ -112,27 +154,84 @@ export default function Header() {
           />
         </div>
 
-        <div className="flex gap-3 w-full md:w-auto">
-          <button
-            onClick={() => setLoginModalOpen(true)}
-            className="flex-1 md:flex-initial border border-white text-white px-6 py-3 rounded-xl hover:cursor-pointer hover:bg-white hover:text-slate-800 transition"
-          >
-            Login
-          </button>
+        <div className="flex gap-3 w-full md:w-auto items-center">
+          {user ? (
+            <>
+              <button onClick={() => {router.push("")}} className="p-2 hover:cursor-pointer text-white hover:text-gray-300">
+                <Image 
+                  src={`/svgs/heart.svg`}
+                  alt="heart"
+                  width={40}
+                  height={40}
+                />
+              </button>
+              <button onClick={() => {router.push("/messages")}} className="p-2 hover:cursor-pointer text-white hover:text-gray-300">
+                <Image 
+                  src={`/svgs/message.svg`}
+                  alt="message"
+                  width={40}
+                  height={40}
+                />
+              </button>
+              <div className="flex items-center gap-2 bg-gray-700 text-white px-3 py-2 rounded-2xl font-semibold">
+                <Image 
+                  src={`/svgs/coin-1.svg`}
+                  alt="message"
+                  width={30}
+                  height={30}
+                />
+                115 Coins
+              </div>
+              <button
+                onClick={() => {
+                  if (user?.role === "seller") {
+                    router.push("/store/dashboard");
+                  } else {
+                    router.push("/profile");
+                  }
+                }}
+                className="flex items-center gap-2 bg-gray-700 rounded-full px-3 py-2 hover:cursor-pointer hover:bg-gray-600 transition"
+              >
+                <div className="w-8 h-8 sm:w-9 sm:h-9 relative flex-shrink-0">
+                  <Image
+                    src={user.profilePicture?.url || "/svgs/profile-image.jpg"}
+                    alt="User"
+                    fill
+                    className="rounded-full object-cover"
+                  />
+                </div>
 
-          <button
-            onClick={openEmailModal}
-            className="flex-1 md:flex-initial bg-white text-slate-800 px-6 py-3 rounded-xl font-semibold hover:cursor-pointer hover:bg-gray-100 transition"
-          >
-            Create Account
-          </button>
+                <span className="text-sm sm:text-base text-white truncate max-w-[120px]">
+                  {user.fullName.length > 15 ? user.fullName.slice(0, 15) + "..." : user.fullName}
+                </span>
+
+                <ChevronRight color="white" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setLoginModalOpen(true)}
+                className="flex-1 md:flex-initial border border-white text-white px-6 py-3 rounded-xl hover:cursor-pointer hover:bg-white hover:text-slate-800 transition"
+              >
+                Login
+              </button>
+
+              <button
+                onClick={openEmailModal}
+                className="flex-1 md:flex-initial bg-white text-slate-800 px-6 py-3 rounded-xl font-semibold hover:cursor-pointer hover:bg-gray-100 transition"
+              >
+                Create Account
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <AnimatePresence>
-        {/* Login Choose Buyer/Seller */}
+        {/* Modals */}
         {loginModalOpen && (
           <ChooseModal
             isOpen={loginModalOpen}
@@ -140,13 +239,12 @@ export default function Header() {
             onSelectBuyer={() => {}}
             onSelectSeller={() => {}}
             onOpenLogin={() => {
-              setLoginEmailOpen(true); 
-              setLoginModalOpen(false); 
+              setLoginEmailOpen(true);
+              setLoginModalOpen(false);
             }}
           />
         )}
 
-        {/* Create Account ChooseModal */}
         {signupChooseModalOpen && (
           <ChooseModal
             isOpen={signupChooseModalOpen}
@@ -154,18 +252,17 @@ export default function Header() {
             onSelectBuyer={() => {
               localStorage.setItem("selectedRole", "buyer");
               setSignupChooseModalOpen(false);
-              isTokenExist ? setLoginModalOpen(true) : setSignupEmailOpen(true);
+              token ? setLoginModalOpen(true) : setSignupEmailOpen(true);
             }}
             onSelectSeller={() => {
               localStorage.setItem("selectedRole", "seller");
               setSignupChooseModalOpen(false);
-              isTokenExist ? setLoginModalOpen(true) : setSignupEmailOpen(true);
+              token ? setLoginModalOpen(true) : setSignupEmailOpen(true);
             }}
             onOpenLogin={() => {}}
           />
         )}
 
-        {/* Login Email */}
         {loginEmailOpen && (
           <LoginWithEmailModal
             isOpen={loginEmailOpen}
@@ -173,7 +270,6 @@ export default function Header() {
           />
         )}
 
-        {/* Signup Email */}
         {signupEmailOpen && (
           <SignupWithEmailModal
             isOpen={signupEmailOpen}
@@ -182,7 +278,6 @@ export default function Header() {
           />
         )}
 
-        {/* OTP */}
         {otpModalOpen && (
           <VerifyPhoneOrEmailOtpModal
             isOpen={otpModalOpen}
@@ -193,12 +288,11 @@ export default function Header() {
           />
         )}
 
-        {/* Complete Profile */}
         {completeProfileOpen && (
           <CompleteProfileModal
             isOpen={completeProfileOpen}
             onClose={() => setCompleteProfileOpen(false)}
-            onOpenLoginModal={() => setLoginEmailOpen(true)} // Opens LoginWithEmailModal
+            onOpenLoginModal={() => setLoginEmailOpen(true)}
           />
         )}
       </AnimatePresence>

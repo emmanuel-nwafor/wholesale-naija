@@ -1,7 +1,7 @@
 // utils/auth.ts
 
 let cachedSellerId: string | null = null;
-let cachedProductId: string | null = null; // ← New: cache product ID
+let cachedProductId: string | null = null; 
 
 // Get current seller ID
 export const getCurrentSellerId = (): string | null => {

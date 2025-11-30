@@ -48,7 +48,7 @@ export default function StoreAnalytics(): React.JSX.Element {
     fetchAnalytics();
   }, []);
 
-  // ---------- SHIMMER LOADING ----------
+  // Shimmer skeleton loader
   if (loading) {
     return (
       <>
@@ -68,7 +68,6 @@ export default function StoreAnalytics(): React.JSX.Element {
     );
   }
 
-  // ---------- NO TOKEN UI ----------
   if (tokenMissing) {
     return (
       <div className="p-4 mt-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800">
@@ -80,7 +79,7 @@ export default function StoreAnalytics(): React.JSX.Element {
     );
   }
 
-  // ---------- ERROR UI ----------
+  // Better error handling UI
   if (error) {
     return (
       <div className="p-4 mt-4 bg-red-50 border border-red-200 rounded-xl text-red-600">
@@ -90,7 +89,6 @@ export default function StoreAnalytics(): React.JSX.Element {
     );
   }
 
-  // ---------- MAIN UI ----------
   return (
     <>
       <h1 className="m-2 text-gray-700 font-semibold">Analytics</h1>
