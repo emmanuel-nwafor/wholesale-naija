@@ -105,7 +105,7 @@ export default function ProfilePasswordSetting() {
                   </div>
 
                   <div className="flex justify-end pt-4">
-                    <button className="px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-medium hover:bg-slate-800 transition">
+                    <button className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-sm font-medium hover:bg-slate-800 transition">
                       Save Changes
                     </button>
                   </div>

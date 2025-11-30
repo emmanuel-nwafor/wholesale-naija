@@ -1,4 +1,4 @@
-// /components/DeleteModal.tsx
+// components/DeleteModal.tsx
 'use client';
 
 import React from 'react';
@@ -9,9 +9,21 @@ interface DeleteModalProps {
   show: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  title?: string;
+  message?: string;
+  itemName?: string; // e.g., "this product", "Samsung S24 Ultra", etc.
+  loading?: boolean;
 }
 
-export default function DeleteModal({ show, onClose, onConfirm }: DeleteModalProps) {
+export default function DeleteModal({
+  show,
+  onClose,
+  onConfirm,
+  title = "Delete this item?",
+  message = "This action cannot be undone.",
+  itemName,
+  loading = false,
+}: DeleteModalProps) {
   return (
     <AnimatePresence>
       {show && (
@@ -21,7 +33,7 @@ export default function DeleteModal({ show, onClose, onConfirm }: DeleteModalPro
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
             onClick={onClose}
           />
 
@@ -34,27 +46,45 @@ export default function DeleteModal({ show, onClose, onConfirm }: DeleteModalPro
             className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto bg-white rounded-2xl shadow-2xl z-50 p-6"
           >
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <Trash2 className="w-6 h-6 text-red-600" />
+              <div className="mx-auto w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-5">
+                <Trash2 className="w-7 h-7 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Are you sure you want to delete this conversation?
+
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                {title}
               </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                This will remove it from your inbox but not from the other user.
+
+              {itemName && (
+                <p className="text-lg font-medium text-gray-800 mb-2">
+                  {itemName}
+                </p>
+              )}
+
+              <p className="text-sm text-gray-600 mb-8 max-w-xs mx-auto">
+                {message}
               </p>
+
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={onClose}
-                  className="px-8 py-3 bg-gray-100 hover:cursor-pointer text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                  disabled={loading}
+                  className="px-8 py-3 cursor-pointer bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 disabled:opacity-70 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={onConfirm}
-                  className="px-8 py-3 bg-red-600 hover:cursor-pointer text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                  disabled={loading}
+                  className="px-8 py-3 bg-red-600 hover:cursor-pointer text-white rounded-xl font-medium hover:bg-red-700 disabled:opacity-70 transition-colors flex items-center gap-2"
                 >
-                  Delete
+                  {loading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
                 </button>
               </div>
             </div>

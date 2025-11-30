@@ -1,15 +1,33 @@
-// Updated SellerProfilePage.tsx
+// app/(seller)/profile/page.tsx
 "use client";
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, Menu, Camera } from 'lucide-react';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { Menu, Camera } from 'lucide-react';
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 import ProfileSidebar from '@/app/components/sidebar/SellersProfileSidebar';
+import { fetchWithToken } from "@/app/utils/fetchWithToken";
+import OkaySuccessModal from "@/app/components/modals/OkaySuccessModal";
 
 export default function SellerProfilePage() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [form, setForm] = useState({
+    fullName: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    profilePicture: "",
+  });
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -18,140 +36,280 @@ export default function SellerProfilePage() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchWithToken<any>("/auth/profile");
+      const u = data.user;
+
+      setForm({
+        fullName: u.fullName || "",
+        firstName: u.firstName || "",
+        lastName: u.lastName || "",
+        phone: u.phone || "",
+        email: u.email || "",
+        profilePicture: u.profilePicture?.url || "",
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uploadPhoto = async (file: File) => {
+    setUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+
+    try {
+      const res = await fetchWithToken<any>("/uploads/single", {
+        method: "POST",
+        body: fd,
+      });
+
+      const newUrl = res.uploaded[0].url;
+
+      // Show image immediately with cache buster
+      setForm(prev => ({
+        ...prev,
+        profilePicture: newUrl + "?t=" + Date.now(),
+      }));
+    } catch (err) {
+      alert("Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const response = await fetchWithToken<any>("/auth/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: form.fullName,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          profilePicture: form.profilePicture.replace(/\?.*$/, ""), // send clean URL
+        }),
+      });
+
+      // Update form with fresh data from server (important!)
+      const u = response.user;
+      setForm({
+        fullName: u.fullName || "",
+        firstName: u.firstName || "",
+        lastName: u.lastName || "",
+        phone: u.phone || "",
+        email: u.email || "",
+        profilePicture: u.profilePicture?.url || "",
+      });
+
+      setIsEditing(false);
+      setShowSuccess(true);
+    } catch (err: any) {
+      alert(err.message || "Failed to save profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const initials = form.fullName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "JJ";
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen">
+        <StoreSidebar />
+        <div className="flex-1 flex flex-col">
+          <DashboardHeader />
+          <main className="flex-1 p-8 text-center text-gray-500">Loading profile...</main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen">
       <StoreSidebar />
       <div className="flex-1 flex flex-col">
         <DashboardHeader />
+
         <main className="flex-1 md:ml-64 p-4 md:p-8 bg-gray-50">
           <div className="max-w-5xl">
-            {/* Mobile Menu Trigger */}
             {isMobile && (
               <button
                 onClick={() => setMenuOpen(true)}
-                className="mb-6 hover:cursor-pointer hover:bg-gray-100 rounded-xl p-2 flex items-center gap-2 text-sm font-medium text-gray-700"
+                className="mb-6 flex items-center gap-2 text-sm font-medium hover:bg-gray-100 rounded-xl p-3"
               >
-                <Menu className="w-4 h-4" /> Profile Info
+                <Menu className="w-5 h-5" /> Profile Info
               </button>
             )}
+
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-              {/* Sidebar */}
               <div className="lg:w-64">
                 <ProfileSidebar isMobile={isMobile} isOpen={menuOpen} setIsOpen={setMenuOpen} />
               </div>
-              {/* Main Content */}
+
               <div className="flex-1 bg-white rounded-2xl p-6">
                 <div className="flex justify-between items-start mb-8">
                   <h1 className="text-xl font-semibold">Profile Info</h1>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className={`px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium transition-colors ${
-                      isEditing ? 'hidden' : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    Edit Profile
-                  </button>
+                  {!isEditing && (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50"
+                    >
+                      Edit Profile
+                    </button>
+                  )}
                 </div>
+
+                {/* Avatar Section */}
                 <div className="flex items-center mb-8">
                   <div className="relative">
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
-                      OR
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
+                      {form.profilePicture ? (
+                        <img
+                          src={form.profilePicture}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{initials}</span>
+                      )}
                     </div>
+
                     {isEditing && (
-                      <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full border shadow-sm">
-                        <Camera className="w-4 h-4 text-gray-600" />
-                      </button>
+                      <>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          ref={fileInputRef}
+                          onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])}
+                          className="hidden"
+                        />
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploading}
+                          className="absolute bottom-0 right-0 p-2 bg-white rounded-full border shadow-sm hover:bg-gray-50"
+                        >
+                          {uploading ? (
+                            <div className="w-4 h-4 border-2 border-t-blue-600 rounded-full animate-spin" />
+                          ) : (
+                            <Camera className="w-4 h-4 text-gray-600" />
+                          )}
+                        </button>
+                      </>
                     )}
                   </div>
-                  <div className="ml-6 flex-1">
-                    <h2 className="text-lg font-semibold">Adams Adeleke</h2>
+
+                  <div className="ml-6">
+                    <h2 className="text-lg font-semibold">{form.fullName || "Your Name"}</h2>
                     <p className="text-sm text-gray-500">Update your photo and personal details.</p>
-                    {isEditing && (
-                      <div className="flex gap-2 mt-3">
-                        <button className="px-3 py-1 text-xs border border-gray-300 rounded-lg hover:bg-gray-50">Delete</button>
-                        <button className="px-3 py-1 text-xs border border-gray-300 rounded-lg hover:bg-gray-50">Update</button>
-                      </div>
-                    )}
                   </div>
                 </div>
-                <form className="space-y-6">
+
+                {/* Form Fields */}
+                <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                       <input
                         type="text"
-                        defaultValue="example@email.com"
+                        value={form.firstName}
+                        onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                         disabled={!isEditing}
-                        className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                          isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'
-                        }`}
+                        className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                       <input
                         type="text"
-                        defaultValue="example@email.com"
+                        value={form.lastName}
+                        onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                         disabled={!isEditing}
-                        className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                          isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'
-                        }`}
+                        className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
                       />
                     </div>
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        defaultValue="example@email.com"
-                        disabled={!isEditing}
-                        className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 transition-colors ${
-                          isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'
-                        }`}
-                      />
-                      {isEditing && <ChevronDown className="absolute right-3 top-3.5 w-4 h-4 text-gray-400 pointer-events-none" />}
-                    </div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      value={form.fullName}
+                      onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
+                    />
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                     <input
-                      type="text"
-                      defaultValue="example@email.com"
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       disabled={!isEditing}
-                      className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                        isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'
-                      }`}
+                      className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                     <input
                       type="email"
-                      defaultValue="example@email.com"
-                      disabled={!isEditing}
-                      className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                        isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'
-                      }`}
+                      value={form.email}
+                      disabled
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50"
                     />
                   </div>
-                  {isEditing && (
-                    <div className="flex justify-end pt-4">
-                      <button
-                        type="button"
-                        onClick={() => setIsEditing(false)}
-                        className="px-6 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 text-sm font-medium"
-                      >
-                        Save Changes
-                      </button>
-                    </div>
-                  )}
-                </form>
+                </div>
+
+                {isEditing && (
+                  <div className="flex justify-end gap-3 mt-8">
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        loadProfile();
+                      }}
+                      className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="px-8 py-3 bg-slate-900 text-white rounded-xl disabled:opacity-70"
+                    >
+                      {saving ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </main>
       </div>
+
+      <OkaySuccessModal
+        show={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="Profile Updated!"
+        message="Your profile has been updated successfully."
+      />
     </div>
   );
 }

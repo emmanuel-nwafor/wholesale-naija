@@ -49,7 +49,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
     >
       <motion.div
         variants={contentVariants}
-        className="w-full max-w-lg bg-white rounded-2xl p-8 shadow-2xl"
+        className="w-full max-w-xl bg-white rounded-2xl p-8 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-8">
@@ -114,9 +114,6 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
           }`}
         >
           Next
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
         </button>
       </motion.div>
     </motion.div>

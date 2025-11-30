@@ -1,69 +1,54 @@
 // utils/auth.ts
 
 let cachedSellerId: string | null = null;
+let cachedProductId: string | null = null; // ← New: cache product ID
 
-/**
- * Get the current seller ID from localStorage (saved on login)
- * Super fast, no network, no JWT parsing
- */
+// Get current seller ID
 export const getCurrentSellerId = (): string | null => {
-  // Return cached value if already loaded
-  if (cachedSellerId !== null) {
-    return cachedSellerId;
-  }
+  if (cachedSellerId !== null) return cachedSellerId;
 
-  // Only run in browser
-  if (typeof window === "undefined") {
-    return null;
-  }
+  if (typeof window === "undefined") return null;
 
-  // Try to get from direct sellerId key first (most reliable)
   const directId = localStorage.getItem("sellerId");
   if (directId) {
     cachedSellerId = directId;
     return directId;
   }
 
-  // Fallback: read from full user object
   const userStr = localStorage.getItem("user");
-  if (!userStr) {
-    cachedSellerId = null;
-    return null;
-  }
+  if (!userStr) return null;
 
   try {
     const user = JSON.parse(userStr);
     const id = user?.id || user?._id || user?.sellerId;
-
-    if (id) {
-      cachedSellerId = id;
-      return id;
-    }
-  } catch (err) {
-    console.error("Failed to parse user from localStorage:", err);
-  }
-
-  cachedSellerId = null;
-  return null;
-};
-
-/**
- * Clear cache (use on logout)
- */
-export const clearSellerIdCache = () => {
-  cachedSellerId = null;
-};
-
-/**
- * Optional: Get full user object
- */
-export const getCurrentUser = () => {
-  if (typeof window === "undefined") return null;
-  const userStr = localStorage.getItem("user");
-  if (!userStr) return null;
-  try {
-    return JSON.parse(userStr);
+    if (id) cachedSellerId = id;
+    return id || null;
   } catch {
     return null;
   }
+};
+
+// Get current product ID (from last viewed product)
+export const getCurrentProductId = (): string | null => {
+  if (cachedProductId !== null) return cachedProductId;
+
+  if (typeof window === "undefined") return null;
+
+  const id = localStorage.getItem("currentProductId");
+  cachedProductId = id;
+  return id;
+};
+
+// Save current product ID (call this when viewing a product)
+export const setCurrentProductId = (id: string) => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("currentProductId", id);
+  cachedProductId = id;
+};
+
+// Clear all caches (on logout)
+export const clearAuthCache = () => {
+  cachedSellerId = null;
+  cachedProductId = null;
+  localStorage.removeItem("currentProductId");
 };
