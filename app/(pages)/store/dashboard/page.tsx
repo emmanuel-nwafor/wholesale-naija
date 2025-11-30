@@ -1,6 +1,7 @@
 "use client";
 
 import StoreAnalytics from "@/app/components/analytics/StoreAnalytics";
+import StoreCarousel from "@/app/components/carousels/StoreCarousel";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 import QuickActions from "@/app/components/quick-actions/QuickActions";
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
@@ -20,6 +21,7 @@ export default function Dashboard() {
             </h1>
             <StoreAnalytics />
             <QuickActions />
+            <StoreCarousel />
           </div>
         </main>
       </div>

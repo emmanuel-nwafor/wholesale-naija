@@ -6,6 +6,7 @@ import { Edit3, Check, XCircle, ImageIcon, X } from "lucide-react";
 import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
 import DashboardHeader from "@/app/components/header/DashboardHeader";
 import ReviewStatusModal from "@/app/components/modals/ReviewStatusModal";
+import OkaySuccessModal from "@/app/components/modals/OkaySuccessModal";
 import { fetchWithToken } from "@/app/utils/fetchWithToken";
 import { getCurrentSellerId } from "@/app/utils/auth";
 
@@ -13,7 +14,10 @@ export default function StoreManagement() {
   const [isEditing, setIsEditing] = useState(false);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+
   const [reviewModal, setReviewModal] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const [loading, setLoading] = useState(true);
 
   const [store, setStore] = useState({
@@ -37,38 +41,33 @@ export default function StoreManagement() {
 
     try {
       setLoading(true);
-      console.log("Loading store for seller:", sellerId);
 
-      // GET: sellerId in path
       const res = await fetchWithToken<any>(`/v1/seller/store/${sellerId}`);
 
       if (!res?.store) {
-        console.log("No store data");
+        setLoading(false);
         return;
       }
 
       const s = res.store;
 
-      const street = typeof s.address === "object" && s.address?.street
-        ? s.address.street
-        : typeof s.address === "string"
-        ? s.address
-        : "";
+      const street =
+        typeof s.address === "object" && s.address?.street
+          ? s.address.street
+          : typeof s.address === "string"
+          ? s.address
+          : "";
 
-      const banner = s.bannerUrl
-        ? s.bannerUrl.startsWith("http")
-          ? s.bannerUrl
-          : `https://wholesalenaija-backend-9k01.onrender.com/api/uploads/single${s.bannerUrl}`
-        : null;
+      const banner = s.bannerUrl || null;
 
       setStore({
-        name: s.name || "Not set",
-        location: s.location || "Not set",
-        address: street || "Not set",
-        description: s.description || "No description",
-        phone: s.contactPhone || "Not set",
-        whatsapp: s.whatsapp || s.contactPhone || "Not set",
-        openingDays: s.openingDays || "Not set",
+        name: s.name || "",
+        location: s.location || "",
+        address: street || "",
+        description: s.description || "",
+        phone: s.contactPhone || "",
+        whatsapp: s.whatsapp || s.contactPhone || "",
+        openingDays: s.openingDays || "",
         bannerUrl: banner,
       });
 
@@ -93,47 +92,72 @@ export default function StoreManagement() {
     }
   };
 
+  const uploadBanner = async () => {
+    if (!bannerFile) return store.bannerUrl;
+
+    const formData = new FormData();
+    formData.append("file", bannerFile);
+
+    const uploadRes = await fetchWithToken<{ uploaded: Array<{ url: string }> }>("/uploads/single", {
+      method: "POST",
+      body: formData,
+    });
+
+    const uploadedUrl = uploadRes?.uploaded?.[0]?.url;
+
+    if (!uploadedUrl) throw new Error("Banner upload failed.");
+
+    return uploadedUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const sellerId = getCurrentSellerId();
-    if (!sellerId) {
-      alert("Error: Seller not found. Please log in again.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("name", store.name === "Not set" ? "" : store.name);
-    formData.append("description", store.description === "No description" ? "" : store.description);
-    formData.append("location", store.location === "Not set" ? "" : store.location);
-    formData.append("contactPhone", store.phone === "Not set" ? "" : store.phone);
-    formData.append("whatsapp", store.whatsapp === "Not set" ? "" : store.whatsapp);
-    formData.append("openingDays", store.openingDays === "Not set" ? "" : store.openingDays);
-
-    if (store.address && store.address !== "Not set") {
-      formData.append("address[street]", store.address);
-    }
-    if (bannerFile) formData.append("banner", bannerFile);
-
     try {
-      // PUT: sellerId in query params
-      const url = `/v1/seller/store?sellerId=${sellerId}`;
+      setLoading(true);
 
-      await fetchWithToken(url, {
+      const uploadedBannerUrl = await uploadBanner();
+
+      const payload = {
+        store: {
+          name: store.name || "",
+          description: store.description || "",
+          bannerUrl: uploadedBannerUrl || "",
+          contactEmail: store.phone || "",
+          contactPhone: store.phone || "",
+          whatsapp: store.whatsapp || "",
+          location: store.location || "",
+          openingDays: store.openingDays || "",
+          openingHours: {
+            key_0: "12-6",
+            key_1: "8-5",
+            key_2: "10-4",
+          },
+          address: {
+            street: store.address || "",
+            city: "",
+            state: "",
+            country: "",
+            postalCode: "",
+          },
+        },
+      };
+
+      await fetchWithToken("/auth/profile", {
         method: "PUT",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
-      console.log("Store updated successfully");
-
+      setIsEditing(false);
+      setShowSuccess(true); // success modal opens
       await loadStore();
 
-      setIsEditing(false);
-      setBannerFile(null);
-      setReviewModal(true);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Update failed:", err);
-      alert("Update failed. Check console.");
+      alert("Store update failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,14 +201,14 @@ export default function StoreManagement() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8 mt-8">
-              {/* Logo */}
+              {/* Banner */}
               <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Store Logo</h2>
+                <h2 className="text-lg font-medium text-gray-900 mb-4">Store Banner</h2>
                 <div className="flex items-center gap-6">
                   <div className="relative">
                     {bannerUrl ? (
                       <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-300">
-                        <Image src={bannerUrl} alt="Store logo" fill className="object-cover" />
+                        <Image src={bannerUrl} alt="Store banner" fill className="object-cover" />
                         {isEditing && (
                           <button
                             type="button"
@@ -207,7 +231,7 @@ export default function StoreManagement() {
 
                   {isEditing && (
                     <label className="cursor-pointer text-sm text-blue-600 hover:underline">
-                      Change logo
+                      Change banner
                       <input
                         type="file"
                         accept="image/*"
@@ -250,6 +274,7 @@ export default function StoreManagement() {
                       <p>{store.location}</p>
                     )}
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
                     {isEditing ? (
@@ -349,11 +374,22 @@ export default function StoreManagement() {
         </main>
       </div>
 
+      {/* REVIEW MODAL */}
       <ReviewStatusModal
         isOpen={reviewModal}
         onClose={() => setReviewModal(false)}
         status="review"
         productName="Store Information"
+      />
+
+      {/* SUCCESS MODAL */}
+      <OkaySuccessModal
+        show={showSuccess}
+        onClose={() => {
+          setShowSuccess(false);
+          setReviewModal(true);
+        }}
+        title="Store Updated Successfully!"
       />
     </div>
   );

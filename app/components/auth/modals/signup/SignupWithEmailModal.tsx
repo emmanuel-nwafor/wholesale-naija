@@ -27,7 +27,6 @@ const API_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/send-otp`;
 export default function SignupWithEmailModal({
   isOpen,
   onClose,
-  onSwitchToPhone,
   onContinue,
 }: SignupWithEmailModalProps) {
   const [email, setEmail] = useState("");
@@ -91,15 +90,6 @@ export default function SignupWithEmailModal({
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               Create Account
             </h2>
-
-            {onSwitchToPhone && (
-              <button
-                onClick={onSwitchToPhone}
-                className="bg-gray-50 p-2 text-gray-600 hover:cursor-pointer rounded-xl"
-              >
-                Use phone instead
-              </button>
-            )}
           </div>
 
           <p className="text-gray-600 text-xs mb-6">

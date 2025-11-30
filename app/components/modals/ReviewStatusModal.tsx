@@ -29,8 +29,8 @@ interface StatusConfig {
 const statusConfig: Record<Status, StatusConfig> = {
   review: {
     svg: "/svgs/modal-time.svg",
-    title: "Product Under Review",
-    message: (name) => `Your product "${name}" is pending approval.`,
+    title: "Under Review",
+    message: (name) => `Your "${name}" is pending approval.`,
     subtext: "We'll notify you once it's live.",
     buttonText: "Close",
     buttonVariant: "bg-slate-900 text-white hover:bg-slate-800"
@@ -38,8 +38,8 @@ const statusConfig: Record<Status, StatusConfig> = {
 
   approved: {
     svg: "/svgs/modal-live.svg",
-    title: "Product Approved!",
-    message: (name) => `Your product "${name}" is now live.`,
+    title: "Approved!",
+    message: (name) => `Your "${name}" is now live.`,
     subtext: "You can view it in your store.",
     buttonText: "Close",
     buttonVariant: "bg-slate-900 text-white hover:bg-slate-800"
@@ -47,8 +47,8 @@ const statusConfig: Record<Status, StatusConfig> = {
 
   rejected: {
     svg: "/svgs/modal-rejected.svg",
-    title: "Product Rejected",
-    message: (name) => `Your product "${name}" was not approved.`,
+    title: "Rejected",
+    message: (name) => `Your "${name}" was not approved.`,
     subtext: (reason) => (reason ? `Reason: ${reason}` : ""),
     buttonText: "Close",
     buttonVariant:

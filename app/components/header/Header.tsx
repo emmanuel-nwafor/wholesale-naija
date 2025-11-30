@@ -170,10 +170,6 @@ export default function Header() {
           <LoginWithEmailModal
             isOpen={loginEmailOpen}
             onClose={() => setLoginEmailOpen(false)}
-            onSwitchToPhone={undefined} 
-            onLogin={(email: string, password: string) => {
-              console.log("Login with email:", email, password);
-            }}
           />
         )}
 
@@ -202,6 +198,7 @@ export default function Header() {
           <CompleteProfileModal
             isOpen={completeProfileOpen}
             onClose={() => setCompleteProfileOpen(false)}
+            onOpenLoginModal={() => setLoginEmailOpen(true)} // Opens LoginWithEmailModal
           />
         )}
       </AnimatePresence>

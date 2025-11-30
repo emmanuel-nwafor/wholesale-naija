@@ -18,12 +18,19 @@ export default function StoreAnalytics(): React.JSX.Element {
     avgRating: null,
   });
   const [loading, setLoading] = useState(true);
+  const [tokenMissing, setTokenMissing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
         const res = await fetchWithToken<DashboardData>("/v1/seller/dashboard");
+
+        if (!res) {
+          setTokenMissing(true);
+          return;
+        }
+
         setData({
           totalUnlocks: res.totalUnlocks,
           messagesCount: res.messagesCount,
@@ -32,7 +39,7 @@ export default function StoreAnalytics(): React.JSX.Element {
         });
       } catch (err: any) {
         console.error(err);
-        setError(err.message || "Failed to fetch analytics");
+        setError(err.message || "Unable to load analytics.");
       } finally {
         setLoading(false);
       }
@@ -41,12 +48,53 @@ export default function StoreAnalytics(): React.JSX.Element {
     fetchAnalytics();
   }, []);
 
-  if (loading) return <p className="m-2 text-gray-500">Loading analytics...</p>;
-  if (error) return <p className="m-2 text-red-500">Error: {error}</p>;
+  // ---------- SHIMMER LOADING ----------
+  if (loading) {
+    return (
+      <>
+        <h1 className="m-2 text-gray-700 font-semibold">Analytics</h1>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-white rounded-xl p-6 border border-gray-100 animate-pulse"
+            >
+              <div className="h-3 w-16 bg-gray-200 rounded"></div>
+              <div className="h-6 w-10 bg-gray-300 rounded mt-3"></div>
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
 
+  // ---------- NO TOKEN UI ----------
+  if (tokenMissing) {
+    return (
+      <div className="p-4 mt-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800">
+        <p className="text-sm font-medium">Authentication Required</p>
+        <p className="text-xs mt-1">
+          You are not logged in. Please sign in again to view your analytics.
+        </p>
+      </div>
+    );
+  }
+
+  // ---------- ERROR UI ----------
+  if (error) {
+    return (
+      <div className="p-4 mt-4 bg-red-50 border border-red-200 rounded-xl text-red-600">
+        <p className="text-sm font-medium">Failed to load analytics</p>
+        <p className="text-xs mt-1">{error}</p>
+      </div>
+    );
+  }
+
+  // ---------- MAIN UI ----------
   return (
     <>
       <h1 className="m-2 text-gray-700 font-semibold">Analytics</h1>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Unlocks */}
         <div className="bg-white rounded-xl p-6 border border-gray-100 flex justify-between items-center">
