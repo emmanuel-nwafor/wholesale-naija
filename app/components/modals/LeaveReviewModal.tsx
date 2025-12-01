@@ -4,7 +4,6 @@
 import React, { useState } from 'react';
 import { X, Star, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import OkaySuccessModal from './OkaySuccessModal';
 
 interface LeaveReviewModalProps {
@@ -13,6 +12,7 @@ interface LeaveReviewModalProps {
   sellerName?: string;
   sellerVerified?: boolean;
   storeBannerUrl?: string;
+  onSuccess?: () => void;
 }
 
 export default function LeaveReviewModal({
@@ -28,7 +28,7 @@ export default function LeaveReviewModal({
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (rating === 0 || !comment.trim()) return;
 
     const sellerId = localStorage.getItem('sellerId');
@@ -40,24 +40,31 @@ export default function LeaveReviewModal({
     }
 
     setLoading(true);
-    try {
-      await fetchWithToken(`/v1/sellers/${sellerId}/reviews`, {
-        method: 'POST',
-        body: JSON.stringify({
-          rating,
-          comment: comment.trim(),
-          productId,
-        }),
-      });
 
-      // Show success modal
+    // Simulate API delay
+    setTimeout(() => {
+      // Create review object
+      const newReview = {
+        id: Date.now().toString(),
+        sellerId,
+        storeName: sellerName,
+        productId,
+        productName: 'Unknown Product', 
+        productImage: '/placeholder.jpg', 
+        rating,
+        comment: comment.trim(),
+        date: new Date().toISOString(),
+      };
+
+      // Save to localStorage
+      const existing = JSON.parse(localStorage.getItem('userReviews') || '[]');
+      const updated = [...existing, newReview];
+      localStorage.setItem('userReviews', JSON.stringify(updated));
+
+      // Show success
       setShowSuccess(true);
-    } catch (err) {
-      console.error('Review submission failed:', err);
-      alert('Failed to submit review. Please try again.');
-    } finally {
       setLoading(false);
-    }
+    }, 800);
   };
 
   const handleCloseSuccess = () => {

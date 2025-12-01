@@ -9,15 +9,31 @@ import LeaveReviewModal from '@/app/components/modals/LeaveReviewModal';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import Image from 'next/image';
 
-interface SellerWithProduct {
-  sellerId: string;
-  productId: string;
-  storeName: string;
-  bannerUrl?: string;
+interface Seller {
+  _id: string;
+  store: {
+    name: string;
+    bannerUrl?: string;
+  };
   isVerifiedSeller: boolean;
-  profilePictureUrl?: string;
-  productName: string;
-  productImage: string;
+  profilePicture?: { url: string };
+}
+
+interface GivenReview {
+  _id: string;
+  sellerId: {
+    store: { name: string; bannerUrl?: string };
+    profilePicture?: { url: string };
+    isVerifiedSeller: boolean;
+  };
+  productId: {
+    _id: string;
+    name: string;
+    images: string[];
+  };
+  rating: number;
+  comment: string;
+  createdAt: string;
 }
 
 export default function ProfileReviewsPage() {
@@ -25,9 +41,11 @@ export default function ProfileReviewsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'ready' | 'given'>('ready');
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [selectedReview, setSelectedReview] = useState<SellerWithProduct | null>(null);
-  const [reviewableSellers, setReviewableSellers] = useState<SellerWithProduct[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
+  const [allSellers, setAllSellers] = useState<Seller[]>([]);
+  const [givenReviews, setGivenReviews] = useState<GivenReview[]>([]);
+  const [loadingSellers, setLoadingSellers] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -36,63 +54,76 @@ export default function ProfileReviewsPage() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Fetch real products → extract unique sellers with real productId
+  // Fetch ALL sellers from /v1/users/sellers
   useEffect(() => {
-    const fetchReviewableSellers = async () => {
+    const fetchSellers = async () => {
       try {
-        setLoading(true);
+        setLoadingSellers(true);
+        const res = await fetchWithToken<{ sellers: any[] }>('/v1/users/sellers');
 
-        // This tells TypeScript the shape of the response
-        const res = await fetchWithToken<{ products: any[] }>('/v1/products/search');
-
-        if (!res?.products || !Array.isArray(res.products)) {
-          setReviewableSellers([]);
+        if (!res?.sellers || !Array.isArray(res.sellers)) {
+          setAllSellers([]);
           return;
         }
 
-        const uniqueSellers = new Map<string, SellerWithProduct>();
+        const validSellers = res.sellers
+          .filter((s: any) => s.store?.name)
+          .map((s: any) => ({
+            _id: s._id,
+            store: {
+              name: s.store.name,
+              bannerUrl: s.store.bannerUrl || '',
+            },
+            isVerifiedSeller: s.isVerifiedSeller || false,
+            profilePicture: s.profilePicture || null,
+          }));
 
-        res.products.forEach((product: any) => {
-          const sellerId = product.seller?._id || product.vendor?._id;
-          const store = product.seller?.store || product.vendor?.store;
-
-          if (!sellerId || !store?.name) return;
-
-          if (!uniqueSellers.has(sellerId)) {
-            uniqueSellers.set(sellerId, {
-              sellerId,
-              productId: product._id,
-              storeName: store.name,
-              bannerUrl: store.bannerUrl || '',
-              isVerifiedSeller: product.seller?.isVerifiedSeller || product.vendor?.isVerifiedSeller || false,
-              profilePictureUrl: product.seller?.profilePicture?.url || product.vendor?.profilePicture?.url,
-              productName: product.name,
-              productImage: product.images?.[0] || '/placeholder.jpg',
-            });
-          }
-        });
-
-        setReviewableSellers(Array.from(uniqueSellers.values()));
+        setAllSellers(validSellers);
       } catch (err) {
-        console.error('Failed to load reviewable sellers:', err);
+        console.error('Failed to load sellers:', err);
       } finally {
-        setLoading(false);
+        setLoadingSellers(false);
       }
     };
 
-    fetchReviewableSellers();
+    fetchSellers();
   }, []);
 
-  const openReviewModal = (item: SellerWithProduct) => {
-    setSelectedReview(item);
-    localStorage.setItem('sellerId', item.sellerId);
-    localStorage.setItem('currentProductId', item.productId); // Real productId!
+  // Fetch REAL reviews written by user
+  useEffect(() => {
+    if (activeTab !== 'given') return;
+
+    const fetchGivenReviews = async () => {
+      try {
+        setLoadingReviews(true);
+        const res = await fetchWithToken<{ reviews: GivenReview[] }>('/v1/users/me/reviews-written');
+
+        if (res?.reviews && Array.isArray(res.reviews)) {
+          setGivenReviews(res.reviews);
+        } else {
+          setGivenReviews([]);
+        }
+      } catch (err) {
+        console.error('Failed to load your reviews:', err);
+        setGivenReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    fetchGivenReviews();
+  }, [activeTab]);
+
+  const openReviewModal = (seller: Seller) => {
+    setSelectedSeller(seller);
+    localStorage.setItem('sellerId', seller._id);
+    localStorage.setItem('currentProductId', 'any-product-id');
     setIsReviewModalOpen(true);
   };
 
   const closeReviewModal = () => {
     setIsReviewModalOpen(false);
-    setSelectedReview(null);
+    setSelectedSeller(null);
     localStorage.removeItem('sellerId');
     localStorage.removeItem('currentProductId');
   };
@@ -124,46 +155,46 @@ export default function ProfileReviewsPage() {
                       onClick={() => setActiveTab('ready')}
                       className={`pb-4 text-sm font-medium transition ${activeTab === 'ready' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-gray-900'}`}
                     >
-                      Ready for review ({reviewableSellers.length})
+                      Ready for review ({allSellers.length})
                     </button>
                     <button
                       onClick={() => setActiveTab('given')}
                       className={`pb-4 text-sm font-medium transition ${activeTab === 'given' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-gray-900'}`}
                     >
-                      Reviews given (0)
+                      Reviews given ({givenReviews.length})
                     </button>
                   </div>
 
+                  {/* Ready for Review — ALL sellers */}
                   {activeTab === 'ready' && (
                     <>
-                      {loading ? (
+                      {loadingSellers ? (
                         <div className="text-center py-16">
                           <div className="w-12 h-12 border-4 border-gray-300 border-t-slate-900 rounded-full animate-spin mx-auto" />
                           <p className="mt-4 text-gray-600">Loading sellers...</p>
                         </div>
-                      ) : reviewableSellers.length === 0 ? (
+                      ) : allSellers.length === 0 ? (
                         <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
-                          <p className="text-gray-500 text-lg">No sellers to review yet</p>
-                          <p className="text-sm text-gray-400 mt-2">Browse products and come back!</p>
+                          <p className="text-gray-500 text-lg">No sellers found</p>
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                          {reviewableSellers.map((item) => (
-                            <div key={item.sellerId} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                          {allSellers.map((seller) => (
+                            <div key={seller._id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
                               <div className="flex items-start gap-4">
                                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
-                                  {item.profilePictureUrl ? (
-                                    <Image src={item.profilePictureUrl} alt={item.storeName} width={64} height={64} className="w-full h-full object-cover" />
+                                  {seller.profilePicture?.url ? (
+                                    <Image src={seller.profilePicture.url} alt={seller.store.name} width={64} height={64} className="w-full h-full object-cover" />
                                   ) : (
                                     <div className="w-full h-full bg-gray-300" />
                                   )}
                                 </div>
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-gray-900 flex items-center gap-1.5">
-                                    {item.storeName}
-                                    {item.isVerifiedSeller && <Verified className="w-4 h-4 fill-green-500 text-white" />}
+                                    {seller.store.name}
+                                    {seller.isVerifiedSeller && <Verified className="w-4 h-4 fill-green-500 text-white" />}
                                   </h3>
-                                  <p className="text-xs text-gray-600 mt-1">You viewed: {item.productName}</p>
+                                  <p className="text-xs text-gray-600 mt-1">Wholesale Store</p>
                                   <div className="flex gap-1 mt-3">
                                     {[1, 2, 3, 4, 5].map((i) => (
                                       <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
@@ -173,7 +204,7 @@ export default function ProfileReviewsPage() {
                                 </div>
                               </div>
                               <button
-                                onClick={() => openReviewModal(item)}
+                                onClick={() => openReviewModal(seller)}
                                 className="mt-6 w-full py-3 bg-slate-900 text-white rounded-2xl font-medium hover:bg-slate-800 transition"
                               >
                                 Leave a Review
@@ -185,11 +216,67 @@ export default function ProfileReviewsPage() {
                     </>
                   )}
 
+                  {/* Reviews Given — REAL from API */}
                   {activeTab === 'given' && (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
-                      <p className="text-gray-500 text-lg">No reviews yet</p>
-                      <p className="text-sm text-gray-400 mt-2">Your reviews will appear here</p>
-                    </div>
+                    <>
+                      {loadingReviews ? (
+                        <div className="text-center py-16">
+                          <div className="w-12 h-12 border-4 border-gray-300 border-t-slate-900 rounded-full animate-spin mx-auto" />
+                          <p className="mt-4 text-gray-600">Loading your reviews...</p>
+                        </div>
+                      ) : givenReviews.length === 0 ? (
+                        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
+                          <p className="text-gray-500 text-lg">No reviews yet</p>
+                          <p className="text-sm text-gray-400 mt-2">Your reviews will appear here</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {givenReviews.map((review) => (
+                            <div key={review._id} className="bg-white rounded-3xl p-6 border border-gray-100">
+                              <div className="flex items-start gap-4">
+                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
+                                  {review.sellerId.profilePicture?.url ? (
+                                    <Image src={review.sellerId.profilePicture.url} alt={review.sellerId.store.name} width={64} height={64} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-300" />
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900 flex items-center gap-1.5">
+                                    {review.sellerId.store.name}
+                                    {review.sellerId.isVerifiedSeller && <Verified className="w-4 h-4 fill-green-500 text-white" />}
+                                  </h3>
+                                  <p className="text-xs text-gray-600 mt-1">Reviewed: {review.productId.name}</p>
+
+                                  <div className="flex gap-1 mt-3">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        className={`w-5 h-5 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                                      />
+                                    ))}
+                                  </div>
+
+                                  <p className="mt-4 text-gray-800 font-medium">{review.comment}</p>
+
+                                  {review.productId.images[0] && (
+                                    <div className="flex gap-3 mt-4">
+                                      <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                                        <Image src={review.productId.images[0]} alt={review.productId.name} width={64} height={64} className="w-full h-full object-cover" />
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  <p className="text-xs text-gray-500 mt-4">
+                                    {new Date(review.createdAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -198,18 +285,18 @@ export default function ProfileReviewsPage() {
         </div>
       </div>
 
-      {/* Modal with REAL productId and sellerId */}
-      {selectedReview && (
+      {/* Modal */}
+      {selectedSeller && (
         <LeaveReviewModal
           isOpen={isReviewModalOpen}
           onClose={closeReviewModal}
-          sellerName={selectedReview.storeName}
-          sellerVerified={selectedReview.isVerifiedSeller}
-          storeBannerUrl={selectedReview.bannerUrl}
-          // onSuccess={() => {
-          //   alert('Thank you! Your review has been submitted.');
-          //   closeReviewModal();
-          // }}
+          sellerName={selectedSeller.store.name}
+          sellerVerified={selectedSeller.isVerifiedSeller}
+          storeBannerUrl={selectedSeller.store.bannerUrl}
+          onSuccess={() => {
+            alert('Review submitted!');
+            closeReviewModal();
+          }}
         />
       )}
     </>
