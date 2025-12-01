@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Menu, Camera } from 'lucide-react';
+import { Menu, Camera } from 'lucide-react';
 import Header from '@/app/components/header/Header';
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
+import Spinner from '@/app/components/spinner/Spinner';
 
 export default function BuyersProfilePage() {
   const [isMobile, setIsMobile] = useState(false);
@@ -101,15 +102,10 @@ export default function BuyersProfilePage() {
     }
   };
 
-  if (loading) return <div className="text-center">
-    <Header />
-    Create a shimmer here. Also the sidebar should show. It should just be exactly like the way it is when the page is done loading. 
-  </div>;
 
   return (
     <>
       <Header />
-
       <div className="flex min-h-screen bg-gray-50">
         <div className="flex-1 flex flex-col">
           <main className="flex-1 p-4 md:p-8">
@@ -124,9 +120,7 @@ export default function BuyersProfilePage() {
               )}
 
               <div className="flex flex-col lg:flex-row gap-8">
-                {isMobile && (
-                  <BuyersProfileSidebar isMobile={true} isOpen={menuOpen} setIsOpen={setMenuOpen} />
-                )}
+                {isMobile && <BuyersProfileSidebar isMobile={true} isOpen={menuOpen} setIsOpen={setMenuOpen} />}
                 {!isMobile && <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />}
 
                 <div className="flex-1 bg-white rounded-3xl p-6 md:p-8">
@@ -191,7 +185,9 @@ export default function BuyersProfilePage() {
                           value={form.firstName}
                           onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3.5 rounded-xl border transition ${isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'}`}
+                          className={`w-full px-4 py-3.5 rounded-xl border transition ${
+                            isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'
+                          }`}
                         />
                       </div>
                       <div>
@@ -201,7 +197,9 @@ export default function BuyersProfilePage() {
                           value={form.lastName}
                           onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                           disabled={!isEditing}
-                          className={`w-full px-4 py-3.5 rounded-xl border transition ${isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'}`}
+                          className={`w-full px-4 py-3.5 rounded-xl border transition ${
+                            isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'
+                          }`}
                         />
                       </div>
                     </div>
@@ -209,11 +207,15 @@ export default function BuyersProfilePage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
                       <input
-                        type="text"
+                        type="date"
                         value={form.dateOfBirth}
                         onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
                         disabled={!isEditing}
-                        className={`w-full px-4 py-3.5 rounded-xl border transition ${isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'}`}
+                        className={`w-full px-4 py-3.5 rounded-xl border transition ${
+                          isEditing
+                            ? 'border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                            : 'border-transparent bg-gray-50'
+                        }`}
                       />
                     </div>
 
@@ -224,7 +226,9 @@ export default function BuyersProfilePage() {
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
                         disabled={!isEditing}
-                        className={`w-full px-4 py-3.5 rounded-xl border transition ${isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'}`}
+                        className={`w-full px-4 py-3.5 rounded-xl border transition ${
+                          isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'
+                        }`}
                       />
                     </div>
 

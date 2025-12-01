@@ -1,15 +1,33 @@
 // app/profile/reviews/page.tsx
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import { Menu, Star, Verified } from 'lucide-react';
 import Header from '@/app/components/header/Header';
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
+import LeaveReviewModal from '@/app/components/modals/LeaveReviewModal';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import Image from 'next/image';
+
+interface SellerWithProduct {
+  sellerId: string;
+  productId: string;
+  storeName: string;
+  bannerUrl?: string;
+  isVerifiedSeller: boolean;
+  profilePictureUrl?: string;
+  productName: string;
+  productImage: string;
+}
 
 export default function ProfileReviewsPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'ready' | 'given'>('ready');
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<SellerWithProduct | null>(null);
+  const [reviewableSellers, setReviewableSellers] = useState<SellerWithProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -18,29 +36,66 @@ export default function ProfileReviewsPage() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  const readyForReview = [
-    { id: 1, name: "ABSOLUTE Stores", category: "Phones, Accessories", rating: 5.0 },
-    { id: 2, name: "ABSOLUTE Stores", category: "Phones, Accessories", rating: 4.9 },
-  ];
+  // Fetch real products → extract unique sellers with real productId
+  useEffect(() => {
+    const fetchReviewableSellers = async () => {
+      try {
+        setLoading(true);
 
-  const reviewsGiven = [
-    {
-      id: 3,
-      name: "ABSOLUTE Stores",
-      category: "Phones, Accessories",
-      rating: 5.0,
-      comment: "Trusted, honest and he delivers",
-      products: ["/images/blender1.png", "/images/blender2.png", "/images/blender3.png"],
-    },
-    {
-      id: 4,
-      name: "ABSOLUTE Stores",
-      category: "Phones, Accessories",
-      rating: 4.0,
-      comment: "Trusted, honest and he delivers",
-      products: ["/images/blender1.png", "/images/blender2.png", "/images/blender3.png"],
-    },
-  ];
+        // This tells TypeScript the shape of the response
+        const res = await fetchWithToken<{ products: any[] }>('/v1/products/search');
+
+        if (!res?.products || !Array.isArray(res.products)) {
+          setReviewableSellers([]);
+          return;
+        }
+
+        const uniqueSellers = new Map<string, SellerWithProduct>();
+
+        res.products.forEach((product: any) => {
+          const sellerId = product.seller?._id || product.vendor?._id;
+          const store = product.seller?.store || product.vendor?.store;
+
+          if (!sellerId || !store?.name) return;
+
+          if (!uniqueSellers.has(sellerId)) {
+            uniqueSellers.set(sellerId, {
+              sellerId,
+              productId: product._id,
+              storeName: store.name,
+              bannerUrl: store.bannerUrl || '',
+              isVerifiedSeller: product.seller?.isVerifiedSeller || product.vendor?.isVerifiedSeller || false,
+              profilePictureUrl: product.seller?.profilePicture?.url || product.vendor?.profilePicture?.url,
+              productName: product.name,
+              productImage: product.images?.[0] || '/placeholder.jpg',
+            });
+          }
+        });
+
+        setReviewableSellers(Array.from(uniqueSellers.values()));
+      } catch (err) {
+        console.error('Failed to load reviewable sellers:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviewableSellers();
+  }, []);
+
+  const openReviewModal = (item: SellerWithProduct) => {
+    setSelectedReview(item);
+    localStorage.setItem('sellerId', item.sellerId);
+    localStorage.setItem('currentProductId', item.productId); // Real productId!
+    setIsReviewModalOpen(true);
+  };
+
+  const closeReviewModal = () => {
+    setIsReviewModalOpen(false);
+    setSelectedReview(null);
+    localStorage.removeItem('sellerId');
+    localStorage.removeItem('currentProductId');
+  };
 
   return (
     <>
@@ -51,22 +106,15 @@ export default function ProfileReviewsPage() {
           <main className="flex-1 p-4 md:p-8">
             <div className="max-w-5xl mx-auto">
               {isMobile && (
-                <button
-                  onClick={() => setMenuOpen(true)}
-                  className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl p-3"
-                >
+                <button onClick={() => setMenuOpen(true)} className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl p-3">
                   <Menu className="w-5 h-5" />
                   Menu
                 </button>
               )}
 
               <div className="flex flex-col lg:flex-row gap-8">
-                {isMobile && (
-                  <BuyersProfileSidebar isMobile={true} isOpen={menuOpen} setIsOpen={setMenuOpen} />
-                )}
-                {!isMobile && (
-                  <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />
-                )}
+                {isMobile && <BuyersProfileSidebar isMobile={true} isOpen={menuOpen} setIsOpen={setMenuOpen} />}
+                {!isMobile && <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />}
 
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold text-gray-900 mb-6">Your Reviews</h1>
@@ -74,124 +122,96 @@ export default function ProfileReviewsPage() {
                   <div className="flex gap-8 border-b border-gray-200 mb-8">
                     <button
                       onClick={() => setActiveTab('ready')}
-                      className={`pb-4 text-sm font-medium transition ${
-                        activeTab === 'ready'
-                          ? 'text-black border-b-2 border-black'
-                          : 'text-gray-500 hover:text-gray-900'
-                      }`}
+                      className={`pb-4 text-sm font-medium transition ${activeTab === 'ready' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-gray-900'}`}
                     >
-                      Ready for review (14)
+                      Ready for review ({reviewableSellers.length})
                     </button>
                     <button
                       onClick={() => setActiveTab('given')}
-                      className={`pb-4 text-sm font-medium transition ${
-                        activeTab === 'given'
-                          ? 'text-black border-b-2 border-black'
-                          : 'text-gray-500 hover:text-gray-900'
-                      }`}
+                      className={`pb-4 text-sm font-medium transition ${activeTab === 'given' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-gray-900'}`}
                     >
-                      Reviews (2)
+                      Reviews given (0)
                     </button>
                   </div>
 
-                  {activeTab === 'ready' && readyForReview.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {readyForReview.map((store) => (
-                        <div key={store.id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                          <div className="flex items-start gap-4">
-                            <div className="w-16 h-16 bg-gray-200 rounded-full" />
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900 flex items-center gap-1">
-                                {store.name}
-                                <Verified className="w-4 h-4 fill-green-500 text-white" />
-                              </h3>
-                              <p className="text-xs text-gray-600 mt-1">{store.category}</p>
-                              <div className="flex items-center gap-1 mt-3">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`w-5 h-5 ${
-                                      i < Math.floor(store.rating)
-                                        ? 'fill-yellow-400 text-yellow-400'
-                                        : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          <button className="mt-6 w-full py-3 bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800">
-                            Leave a review
-                          </button>
+                  {activeTab === 'ready' && (
+                    <>
+                      {loading ? (
+                        <div className="text-center py-16">
+                          <div className="w-12 h-12 border-4 border-gray-300 border-t-slate-900 rounded-full animate-spin mx-auto" />
+                          <p className="mt-4 text-gray-600">Loading sellers...</p>
                         </div>
-                      ))}
-                    </div>
+                      ) : reviewableSellers.length === 0 ? (
+                        <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+                          <p className="text-gray-500 text-lg">No sellers to review yet</p>
+                          <p className="text-sm text-gray-400 mt-2">Browse products and come back!</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          {reviewableSellers.map((item) => (
+                            <div key={item.sellerId} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                              <div className="flex items-start gap-4">
+                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
+                                  {item.profilePictureUrl ? (
+                                    <Image src={item.profilePictureUrl} alt={item.storeName} width={64} height={64} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-300" />
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900 flex items-center gap-1.5">
+                                    {item.storeName}
+                                    {item.isVerifiedSeller && <Verified className="w-4 h-4 fill-green-500 text-white" />}
+                                  </h3>
+                                  <p className="text-xs text-gray-600 mt-1">You viewed: {item.productName}</p>
+                                  <div className="flex gap-1 mt-3">
+                                    {[1, 2, 3, 4, 5].map((i) => (
+                                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                                    ))}
+                                    <span className="text-sm text-gray-600 ml-1">(5.0)</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => openReviewModal(item)}
+                                className="mt-6 w-full py-3 bg-slate-900 text-white rounded-2xl font-medium hover:bg-slate-800 transition"
+                              >
+                                Leave a Review
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {activeTab === 'given' && (
-                    <div className="space-y-6">
-                      {reviewsGiven.map((review) => (
-                        <div key={review.id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                          <div className="flex items-start gap-4">
-                            <div className="w-16 h-16 bg-gray-200 rounded-full" />
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900 flex items-center gap-1">
-                                {review.name}
-                                <Verified className="w-4 h-4 fill-green-500 text-white" />
-                              </h3>
-                              <p className="text-xs text-gray-600">{review.category}</p>
-
-                              <div className="flex items-center gap-1 mt-3">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`w-5 h-5 ${
-                                      i < review.rating
-                                        ? 'fill-yellow-400 text-yellow-400'
-                                        : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-
-                              <p className="mt-4 text-gray-800 font-medium">{review.comment}</p>
-
-                              <div className="flex gap-3 mt-4">
-                                {review.products.map((src, i) => (
-                                  <div key={i} className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                                    <Image
-                                      src={src}
-                                      alt="product"
-                                      width={64}
-                                      height={64}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-
-                              <p className="text-xs text-gray-500 mt-4">Reviewed by you</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
+                      <p className="text-gray-500 text-lg">No reviews yet</p>
+                      <p className="text-sm text-gray-400 mt-2">Your reviews will appear here</p>
                     </div>
                   )}
-
-                  <div className="flex justify-center mt-12">
-                    <button className="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition">
-                      See more
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
           </main>
         </div>
       </div>
+
+      {/* Modal with REAL productId and sellerId */}
+      {selectedReview && (
+        <LeaveReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={closeReviewModal}
+          sellerName={selectedReview.storeName}
+          sellerVerified={selectedReview.isVerifiedSeller}
+          storeBannerUrl={selectedReview.bannerUrl}
+          // onSuccess={() => {
+          //   alert('Thank you! Your review has been submitted.');
+          //   closeReviewModal();
+          // }}
+        />
+      )}
     </>
   );
 }
