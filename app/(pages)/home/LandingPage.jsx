@@ -10,6 +10,7 @@ import NewProducts from '@/app/components/new-products/NewProducts';
 import LandingPageBanner from '@/app/components/banner/LandingPageBanner';
 import NewsLetter from '@/app/components/new-letter/NewsLetter';
 import Footer from '@/app/components/footer/Footer';
+// import PopularProducts from '@/app/components/popular/PopularProducts';
 
 export default function LandingPage() {
   return (
@@ -22,6 +23,7 @@ export default function LandingPage() {
           <FeaturedGrid />
           <CategoryGrid />
           <NewProducts />
+          {/* <PopularProducts /> */}
           <FeaturedGrid />
           <LandingPageBanner />
         </div>

@@ -1,36 +1,105 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Star, Verified } from 'lucide-react';
 import Link from 'next/link';
 
-export default function ProductCard() {
+interface ProductCardProps {
+  loading?: boolean;
+  product?: {
+    _id: string;
+    name: string;
+    price: number;
+    images: string[];
+    moq?: string;
+    verified?: boolean; 
+    seller?: {
+      fullName?: string;
+    };
+  };
+}
+
+// Mask seller name
+function maskName(name?: string) {
+  if (!name || name.trim() === "") return "AB******";
+
+  const clean = name.replace(/\s+/g, "");
+  if (clean.length <= 2) return clean;
+
+  return clean.slice(0, 2) + "*".repeat(clean.length - 2);
+}
+
+export default function ProductCard({ product, loading = false }: ProductCardProps) {
+  const [imgError, setImgError] = useState(false);
+
+  // Show shimmer when loading
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="aspect-square rounded-xl bg-gray-200"></div>
+
+        <div className="mt-4 space-y-3">
+          <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
+          <div className="w-1/2 h-4 bg-gray-200 rounded"></div>
+
+          <div className="flex justify-between mt-3">
+            <div className="w-20 h-3 bg-gray-200 rounded"></div>
+            <div className="w-12 h-3 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) return null;
+  const p = product;
+
+  const isVerifiedSeller = p.verified === true;
+
+  // Determine correct image
+  const mainImage = 
+    imgError || !p.images?.[0] || p.images[0].trim() === ""
+      ? "/svgs/logo.svg"
+      : p.images[0];
+
   return (
-    <>
-    <Link href={`/product/:id`}>
+    <Link href={`/product/${p._id}`}>
       <div className="overflow-hidden hover:cursor-pointer z-10">
-        <div className="aspect-square bg-gray-50 rounded-xl flex items-center justify-center p-8">
+        {/* Image */}
+        <div className="aspect-square bg-gray-200 rounded-xl flex items-center justify-center">
           <Image
-            src="/svgs/blender.svg"
-            alt="50kg Bag of Nigerian Rice"
+            src={mainImage}
+            alt={p.name}
             width={300}
             height={300}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover rounded-xl"
+            onError={() => setImgError(true)}
           />
         </div>
+
+        {/* Info */}
         <div className="mt-4 space-y-2">
           <h3 className="text-base font-medium text-gray-900 line-clamp-2">
-            50kg Bag of Nigerian Rice
+            {p.name}
           </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-gray-900">₦28,000</span>
-            <span className="text-sm text-gray-500 line-through">₦30,500</span>
 
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-gray-900">
+              ₦{p.price.toLocaleString()}
+            </span>
           </div>
+
           <div className="flex-col items-center justify-between">
-            <p className="text-xs text-gray-500">MOQ: 20 bags</p>
+            <p className="text-xs text-gray-500">MOQ: {p.moq || "N/A"}</p>
+
             <div className="flex items-center justify-between mt-3">
-              <span className="flex text-xs text-gray-400">
-                AB***** <Verified className="w-4 h-4 fill-green-500 text-white"  />
+              <span className="flex text-xs text-gray-400 items-center gap-1">
+                {maskName(p.seller?.fullName)}
+
+                {isVerifiedSeller && (
+                  <Verified className="w-4 h-4 text-green-500" />
+                )}
               </span>
 
               <div className="flex items-center gap-1">
@@ -43,6 +112,5 @@ export default function ProductCard() {
         </div>
       </div>
     </Link>
-    </>
   );
 }

@@ -194,7 +194,7 @@ export default function Header() {
               >
                 <div className="w-8 h-8 sm:w-9 sm:h-9 relative flex-shrink-0">
                   <Image
-                    src={user.profilePicture?.url || "/svgs/profile-image.jpg"}
+                    src={user.profilePicture?.url || "/svgs/logo.svg"}
                     alt="User"
                     fill
                     className="rounded-full object-cover"

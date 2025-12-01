@@ -301,7 +301,6 @@ export default function ProductDetailsPage() {
           router.push("/store/products");
         }}
         title="Product deleted successfully"
-        message="The product has been removed from your store."
       />
     </>
   );

@@ -5,6 +5,7 @@ import { ChevronDown, LogOut, Settings, Bell } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import NotificationsModal from "../modals/NotificationsModal";
+import { fetchWithToken } from "@/app/utils/fetchWithToken";
 
 const pathToTitle: Record<string, string> = {
   "/store/dashboard": "Dashboard",
@@ -16,6 +17,13 @@ const pathToTitle: Record<string, string> = {
   "/store/settings": "Settings",
 };
 
+interface UserProfile {
+  fullName: string;
+  profilePicture?: {
+    url: string;
+  };
+}
+
 export default function DashboardHeader() {
   const pathname = usePathname();
   const router = useRouter();
@@ -23,15 +31,28 @@ export default function DashboardHeader() {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [sellerName, setSellerName] = useState("Seller");
+  const [user, setUser] = useState<UserProfile | null>(null);
 
   const profileRef = useRef<HTMLDivElement>(null);
 
+  // Fetch user profile
   useEffect(() => {
-    const name = localStorage.getItem("sellerName") || localStorage.getItem("storeName");
-    if (name) setSellerName(name);
+    const token = localStorage.getItem("token");
+    if (token) {
+      loadUserProfile();
+    }
   }, []);
 
+  const loadUserProfile = async () => {
+    try {
+      const res = await fetchWithToken<{ user: UserProfile }>("/auth/profile");
+      if (res?.user) setUser(res.user);
+    } catch (err) {
+      console.error("Failed to fetch user profile:", err);
+    }
+  };
+
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
@@ -51,9 +72,8 @@ export default function DashboardHeader() {
     <>
       <header className="md:ml-64 bg-white shadow-sm sticky top-0 z-20 border-b border-gray-200">
         <div className="flex items-center justify-between px-4 py-3 md:px-6">
-          {/* Left: Logo (mobile only) + Title (desktop only) */}
+          {/* Left: Logo (mobile) + Title (desktop) */}
           <div className="flex items-center gap-3">
-            {/* Logo - visible only on mobile */}
             <div className="md:hidden">
               <Image
                 src="/svgs/wholesale-ng-logo.png"
@@ -64,7 +84,6 @@ export default function DashboardHeader() {
               />
             </div>
 
-            {/* Title - visible only on desktop */}
             <h1 className="hidden md:block text-lg md:text-xl font-semibold text-gray-900 truncate">
               {title}
             </h1>
@@ -81,23 +100,26 @@ export default function DashboardHeader() {
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
-            {/* Profile Dropdown - hidden on mobile, visible on md+ */}
+            {/* Profile Dropdown */}
             <div className="hidden md:block relative" ref={profileRef}>
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 rounded-lg p-2 hover:bg-gray-100 transition"
               >
-                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center overflow-hidden">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-green-100 flex items-center justify-center overflow-hidden relative flex-shrink-0">
                   <Image
-                    src="/svgs/wholesale-ng-logo.png"
-                    alt="Store"
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-contain"
+                    src={user?.profilePicture?.url || "/svgs/profile-image.jpg"}
+                    alt="User"
+                    fill
+                    className="object-cover"
                   />
                 </div>
                 <span className="text-sm font-medium text-gray-700 max-w-[140px] truncate">
-                  {sellerName}
+                  {user
+                    ? user.fullName.split(" ")[0].length > 12
+                      ? user.fullName.split(" ")[0].slice(0, 12) + "..."
+                      : user.fullName.split(" ")[0]
+                    : "User"}
                 </span>
                 <ChevronDown className="w-4 h-4 text-gray-600" />
               </button>
