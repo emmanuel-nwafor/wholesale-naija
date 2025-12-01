@@ -128,18 +128,6 @@ export default function SellerProfilePage() {
     .slice(0, 2)
     .toUpperCase() || "JJ";
 
-  // if (loading) {
-  //   return (
-  //     <div className="flex min-h-screen">
-  //       <StoreSidebar />
-  //       <div className="flex-1 flex flex-col">
-  //         <DashboardHeader />
-  //         <main className="flex-1 p-8 text-center text-gray-500">Loading profile...</main>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="flex min-h-screen">
       <StoreSidebar />
@@ -308,7 +296,6 @@ export default function SellerProfilePage() {
         show={showSuccess}
         onClose={() => setShowSuccess(false)}
         title="Profile Updated!"
-        message="Your profile has been updated successfully."
       />
     </div>
   );

@@ -173,14 +173,16 @@ export default function Header() {
                   height={40}
                 />
               </button>
-              <div className="flex items-center gap-2 bg-gray-700 text-white px-3 py-2 rounded-2xl font-semibold">
+              <div className="flex items-center gap-2 bg-gray-700 text-white px-3 py-2  rounded-2xl font-semibold">
                 <Image 
                   src={`/svgs/coin-1.svg`}
                   alt="message"
                   width={30}
                   height={30}
                 />
-                115 Coins
+                <p className="text-xs">
+                  115 Coins
+                </p>
               </div>
               <button
                 onClick={() => {
