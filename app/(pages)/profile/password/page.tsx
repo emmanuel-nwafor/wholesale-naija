@@ -1,29 +1,61 @@
-// app/profile/password/page.tsx
 "use client";
-import React, { useState, useEffect } from 'react';
-import { Menu, Eye, EyeOff } from 'lucide-react';
-import Header from '@/app/components/header/Header';
-import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
 
-export default function ProfilePasswordPage() {
+import React, { useState, useEffect } from "react";
+import { Menu } from "lucide-react";
+import Header from "@/app/components/header/Header";
+import BuyersProfileSidebar from "@/app/components/sidebar/BuyersProfileSidebar";
+import ChangePasswordModal from "@/app/components/auth/modals/ChangePasswordModal";
+import { fetchWithToken } from "@/app/utils/fetchWithToken";
+import CarouselBanner from "@/app/components/carousels/CarouselBanner";
+import DynamicHeader from "@/app/components/header/DynamicHeader";
+
+interface UserProfile {
+  fullName: string;
+  email: string;
+  phone: string;
+  store?: {
+    name: string;
+    contactPhone?: string;
+  };
+}
+
+export default function BuyersProfilePasswordPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showOld, setShowOld] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Fetch profile data from the same API as sellers
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchWithToken<{ user: UserProfile }>("/auth/profile");
+      setProfile(data.user);
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProfile();
   }, []);
 
   return (
     <>
       <Header />
+      <DynamicHeader />
 
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex">
         <div className="flex-1 flex flex-col">
           <main className="flex-1 p-4 md:p-8">
             <div className="max-w-5xl mx-auto">
@@ -55,78 +87,23 @@ export default function ProfilePasswordPage() {
 
                 {/* Main Content */}
                 <div className="flex-1 rounded-3xl p-6 md:p-8 bg-white">
-                  <h1 className="text-xl font-bold mb-8">Change Password</h1>
+                  <h1 className="text-xl font-bold mb-8">Password Setting</h1>
 
-                  <div className="space-y-6 max-w-lg">
-                    {/* Current Password */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Current Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showOld ? 'text' : 'password'}
-                          placeholder="••••••••"
-                          className="w-full px-5 py-4 pr-14 border border-gray-200 rounded-xl outline-none text-base placeholder:text-gray-400 focus:border-gray-400"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowOld(!showOld)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                        >
-                          {showOld ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
-                      </div>
-                    </div>
+                  {/* Display profile info */}
+                  <div className="space-y-4 max-w-lg">
+                    <p className="text-gray-600">
+                      To keep your account secure, you can change your password anytime using the verification code sent to your email.
+                    </p>
+                  </div>
 
-                    {/* New Password */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        New Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showNew ? 'text' : 'password'}
-                          placeholder="••••••••"
-                          className="w-full px-5 py-4 pr-14 border border-gray-200 rounded-xl outline-none text-base placeholder:text-gray-400 focus:border-gray-400"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowNew(!showNew)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                        >
-                          {showNew ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Confirm New Password */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Confirm New Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showConfirm ? 'text' : 'password'}
-                          placeholder="••••••••"
-                          className="w-full px-5 py-4 pr-14 border border-gray-200 rounded-xl outline-none text-base placeholder:text-gray-400 focus:border-gray-400"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirm(!showConfirm)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                        >
-                          {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="flex justify-end pt-6">
-                      <button className="px-8 py-4 bg-slate-900 text-white rounded-xl hover:cursor-pointer font-medium hover:bg-slate-800 transition">
-                        Save Changes
-                      </button>
-                    </div>
+                  {/* Change Password Button */}
+                  <div className="flex justify-left pt-8">
+                    <button
+                      onClick={() => setShowChangePasswordModal(true)}
+                      className="px-8 py-4 bg-slate-900 text-white rounded-xl hover:cursor-pointer font-medium hover:bg-slate-800 transition"
+                    >
+                      Change Password
+                    </button>
                   </div>
                 </div>
               </div>
@@ -134,6 +111,13 @@ export default function ProfilePasswordPage() {
           </main>
         </div>
       </div>
+        <CarouselBanner />
+
+      {/* Modal */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
     </>
   );
 }

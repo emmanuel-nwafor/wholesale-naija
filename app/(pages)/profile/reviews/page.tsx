@@ -8,6 +8,7 @@ import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar'
 import LeaveReviewModal from '@/app/components/modals/LeaveReviewModal';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import Image from 'next/image';
+import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 
 interface Seller {
   _id: string;
@@ -132,7 +133,7 @@ export default function ProfileReviewsPage() {
     <>
       <Header />
 
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen">
         <div className="flex-1 flex flex-col">
           <main className="flex-1 p-4 md:p-8">
             <div className="max-w-5xl mx-auto">
@@ -180,8 +181,8 @@ export default function ProfileReviewsPage() {
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                           {allSellers.map((seller) => (
-                            <div key={seller._id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-                              <div className="flex items-start gap-4">
+                            <div key={seller._id} className="bg-white rounded-3xl p-6 border border-gray-100">
+                              <div className="flex flex-col items-start gap-4">
                                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
                                   {seller.profilePicture?.url ? (
                                     <Image src={seller.profilePicture.url} alt={seller.store.name} width={64} height={64} className="w-full h-full object-cover" />
@@ -205,7 +206,7 @@ export default function ProfileReviewsPage() {
                               </div>
                               <button
                                 onClick={() => openReviewModal(seller)}
-                                className="mt-6 w-full py-3 bg-slate-900 text-white rounded-2xl font-medium hover:bg-slate-800 transition"
+                                className="mt-6 w-full py-3 hover:cursor-pointer bg-slate-900 text-white rounded-2xl font-medium hover:bg-slate-800 transition"
                               >
                                 Leave a Review
                               </button>
@@ -234,7 +235,7 @@ export default function ProfileReviewsPage() {
                           {givenReviews.map((review) => (
                             <div key={review._id} className="bg-white rounded-3xl p-6 border border-gray-100">
                               <div className="flex items-start gap-4">
-                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
+                                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white">
                                   {review.sellerId.profilePicture?.url ? (
                                     <Image src={review.sellerId.profilePicture.url} alt={review.sellerId.store.name} width={64} height={64} className="w-full h-full object-cover" />
                                   ) : (
@@ -284,6 +285,7 @@ export default function ProfileReviewsPage() {
           </main>
         </div>
       </div>
+        <CarouselBanner />
 
       {/* Modal */}
       {selectedSeller && (

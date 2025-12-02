@@ -1,10 +1,12 @@
 // app/components/sidebar/BuyersProfileSidebar.tsx
 "use client";
+
 import React, { useState } from 'react';
 import { Bell, Lock, Trash2, LogOut, User, X, MapPin, Star } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LogoutModal from '@/app/components/modals/LogoutModal';
+import DeleteModal from '@/app/components/modals/DeleteModal'; // Import the new modal
 
 interface ProfileSidebarProps {
   isMobile: boolean;
@@ -15,6 +17,7 @@ interface ProfileSidebarProps {
 export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: ProfileSidebarProps) {
   const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // New state
 
   const items = [
     { icon: User, label: "Profile Info", href: "/profile" },
@@ -22,7 +25,7 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
     { icon: MapPin, label: "Country/Region", href: "/profile/country-region" },
     { icon: Bell, label: "Notification Settings", href: "/profile/notifications" },
     { icon: Lock, label: "Password Settings", href: "/profile/password" },
-    { icon: Trash2, label: "Delete Account", href: "/profile/delete", danger: true },
+    // Delete Account now triggers modal instead of direct navigation
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -33,8 +36,22 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
     if (isMobile) setIsOpen(false);
   };
 
+  const handleDeleteAccountClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowDeleteModal(true);
+    if (isMobile) setIsOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    // Replace with actual delete logic or redirect
+    console.log("Account deletion confirmed");
+    // Example: router.push('/profile/delete') or API call
+    setShowDeleteModal(false);
+  };
+
   const content = (
     <nav className="space-y-1">
+      {/* Regular menu items */}
       {items.map((item) => {
         const active = isActive(item.href);
         return (
@@ -45,8 +62,6 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
               active
                 ? 'bg-gray-100 text-gray-900'
-                : item.danger
-                ? 'text-red-600 hover:bg-red-50'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -56,10 +71,19 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
         );
       })}
 
-      {/* Logout Item */}
+      {/* Delete Account - Now opens modal */}
+      <button
+        onClick={handleDeleteAccountClick}
+        className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+      >
+        <Trash2 className="w-5 h-5" />
+        Delete Account
+      </button>
+
+      {/* Logout */}
       <button
         onClick={handleLogoutClick}
-        className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+        className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all mt-4"
       >
         <LogOut className="w-5 h-5" />
         Log Out
@@ -71,6 +95,7 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
     return (
       <>
         {isOpen && <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setIsOpen(false)} />}
+        
         <div
           className={`fixed left-0 top-0 h-full w-72 bg-white shadow-2xl z-50 transition-transform duration-300 ease-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -85,7 +110,16 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
           <div className="p-4">{content}</div>
         </div>
 
+        {/* Modals */}
         <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
+        <DeleteModal
+          show={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleConfirmDelete}
+          title="Delete Your Account?"
+          message="This will permanently delete your account and all associated data. This action cannot be undone."
+          loading={false}
+        />
       </>
     );
   }
@@ -93,7 +127,16 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
   return (
     <div className="bg-white rounded-3xl p-6">
       {content}
+
       <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
+      <DeleteModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Your Account?"
+        message="This will permanently delete your account and all associated data. This action cannot be undone."
+        loading={false}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar'
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
 import Spinner from '@/app/components/spinner/Spinner';
+import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 
 export default function BuyersProfilePage() {
   const [isMobile, setIsMobile] = useState(false);
@@ -106,7 +107,7 @@ export default function BuyersProfilePage() {
   return (
     <>
       <Header />
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen">
         <div className="flex-1 flex flex-col">
           <main className="flex-1 p-4 md:p-8">
             <div className="max-w-5xl mx-auto">
@@ -266,6 +267,7 @@ export default function BuyersProfilePage() {
               </div>
             </div>
           </main>
+            <CarouselBanner />
         </div>
 
         <OkaySuccessModal

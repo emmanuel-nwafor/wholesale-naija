@@ -132,7 +132,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full px-5 py-4 bg-gray-50 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-5 py-4 outline-none bg-gray-50 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                   autoFocus
                 />
                 <button

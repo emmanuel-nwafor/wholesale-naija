@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, Bell, Mail } from 'lucide-react';
 import Header from '@/app/components/header/Header';
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
+import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 
 export default function ProfileNotifications() {
   const [isMobile, setIsMobile] = useState(false);
@@ -22,7 +23,7 @@ export default function ProfileNotifications() {
     <>
       <Header />
 
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex">
         <div className="flex-1 flex flex-col">
           <main className="flex-1 p-4 md:p-8">
             <div className="max-w-5xl mx-auto">
@@ -113,6 +114,7 @@ export default function ProfileNotifications() {
           </main>
         </div>
       </div>
+        <CarouselBanner />
     </>
   );
 }

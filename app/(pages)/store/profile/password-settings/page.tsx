@@ -7,7 +7,7 @@ import DashboardHeader from "@/app/components/header/DashboardHeader";
 import ProfileSidebar from "@/app/components/sidebar/SellersProfileSidebar";
 import ChangePasswordModal from "@/app/components/auth/modals/ChangePasswordModal";
 
-export default function ProfilePasswordSetting() {
+export default function SellersProfilePasswordSetting() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);

@@ -59,7 +59,7 @@ export default function ProductCard({ product, loading = false }: ProductCardPro
   // Determine correct image
   const mainImage =
     imgError || !p.images?.[0] || p.images[0].trim() === ""
-      ? "https://i.pinimg.com/736x/51/5f/c5/515fc584baa97d0aae930bc6161a864f.jpg"
+      ? "https://i.pinimg.com/736x/75/92/1a/75921a9653409e76f63f904530687fe0.jpg"
       : p.images[0];
 
   // Fetch seller reviews & average rating
