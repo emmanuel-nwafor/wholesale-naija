@@ -7,6 +7,7 @@ import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
 import Spinner from '@/app/components/spinner/Spinner';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
+import DynamicHeader from '@/app/components/header/DynamicHeader';
 
 export default function BuyersProfilePage() {
   const [isMobile, setIsMobile] = useState(false);
@@ -107,6 +108,7 @@ export default function BuyersProfilePage() {
   return (
     <>
       <Header />
+      <DynamicHeader />
       <div className="flex min-h-screen">
         <div className="flex-1 flex flex-col">
           <main className="flex-1 p-4 md:p-8">

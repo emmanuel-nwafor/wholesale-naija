@@ -5,6 +5,7 @@ import { Menu, Bell, Mail } from 'lucide-react';
 import Header from '@/app/components/header/Header';
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
+import DynamicHeader from '@/app/components/header/DynamicHeader';
 
 export default function ProfileNotifications() {
   const [isMobile, setIsMobile] = useState(false);
@@ -22,6 +23,7 @@ export default function ProfileNotifications() {
   return (
     <>
       <Header />
+      <DynamicHeader />
 
       <div className="flex">
         <div className="flex-1 flex flex-col">
