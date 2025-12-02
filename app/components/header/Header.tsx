@@ -40,7 +40,6 @@ interface UserProfile {
 
 export default function Header() {
   const router = useRouter();
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Signup states
@@ -59,35 +58,54 @@ export default function Header() {
 
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
-
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  // Wallet balance state (for all users)
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [balanceLoading, setBalanceLoading] = useState<boolean>(true);
 
+  const inputRef = useRef<HTMLInputElement>(null);
   const filtered = suggestions.filter((s) =>
     s.toLowerCase().includes(query.toLowerCase())
   );
 
-  // Load token and user profile
+  // Load token and user profile on mount
   useEffect(() => {
     const t = localStorage.getItem('token');
     setToken(t);
-
     if (t) {
-      loadUserProfile(t);
+      loadUserProfile();
+    } else {
+      setBalanceLoading(false);
     }
   }, []);
 
-  const loadUserProfile = async (authToken: string) => {
+  const loadUserProfile = async () => {
     try {
       const res = await fetchWithToken<{ user: UserProfile }>('/auth/profile');
-
       if (res?.user) {
         setUser(res.user);
+        fetchWalletBalance(); // Fetch balance after user is confirmed
       }
     } catch (err) {
       console.error('Failed to fetch user profile:', err);
+      setBalanceLoading(false);
+    }
+  };
+
+  const fetchWalletBalance = async () => {
+    try {
+      setBalanceLoading(true);
+      const res = await fetchWithToken<{ wallet: { balance: number } }>('/wallet');
+
+      if (res?.wallet?.balance !== undefined) {
+        setWalletBalance(res.wallet.balance);
+      }
+    } catch (err) {
+      console.error('Failed to fetch wallet balance:', err);
+    } finally {
+      setBalanceLoading(false);
     }
   };
 
@@ -112,7 +130,7 @@ export default function Header() {
   return (
     <>
       {/* Hero Banner */}
-      <div className="bg-[url('https://res.cloudinary.com/dqtjja88b/image/upload/v1760883994/3680b6919f2237dd1d7bcfe119a8522af6738e96_2_gtqmc2.jpg')] bg-cover bg-center h-24 sm:h-28 md:h-32 relative overflow-hidden">
+      <div className="bg-[url('https://res.cloudinary.com/dqtjja88b/image/upload/v1760883994/3680b6919f2237dd1d7bcfe119a8522af6738e96_2_gtqmc2.jpg')] bg-cover bg-center h-20 sm:h-20 md:h-24 relative overflow-hidden">
         <div className="relative z-10 flex items-center justify-between px-2 sm:px-4 md:px-10 h-full">
           <Link href="/" className="flex items-center gap-3">
             <Image
@@ -123,26 +141,14 @@ export default function Header() {
               className="h-12 sm:h-14 md:h-16 w-auto"
             />
           </Link>
-
           <div className="hidden md:flex space-x-2">
             <button>
-              <Image
-                src="/svgs/playstore.svg"
-                alt="play store"
-                height={130}
-                width={130}
-              />
+              <Image src="/svgs/playstore.svg" alt="play store" height={130} width={130} />
             </button>
             <button>
-              <Image
-                src="/svgs/apple.svg"
-                alt="apple store"
-                height={130}
-                width={130}
-              />
+              <Image src="/svgs/apple.svg" alt="apple store" height={130} width={130} />
             </button>
           </div>
-
           <button
             onClick={() => setSidebarOpen(true)}
             className="md:hidden p-1 sm:p-2 text-white"
@@ -169,41 +175,24 @@ export default function Header() {
         <div className="flex gap-3 w-full md:w-auto items-center">
           {user ? (
             <>
-              <button
-                onClick={() => {
-                  router.push('');
-                }}
-                className="p-2 hover:cursor-pointer text-white hover:text-gray-300"
-              >
-                <Image
-                  src={`/svgs/heart.svg`}
-                  alt="heart"
-                  width={40}
-                  height={40}
-                />
+              <button onClick={() => router.push('')} className="p-2 hover:cursor-pointer text-white hover:text-gray-300">
+                <Image src="/svgs/heart.svg" alt="heart" width={40} height={40} />
               </button>
-              <button
-                onClick={() => {
-                  router.push('/messages');
-                }}
-                className="p-2 hover:cursor-pointer text-white hover:text-gray-300"
-              >
-                <Image
-                  src={`/svgs/message.svg`}
-                  alt="message"
-                  width={40}
-                  height={40}
-                />
+
+              <button onClick={() => router.push('/messages')} className="p-2 hover:cursor-pointer text-white hover:text-gray-300">
+                <Image src="/svgs/message.svg" alt="message" width={40} height={40} />
               </button>
-              <div className="flex items-center gap-2 bg-gray-700 text-white px-3 py-2  rounded-2xl font-semibold">
-                <Image
-                  src={`/svgs/coin-1.svg`}
-                  alt="message"
-                  width={30}
-                  height={30}
-                />
-                <p className="text-xs">115 Coins</p>
+
+              {/* Real Wallet Balance - Shown for ALL logged-in users */}
+              <div className="flex items-center gap-2 bg-gray-700 text-white px-3 py-2 rounded-2xl font-semibold">
+                <Image src="/svgs/coin-1.svg" alt="coin" width={30} height={30} />
+                {balanceLoading ? (
+                  <p className="text-xs animate-pulse">...</p>
+                ) : (
+                  <p className="text-xs">{walletBalance} Coins</p>
+                )}
               </div>
+
               <button
                 onClick={() => {
                   if (user?.role === 'seller') {
@@ -222,13 +211,9 @@ export default function Header() {
                     className="rounded-full object-cover"
                   />
                 </div>
-
                 <span className="text-sm sm:text-base text-white truncate max-w-[120px]">
-                  {user.fullName.length > 15
-                    ? user.fullName.slice(0, 15) + '...'
-                    : user.fullName}
+                  {user.fullName.length > 15 ? user.fullName.slice(0, 15) + '...' : user.fullName}
                 </span>
-
                 <ChevronRight color="white" />
               </button>
             </>
@@ -240,7 +225,6 @@ export default function Header() {
               >
                 Login
               </button>
-
               <button
                 onClick={openEmailModal}
                 className="flex-1 md:flex-initial bg-white text-slate-800 px-6 py-3 rounded-xl font-semibold hover:cursor-pointer hover:bg-gray-100 transition"
@@ -268,7 +252,6 @@ export default function Header() {
             }}
           />
         )}
-
         {signupChooseModalOpen && (
           <ChooseModal
             key="signup-choose-modal"
@@ -287,7 +270,6 @@ export default function Header() {
             onOpenLogin={() => {}}
           />
         )}
-
         {loginEmailOpen && (
           <LoginWithEmailModal
             key="login-email-modal"
@@ -295,7 +277,6 @@ export default function Header() {
             onClose={() => setLoginEmailOpen(false)}
           />
         )}
-
         {signupEmailOpen && (
           <SignupWithEmailModal
             key="signup-email-modal"
@@ -304,7 +285,6 @@ export default function Header() {
             onContinue={handleContinueWithEmail}
           />
         )}
-
         {otpModalOpen && (
           <VerifyPhoneOrEmailOtpModal
             key="otp-modal"
@@ -315,7 +295,6 @@ export default function Header() {
             onVerified={handleOtpVerified}
           />
         )}
-
         {completeProfileOpen && (
           <CompleteProfileModal
             key="complete-profile-modal"
@@ -324,7 +303,6 @@ export default function Header() {
             onOpenLoginModal={() => setLoginEmailOpen(true)}
           />
         )}
-
         {loginAlertOpen && (
           <LoginAlertModal
             key="login-alert-modal"

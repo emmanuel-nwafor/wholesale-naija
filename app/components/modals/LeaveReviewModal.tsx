@@ -181,7 +181,7 @@ export default function LeaveReviewModal({
                     className="transition-transform hover:scale-110 active:scale-95"
                   >
                     <Star
-                      className={`w-14 h-14 drop-shadow-md transition-all ${
+                      className={`w-14 h-14 drop-shadow-md transition-all ${ 
                         star <= (hoveredStar || rating)
                           ? 'fill-yellow-400 text-yellow-400'
                           : 'text-gray-300'
