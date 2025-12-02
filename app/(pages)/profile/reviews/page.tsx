@@ -9,6 +9,7 @@ import LeaveReviewModal from '@/app/components/modals/LeaveReviewModal';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import Image from 'next/image';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
+import DynamicHeader from '@/app/components/header/DynamicHeader';
 
 interface Seller {
   _id: string;
@@ -132,6 +133,7 @@ export default function ProfileReviewsPage() {
   return (
     <>
       <Header />
+      <DynamicHeader />
 
       <div className="flex min-h-screen">
         <div className="flex-1 flex flex-col">
