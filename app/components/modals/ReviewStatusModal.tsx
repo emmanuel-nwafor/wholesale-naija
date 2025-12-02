@@ -1,10 +1,10 @@
 // components/modals/ReviewStatusModal.tsx
-"use client";
-import React from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
+'use client';
+import React from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
-type Status = "review" | "approved" | "rejected";
+type Status = 'review' | 'approved' | 'rejected';
 
 interface ReviewStatusModalProps {
   isOpen: boolean;
@@ -28,34 +28,34 @@ interface StatusConfig {
 
 const statusConfig: Record<Status, StatusConfig> = {
   review: {
-    svg: "/svgs/modal-time.svg",
-    title: "Under Review",
+    svg: '/svgs/modal-time.svg',
+    title: 'Under Review',
     message: (name) => `Your "${name}" is pending approval.`,
     subtext: "We'll notify you once it's live.",
-    buttonText: "Close",
-    buttonVariant: "bg-slate-900 text-white hover:bg-slate-800"
+    buttonText: 'Close',
+    buttonVariant: 'bg-slate-900 text-white hover:bg-slate-800',
   },
 
   approved: {
-    svg: "/svgs/modal-live.svg",
-    title: "Approved!",
+    svg: '/svgs/modal-live.svg',
+    title: 'Approved!',
     message: (name) => `Your "${name}" is now live.`,
-    subtext: "You can view it in your store.",
-    buttonText: "Close",
-    buttonVariant: "bg-slate-900 text-white hover:bg-slate-800"
+    subtext: 'You can view it in your store.',
+    buttonText: 'Close',
+    buttonVariant: 'bg-slate-900 text-white hover:bg-slate-800',
   },
 
   rejected: {
-    svg: "/svgs/modal-rejected.svg",
-    title: "Rejected",
+    svg: '/svgs/modal-rejected.svg',
+    title: 'Rejected',
     message: (name) => `Your "${name}" was not approved.`,
-    subtext: (reason) => (reason ? `Reason: ${reason}` : ""),
-    buttonText: "Close",
+    subtext: (reason) => (reason ? `Reason: ${reason}` : ''),
+    buttonText: 'Close',
     buttonVariant:
-      "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50",
-    secondaryButton: "Edit & Resubmit",
-    secondaryVariant: "bg-slate-900 text-white hover:bg-slate-800"
-  }
+      'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
+    secondaryButton: 'Edit & Resubmit',
+    secondaryVariant: 'bg-slate-900 text-white hover:bg-slate-800',
+  },
 };
 
 export default function ReviewStatusModal({
@@ -64,7 +64,7 @@ export default function ReviewStatusModal({
   onEdit,
   status,
   productName,
-  reason
+  reason,
 }: ReviewStatusModalProps) {
   if (!isOpen) return null;
 
@@ -111,12 +111,12 @@ export default function ReviewStatusModal({
           {config.subtext && (
             <p
               className={`text-sm ${
-                status === "rejected"
-                  ? "text-red-600 font-medium"
-                  : "text-gray-500"
+                status === 'rejected'
+                  ? 'text-red-600 font-medium'
+                  : 'text-gray-500'
               }`}
             >
-              {typeof config.subtext === "function"
+              {typeof config.subtext === 'function'
                 ? config.subtext(reason)
                 : config.subtext}
             </p>

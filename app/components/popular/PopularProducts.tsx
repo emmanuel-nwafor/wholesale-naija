@@ -27,9 +27,12 @@ export default function PopularProducts() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/popular`, {
-          method: 'GET',
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/popular`,
+          {
+            method: 'GET',
+          }
+        );
 
         const data = await res.json();
 

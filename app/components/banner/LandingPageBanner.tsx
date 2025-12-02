@@ -10,7 +10,8 @@ export default function LandingPageBanner() {
             Connecting Buyers & Sellers Seamlessly
           </h2>
           <p className="text-green-100 text-center md:text-left">
-            Whether you are here to buy or sell, our platform makes everything easy, secure, and fast.
+            Whether you are here to buy or sell, our platform makes everything
+            easy, secure, and fast.
           </p>
           <div className="flex gap-4 justify-center md:justify-start">
             <Image

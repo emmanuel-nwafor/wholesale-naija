@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
-import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
-import DashboardHeader from "@/app/components/header/DashboardHeader";
-import ProfileSidebar from "@/app/components/sidebar/SellersProfileSidebar";
-import ChangePasswordModal from "@/app/components/auth/modals/ChangePasswordModal";
+import React, { useState, useEffect } from 'react';
+import { Menu } from 'lucide-react';
+import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
+import DashboardHeader from '@/app/components/header/DashboardHeader';
+import ProfileSidebar from '@/app/components/sidebar/SellersProfileSidebar';
+import ChangePasswordModal from '@/app/components/auth/modals/ChangePasswordModal';
 
 export default function SellersProfilePasswordSetting() {
   const [isMobile, setIsMobile] = useState(false);
@@ -15,8 +15,8 @@ export default function SellersProfilePasswordSetting() {
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
   return (
@@ -40,7 +40,11 @@ export default function SellersProfilePasswordSetting() {
 
               <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                 <div className="lg:w-64">
-                  <ProfileSidebar isMobile={isMobile} isOpen={menuOpen} setIsOpen={setMenuOpen} />
+                  <ProfileSidebar
+                    isMobile={isMobile}
+                    isOpen={menuOpen}
+                    setIsOpen={setMenuOpen}
+                  />
                 </div>
 
                 {/* Main Card */}
@@ -49,7 +53,8 @@ export default function SellersProfilePasswordSetting() {
 
                   <div className="max-w-md">
                     <p className="text-gray-600 mb-8">
-                      To keep your account secure, you can change your password anytime using the verification code sent to your email.
+                      To keep your account secure, you can change your password
+                      anytime using the verification code sent to your email.
                     </p>
 
                     <button

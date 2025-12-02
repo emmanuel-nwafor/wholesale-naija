@@ -12,7 +12,12 @@ interface ActionsModalProps {
   onDeleteClick: () => void;
 }
 
-export default function StoresActionsModal({ show, onClose, isMobileOrTablet, onDeleteClick }: ActionsModalProps) {
+export default function StoresActionsModal({
+  show,
+  onClose,
+  isMobileOrTablet,
+  onDeleteClick,
+}: ActionsModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -34,7 +39,7 @@ export default function StoresActionsModal({ show, onClose, isMobileOrTablet, on
             initial={{ opacity: 0, scale: 0.9, y: isMobileOrTablet ? 50 : 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: isMobileOrTablet ? 50 : 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className={`fixed z-50 ${
               isMobileOrTablet
                 ? 'bottom-0 left-0 right-0 max-w-md mx-auto rounded-t-3xl'

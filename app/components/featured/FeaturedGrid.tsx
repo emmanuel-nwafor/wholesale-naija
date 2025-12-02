@@ -27,7 +27,9 @@ export default function FeaturedGrid() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/featured`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/featured`
+        );
         const data = await res.json();
 
         if (data?.products) {
@@ -71,9 +73,7 @@ export default function FeaturedGrid() {
 
         {/* Empty State */}
         {!loading && products.length === 0 && (
-          <p className="text-gray-600 py-10">
-            No featured products available.
-          </p>
+          <p className="text-gray-600 py-10">No featured products available.</p>
         )}
 
         {/* Product Grid */}

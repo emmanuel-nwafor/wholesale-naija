@@ -1,12 +1,21 @@
 // app/components/sidebar/SellersProfileSidebar.tsx
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Globe, Bell, Lock, Trash2, LogOut, User, X, Store } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import React, { useState } from 'react';
+import {
+  Globe,
+  Bell,
+  Lock,
+  Trash2,
+  LogOut,
+  User,
+  X,
+  Store,
+} from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 
-import DeleteModal from "@/app/components/modals/DeleteModal";
-import DeleteAccountPasswordModal from "@/app/components/auth/modals/DeleteAccountPasswordModal";
+import DeleteModal from '@/app/components/modals/DeleteModal';
+import DeleteAccountPasswordModal from '@/app/components/auth/modals/DeleteAccountPasswordModal';
 
 interface ProfileSidebarProps {
   isMobile: boolean;
@@ -14,7 +23,11 @@ interface ProfileSidebarProps {
   setIsOpen: (v: boolean) => void;
 }
 
-export default function SellersProfileSidebar({ isMobile, isOpen, setIsOpen }: ProfileSidebarProps) {
+export default function SellersProfileSidebar({
+  isMobile,
+  isOpen,
+  setIsOpen,
+}: ProfileSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -23,28 +36,42 @@ export default function SellersProfileSidebar({ isMobile, isOpen, setIsOpen }: P
   const [deleting, setDeleting] = useState(false);
 
   const items = [
-    { icon: User, label: "Profile Info", href: "/store/profile" },
-    { icon: Globe, label: "Country/Region", href: "/store/profile/country-region" },
-    { icon: Bell, label: "Notification Settings", href: "/store/profile/notifications" },
-    { icon: Lock, label: "Password Settings", href: "/store/profile/password-settings" },
-    { icon: Store, label: "Verification Request", href: "/store/verification" },
-    { icon: Trash2, label: "Delete Account", danger: true },
-    { icon: LogOut, label: "Log Out", danger: true },
+    { icon: User, label: 'Profile Info', href: '/store/profile' },
+    {
+      icon: Globe,
+      label: 'Country/Region',
+      href: '/store/profile/country-region',
+    },
+    {
+      icon: Bell,
+      label: 'Notification Settings',
+      href: '/store/profile/notifications',
+    },
+    {
+      icon: Lock,
+      label: 'Password Settings',
+      href: '/store/profile/password-settings',
+    },
+    { icon: Store, label: 'Verification Request', href: '/store/verification' },
+    { icon: Trash2, label: 'Delete Account', danger: true },
+    { icon: LogOut, label: 'Log Out', danger: true },
   ];
 
   const isActive = (href: string) => pathname === href;
 
   const handleClick = (item: any) => {
-    if (item.label === "Delete Account") {
+    if (item.label === 'Delete Account') {
       setShowPasswordModal(true);
-    } else if (item.label === "Log Out") {
+    } else if (item.label === 'Log Out') {
       // LOG OUT FUNCTIONALITY
       localStorage.clear();
       sessionStorage.clear();
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      document.cookie.split(';').forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, '')
+          .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
       });
-      router.push("/");
+      router.push('/');
     } else if (item.href) {
       router.push(item.href);
     }
@@ -57,7 +84,7 @@ export default function SellersProfileSidebar({ isMobile, isOpen, setIsOpen }: P
     try {
       localStorage.clear();
       sessionStorage.clear();
-      router.push("/");
+      router.push('/');
     } finally {
       setDeleting(false);
     }
@@ -74,10 +101,10 @@ export default function SellersProfileSidebar({ isMobile, isOpen, setIsOpen }: P
             onClick={() => handleClick(item)}
             className={`flex w-full items-center gap-3 px-4 py-3 text-left rounded-xl text-sm font-medium transition-colors ${
               active
-                ? "bg-gray-100 text-gray-900"
+                ? 'bg-gray-100 text-gray-900'
                 : item.danger
-                ? "text-red-600 hover:bg-red-50"
-                : "text-gray-600 hover:bg-gray-50"
+                  ? 'text-red-600 hover:bg-red-50'
+                  : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
             <item.icon className="w-4 h-4" />
@@ -91,11 +118,16 @@ export default function SellersProfileSidebar({ isMobile, isOpen, setIsOpen }: P
   if (isMobile) {
     return (
       <>
-        {isOpen && <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setIsOpen(false)} />}
+        {isOpen && (
+          <div
+            className="fixed inset-0 bg-black/20 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
 
         <div
           className={`fixed left-0 top-0 h-full w-64 bg-white z-50 transition-transform duration-300 ${
-            isOpen ? "translate-x-0" : "-translate-x-full"
+            isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="p-4 border-b border-gray-100 flex justify-between items-center">

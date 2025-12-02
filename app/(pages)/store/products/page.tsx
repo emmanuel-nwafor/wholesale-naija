@@ -1,14 +1,20 @@
-"use client";
-import { useState, useEffect, useRef } from "react";
-import DashboardHeader from "@/app/components/header/DashboardHeader";
-import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
-import AddProductModal from "@/app/components/modals/AddProductModal";
-import { ShoppingBag, MoreVertical, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import { getCurrentSellerId } from "@/app/utils/auth";
+'use client';
+import { useState, useEffect, useRef } from 'react';
+import DashboardHeader from '@/app/components/header/DashboardHeader';
+import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
+import AddProductModal from '@/app/components/modals/AddProductModal';
+import {
+  ShoppingBag,
+  MoreVertical,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import { getCurrentSellerId } from '@/app/utils/auth';
 
 interface Category {
   _id: string;
@@ -25,7 +31,7 @@ interface Product {
   images: string[];
   price: number;
   moq?: string | number;
-  status: "active" | "archived" | "approved" | "pending" | "rejected";
+  status: 'active' | 'archived' | 'approved' | 'pending' | 'rejected';
   type: string;
   categories?: string[];
   category?: string;
@@ -39,8 +45,10 @@ export default function SellersProductPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | "active" | "archived">("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'archived'>(
+    'all'
+  );
+  const [searchQuery, setSearchQuery] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,7 +57,7 @@ export default function SellersProductPage() {
 
   // Fetch categories
   useEffect(() => {
-    fetchWithToken<{ categories: Category[] }>("/v1/categories")
+    fetchWithToken<{ categories: Category[] }>('/v1/categories')
       .then((res) => setCategories(res.categories || []))
       .catch(() => setCategories([]));
   }, []);
@@ -66,7 +74,7 @@ export default function SellersProductPage() {
       );
       setProducts(res.products || []);
     } catch (err) {
-      console.error("Failed to fetch products:", err);
+      console.error('Failed to fetch products:', err);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -80,12 +88,15 @@ export default function SellersProductPage() {
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(null);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const refreshProducts = () => {
@@ -95,13 +106,17 @@ export default function SellersProductPage() {
 
   const getCategoryName = (product: Product): string => {
     const id = product.categories?.[0] || product.category;
-    if (!id) return "—";
+    if (!id) return '—';
     const cat = categories.find((c) => c._id === id);
-    return cat?.name || "Uncategorized";
+    return cat?.name || 'Uncategorized';
   };
 
   const getMOQ = (product: Product): string => {
-    if (product.type === "Variant" && product.variants && product.variants.length > 0) {
+    if (
+      product.type === 'Variant' &&
+      product.variants &&
+      product.variants.length > 0
+    ) {
       let lowestMinQty = Infinity;
       product.variants.forEach((variant) => {
         if (variant.pricingTiers && variant.pricingTiers.length > 0) {
@@ -112,16 +127,17 @@ export default function SellersProductPage() {
       });
       if (lowestMinQty !== Infinity) return `${lowestMinQty} pcs`;
     }
-    return product.moq ? String(product.moq) : "—";
+    return product.moq ? String(product.moq) : '—';
   };
 
   // Local filtering for tabs and search
   const filteredProducts = products
     .filter((product) => {
       const status = product.status.toLowerCase();
-      if (activeTab === "all") return true;
-      if (activeTab === "active") return ["active", "approved"].includes(status);
-      if (activeTab === "archived") return status === "archived";
+      if (activeTab === 'all') return true;
+      if (activeTab === 'active')
+        return ['active', 'approved'].includes(status);
+      if (activeTab === 'archived') return status === 'archived';
       return false;
     })
     .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -134,16 +150,16 @@ export default function SellersProductPage() {
 
   const getStatusStyle = (status: string) => {
     switch (status.toLowerCase()) {
-      case "active":
-      case "approved":
-        return "bg-green-100 text-green-700";
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "rejected":
-      case "archived":
-        return "bg-red-100 text-red-700";
+      case 'active':
+      case 'approved':
+        return 'bg-green-100 text-green-700';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'rejected':
+      case 'archived':
+        return 'bg-red-100 text-red-700';
       default:
-        return "bg-gray-100 text-gray-700";
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -179,7 +195,7 @@ export default function SellersProductPage() {
 
               {/* Tabs */}
               <div className="flex gap-6 sm:gap-8 border-b border-gray-200 mb-6 text-sm font-medium text-gray-600 overflow-x-auto whitespace-nowrap pb-1">
-                {(["all", "active", "archived"] as const).map((tab) => (
+                {(['all', 'active', 'archived'] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -188,11 +204,15 @@ export default function SellersProductPage() {
                     }}
                     className={`pb-3 border-b-2 transition-all whitespace-nowrap capitalize ${
                       activeTab === tab
-                        ? "border-blue-600 text-gray-900"
-                        : "border-transparent hover:text-gray-900"
+                        ? 'border-blue-600 text-gray-900'
+                        : 'border-transparent hover:text-gray-900'
                     }`}
                   >
-                    {tab === "all" ? "All Products" : tab === "active" ? "Active Products" : "Archived Products"}
+                    {tab === 'all'
+                      ? 'All Products'
+                      : tab === 'active'
+                        ? 'Active Products'
+                        : 'Archived Products'}
                   </button>
                 ))}
               </div>
@@ -219,7 +239,9 @@ export default function SellersProductPage() {
 
               {/* Products List */}
               {loading ? (
-                <div className="text-center py-20 text-gray-500">Loading products...</div>
+                <div className="text-center py-20 text-gray-500">
+                  Loading products...
+                </div>
               ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-20">
                   <Image
@@ -230,7 +252,8 @@ export default function SellersProductPage() {
                     className="mx-auto mb-4 opacity-70"
                   />
                   <p className="text-gray-600">
-                    You have no products yet. Add your first product to get started.
+                    You have no products yet. Add your first product to get
+                    started.
                   </p>
                 </div>
               ) : (
@@ -264,15 +287,21 @@ export default function SellersProductPage() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">{product.name}</h3>
+                            <h3 className="font-semibold text-gray-900 truncate">
+                              {product.name}
+                            </h3>
                             <div className="mt-2 grid grid-cols-2 gap-3 text-sm">
                               <div>
                                 <span className="text-gray-500">Category</span>
-                                <p className="font-medium truncate">{getCategoryName(product)}</p>
+                                <p className="font-medium truncate">
+                                  {getCategoryName(product)}
+                                </p>
                               </div>
                               <div>
                                 <span className="text-gray-500">Type</span>
-                                <p className="font-medium capitalize">{product.type || "Simple"}</p>
+                                <p className="font-medium capitalize">
+                                  {product.type || 'Simple'}
+                                </p>
                               </div>
                               <div>
                                 <span className="text-gray-500">MOQ</span>
@@ -280,7 +309,9 @@ export default function SellersProductPage() {
                               </div>
                               <div>
                                 <span className="text-gray-500">Price</span>
-                                <p className="font-medium text-gray-900">₦{product.price.toLocaleString()}</p>
+                                <p className="font-medium text-gray-900">
+                                  ₦{product.price.toLocaleString()}
+                                </p>
                               </div>
                             </div>
                             <div className="mt-3 flex items-center justify-between">
@@ -289,7 +320,8 @@ export default function SellersProductPage() {
                                   product.status
                                 )}`}
                               >
-                                {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                                {product.status.charAt(0).toUpperCase() +
+                                  product.status.slice(1)}
                               </span>
                               <button
                                 onClick={() => toggleDropdown(product._id)}
@@ -376,14 +408,20 @@ export default function SellersProductPage() {
                                       <ShoppingBag className="w-7 h-7 text-gray-400" />
                                     </div>
                                   )}
-                                  <span className="font-medium text-gray-900">{product.name}</span>
+                                  <span className="font-medium text-gray-900">
+                                    {product.name}
+                                  </span>
                                 </div>
                               </td>
-                              <td className="px-6 py-5 text-gray-600">{getCategoryName(product)}</td>
-                              <td className="px-6 py-5 text-gray-600 capitalize">
-                                {product.type || "Simple"}
+                              <td className="px-6 py-5 text-gray-600">
+                                {getCategoryName(product)}
                               </td>
-                              <td className="px-6 py-5 text-gray-600 font-medium">{getMOQ(product)}</td>
+                              <td className="px-6 py-5 text-gray-600 capitalize">
+                                {product.type || 'Simple'}
+                              </td>
+                              <td className="px-6 py-5 text-gray-600 font-medium">
+                                {getMOQ(product)}
+                              </td>
                               <td className="px-6 py-5 font-medium text-gray-900">
                                 ₦{product.price.toLocaleString()}
                               </td>
@@ -393,7 +431,8 @@ export default function SellersProductPage() {
                                     product.status
                                   )}`}
                                 >
-                                  {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                                  {product.status.charAt(0).toUpperCase() +
+                                    product.status.slice(1)}
                                 </span>
                               </td>
                               <td className="px-6 py-5 relative">
@@ -406,20 +445,28 @@ export default function SellersProductPage() {
                                 <AnimatePresence>
                                   {dropdownOpen === product._id && (
                                     <motion.div
-                                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                      initial={{
+                                        opacity: 0,
+                                        y: -10,
+                                        scale: 0.95,
+                                      }}
                                       animate={{ opacity: 1, y: 0, scale: 1 }}
                                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                                       transition={{ duration: 0.15 }}
                                       className="absolute right-6 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-200 py-2 z-50"
                                     >
                                       <button
-                                        onClick={() => handleViewProduct(product._id)}
+                                        onClick={() =>
+                                          handleViewProduct(product._id)
+                                        }
                                         className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50"
                                       >
                                         View Product
                                       </button>
                                       <button
-                                        onClick={() => handleEditProduct(product._id)}
+                                        onClick={() =>
+                                          handleEditProduct(product._id)
+                                        }
                                         className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50"
                                       >
                                         Edit Product
@@ -449,9 +496,9 @@ export default function SellersProductPage() {
                   className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm"
                 >
                   <p className="text-gray-600">
-                    Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                    {Math.min(currentPage * pageSize, filteredProducts.length)} of{" "}
-                    {filteredProducts.length} products
+                    Showing {(currentPage - 1) * pageSize + 1} to{' '}
+                    {Math.min(currentPage * pageSize, filteredProducts.length)}{' '}
+                    of {filteredProducts.length} products
                   </p>
                   <div className="flex items-center gap-2">
                     <button
@@ -462,22 +509,29 @@ export default function SellersProductPage() {
                       <ChevronLeft className="w-5 h-5" />
                     </button>
                     <div className="flex gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        const page =
-                          totalPages <= 5 ? i + 1 : i + Math.max(1, currentPage - 2);
-                        if (page > totalPages) return null;
-                        return (
-                          <button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${
-                              currentPage === page ? "bg-blue-100 text-blue-700" : "hover:bg-gray-50"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        );
-                      })}
+                      {Array.from(
+                        { length: Math.min(5, totalPages) },
+                        (_, i) => {
+                          const page =
+                            totalPages <= 5
+                              ? i + 1
+                              : i + Math.max(1, currentPage - 2);
+                          if (page > totalPages) return null;
+                          return (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`px-4 py-2 rounded-lg font-medium transition ${
+                                currentPage === page
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        }
+                      )}
                       {totalPages > 5 && currentPage < totalPages - 2 && (
                         <>
                           <span className="px-2 text-gray-500">...</span>
@@ -491,7 +545,9 @@ export default function SellersProductPage() {
                       )}
                     </div>
                     <button
-                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(p + 1, totalPages))
+                      }
                       disabled={currentPage === totalPages}
                       className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >

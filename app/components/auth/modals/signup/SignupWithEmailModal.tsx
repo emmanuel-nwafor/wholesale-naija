@@ -1,8 +1,8 @@
-"use client";
-import React, { useState } from "react";
-import { X } from "lucide-react";
-import { motion } from "framer-motion";
-import Image from "next/image";
+'use client';
+import React, { useState } from 'react';
+import { X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface SignupWithEmailModalProps {
   isOpen: boolean;
@@ -29,9 +29,9 @@ export default function SignupWithEmailModal({
   onClose,
   onContinue,
 }: SignupWithEmailModalProps) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
   if (!isOpen) return null;
@@ -39,26 +39,26 @@ export default function SignupWithEmailModal({
   const handleContinue = async () => {
     if (!email) return;
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Failed to send OTP");
+        throw new Error(data.message || 'Failed to send OTP');
       }
 
       // Success, show confirmation modal and call parent callback
       setShowSuccess(true);
       if (onContinue) onContinue(email);
     } catch (err: any) {
-      setError(err.message || "Something went wrong");
+      setError(err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -116,11 +116,11 @@ export default function SignupWithEmailModal({
             disabled={!email || loading}
             className={`w-full py-4 sm:py-3 rounded-2xl text-sm font-medium mb-4 transition ${
               email && !loading
-                ? "bg-gray-900 text-white hover:bg-gray-800 cursor-pointer"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? 'bg-gray-900 text-white hover:bg-gray-800 cursor-pointer'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {loading ? "Sending OTP..." : "Continue"}
+            {loading ? 'Sending OTP...' : 'Continue'}
           </button>
 
           <div className="relative text-center text-gray-500 text-sm mb-4">
@@ -155,8 +155,8 @@ export default function SignupWithEmailModal({
             By continuing you agree to Wholesale Naija <br />
             <a href="#" className="underline">
               Terms of Service
-            </a>{" "}
-            and{" "}
+            </a>{' '}
+            and{' '}
             <a href="#" className="underline">
               Privacy Policies
             </a>

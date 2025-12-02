@@ -1,7 +1,7 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { Lock, MessageCircle, ShoppingBag, Star } from "lucide-react";
-import { fetchWithToken } from "../../utils/fetchWithToken";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { Lock, MessageCircle, ShoppingBag, Star } from 'lucide-react';
+import { fetchWithToken } from '../../utils/fetchWithToken';
 
 interface DashboardData {
   totalUnlocks: number;
@@ -24,7 +24,7 @@ export default function StoreAnalytics(): React.JSX.Element {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const res = await fetchWithToken<DashboardData>("/v1/seller/dashboard");
+        const res = await fetchWithToken<DashboardData>('/v1/seller/dashboard');
 
         if (!res) {
           setTokenMissing(true);
@@ -39,7 +39,7 @@ export default function StoreAnalytics(): React.JSX.Element {
         });
       } catch (err: any) {
         console.error(err);
-        setError(err.message || "Unable to load analytics.");
+        setError(err.message || 'Unable to load analytics.');
       } finally {
         setLoading(false);
       }
@@ -98,7 +98,9 @@ export default function StoreAnalytics(): React.JSX.Element {
         <div className="bg-white rounded-xl p-6 border border-gray-100 flex justify-between items-center">
           <div className="flex-1">
             <p className="text-xs text-gray-600">Unlocks</p>
-            <p className="text-xl font-bold text-gray-900 mt-1">{data.totalUnlocks}</p>
+            <p className="text-xl font-bold text-gray-900 mt-1">
+              {data.totalUnlocks}
+            </p>
           </div>
           <Lock className="w-6 h-6 text-gray-700" />
         </div>
@@ -107,7 +109,9 @@ export default function StoreAnalytics(): React.JSX.Element {
         <div className="bg-white rounded-xl p-6 border border-gray-100 flex justify-between items-center">
           <div className="flex-1">
             <p className="text-xs text-gray-600">New Messages</p>
-            <p className="text-xl font-bold text-gray-900 mt-1">{data.messagesCount}</p>
+            <p className="text-xl font-bold text-gray-900 mt-1">
+              {data.messagesCount}
+            </p>
           </div>
           <MessageCircle className="w-6 h-6 text-green-600" />
         </div>
@@ -116,7 +120,9 @@ export default function StoreAnalytics(): React.JSX.Element {
         <div className="bg-white rounded-xl p-6 border border-gray-100 flex justify-between items-center">
           <div className="flex-1">
             <p className="text-xs text-gray-600">Products</p>
-            <p className="text-xl font-bold text-gray-900 mt-1">{data.productsCount}</p>
+            <p className="text-xl font-bold text-gray-900 mt-1">
+              {data.productsCount}
+            </p>
           </div>
           <ShoppingBag className="w-6 h-6 text-blue-600" />
         </div>

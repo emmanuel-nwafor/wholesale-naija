@@ -1,14 +1,14 @@
-"use client";
-import { useState, useEffect } from "react";
-import DashboardHeader from "@/app/components/header/DashboardHeader";
-import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
-import { Trash2, Edit, ChevronLeft } from "lucide-react";
-import Image from "next/image";
-import { useRouter, useParams } from "next/navigation";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import { getCurrentSellerId } from "@/app/utils/auth";
-import DeleteModal from "@/app/components/modals/DeleteModal";
-import OkaySuccessModal from "@/app/components/modals/OkaySuccessModal";
+'use client';
+import { useState, useEffect } from 'react';
+import DashboardHeader from '@/app/components/header/DashboardHeader';
+import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
+import { Trash2, Edit, ChevronLeft } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter, useParams } from 'next/navigation';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import { getCurrentSellerId } from '@/app/utils/auth';
+import DeleteModal from '@/app/components/modals/DeleteModal';
+import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
 
 interface PricingTier {
   minQty: number;
@@ -49,13 +49,15 @@ export default function ProductDetailsPage() {
       if (!id) return;
       try {
         setLoading(true);
-        const res = await fetchWithToken<{ product: Product }>(`/v1/products/${id}`);
+        const res = await fetchWithToken<{ product: Product }>(
+          `/v1/products/${id}`
+        );
         setProduct(res.product);
         if (res.product.variants?.length) {
           setSelectedVariant(res.product.variants[0]);
         }
       } catch (err) {
-        console.error("Failed to fetch product:", err);
+        console.error('Failed to fetch product:', err);
       } finally {
         setLoading(false);
       }
@@ -66,14 +68,14 @@ export default function ProductDetailsPage() {
   const handleDelete = async () => {
     const sellerId = getCurrentSellerId();
     if (!sellerId) {
-      alert("You must be logged in as a seller to delete products.");
+      alert('You must be logged in as a seller to delete products.');
       return;
     }
 
     setDeleting(true);
     try {
       await fetchWithToken(`/v1/seller/products/${id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
 
       // Show success modal instead of alert
@@ -83,8 +85,8 @@ export default function ProductDetailsPage() {
       // Redirect after a short delay
       setTimeout(() => {}, 2000);
     } catch (err: any) {
-      console.error("Delete failed:", err);
-      alert(err.message || "Failed to delete product. Please try again.");
+      console.error('Delete failed:', err);
+      alert(err.message || 'Failed to delete product. Please try again.');
     } finally {
       setDeleting(false);
     }
@@ -118,7 +120,8 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const images = product.images.length > 0 ? product.images : ["/placeholder.svg"];
+  const images =
+    product.images.length > 0 ? product.images : ['/placeholder.svg'];
   const variant = selectedVariant;
   const hasVariants = product.variants && product.variants.length > 0;
 
@@ -144,7 +147,9 @@ export default function ProductDetailsPage() {
 
               <div className="overflow-hidden">
                 <div className="p-6">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-10">Product Details</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-10">
+                    Product Details
+                  </h1>
                   <div className="grid lg:grid-cols-2 gap-12">
                     {/* Left: Image */}
                     <div className="space-y-6">
@@ -164,7 +169,9 @@ export default function ProductDetailsPage() {
                               key={i}
                               onClick={() => setCurrentImageIndex(i)}
                               className={`w-3 h-3 rounded-full transition-all ${
-                                i === currentImageIndex ? "bg-gray-800 w-10" : "bg-gray-300"
+                                i === currentImageIndex
+                                  ? 'bg-gray-800 w-10'
+                                  : 'bg-gray-300'
                               }`}
                             />
                           ))}
@@ -194,10 +201,14 @@ export default function ProductDetailsPage() {
                               {sortedTiers.map((tier, i) => (
                                 <div key={i} className="space-y-2 text-center">
                                   <div className="text-[20px] font-bold text-gray-900">
-                                    ₦{tier.price.toLocaleString("en-NG")}
+                                    ₦{tier.price.toLocaleString('en-NG')}
                                   </div>
                                   <p className="text-[9.5px] text-gray-600">
-                                    MOQ: {tier.maxQty ? `${tier.minQty}–${tier.maxQty}` : `≥${tier.minQty}`} pieces
+                                    MOQ:{' '}
+                                    {tier.maxQty
+                                      ? `${tier.minQty}–${tier.maxQty}`
+                                      : `≥${tier.minQty}`}{' '}
+                                    pieces
                                   </p>
                                 </div>
                               ))}
@@ -205,10 +216,13 @@ export default function ProductDetailsPage() {
                           ) : (
                             <>
                               <div className="text-4xl font-bold text-gray-900">
-                                ₦{(variant?.price || product.price).toLocaleString("en-NG")}
+                                ₦
+                                {(
+                                  variant?.price || product.price
+                                ).toLocaleString('en-NG')}
                               </div>
                               <p className="text-gray-600 text-base mt-3">
-                                MOQ: {(variant?.MOQ || 20)} pieces
+                                MOQ: {variant?.MOQ || 20} pieces
                               </p>
                             </>
                           )}
@@ -219,7 +233,10 @@ export default function ProductDetailsPage() {
                       {product.variants && product.variants.length > 0 && (
                         <div className="space-y-4">
                           <div className="text-sm text-gray-700">
-                            Variations: <span className="font-medium">{product.variants.length} Variants</span>
+                            Variations:{' '}
+                            <span className="font-medium">
+                              {product.variants.length} Variants
+                            </span>
                           </div>
                           <div className="flex flex-wrap gap-3">
                             {product.variants.map((v) => (
@@ -228,8 +245,8 @@ export default function ProductDetailsPage() {
                                 onClick={() => setSelectedVariant(v)}
                                 className={`px-5 py-2 rounded-xl text-sm font-medium border transition-all ${
                                   selectedVariant?._id === v._id
-                                    ? "bg-gray-200 text-gray-600 border-gray-300"
-                                    : "bg-white text-gray-700 border-gray-300 hover:border-gray-500"
+                                    ? 'bg-gray-200 text-gray-600 border-gray-300'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-500'
                                 }`}
                               >
                                 {v.name}
@@ -240,38 +257,47 @@ export default function ProductDetailsPage() {
                       )}
 
                       {/* Action Buttons */}
-                    <div className="grid grid-cols-2 gap-4 pt-4">
-                      <button
-                        onClick={() => setShowDeleteModal(true)}
-                        disabled={deleting}
-                        className="flex items-center hover:cursor-pointer justify-center gap-2 px-6 py-5 border border-red-300 text-red-600 rounded-2xl hover:bg-red-50 disabled:opacity-70 disabled:cursor-not-allowed transition text-sm font-medium"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete Product
-                      </button>
-                      <button
-                        onClick={() => router.push(`/store/products/${id}/edit`)}
-                        className="flex items-center hover:cursor-pointer justify-center gap-2 px-6 py-5 bg-[#1e293b] text-white rounded-2xl hover:bg-[#0f172a] transition text-sm font-medium"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Edit Product
-                      </button>
-                    </div>
+                      <div className="grid grid-cols-2 gap-4 pt-4">
+                        <button
+                          onClick={() => setShowDeleteModal(true)}
+                          disabled={deleting}
+                          className="flex items-center hover:cursor-pointer justify-center gap-2 px-6 py-5 border border-red-300 text-red-600 rounded-2xl hover:bg-red-50 disabled:opacity-70 disabled:cursor-not-allowed transition text-sm font-medium"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete Product
+                        </button>
+                        <button
+                          onClick={() =>
+                            router.push(`/store/products/${id}/edit`)
+                          }
+                          className="flex items-center hover:cursor-pointer justify-center gap-2 px-6 py-5 bg-[#1e293b] text-white rounded-2xl hover:bg-[#0f172a] transition text-sm font-medium"
+                        >
+                          <Edit className="w-4 h-4" />
+                          Edit Product
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Description */}
                   <div className="mt-16 pt-10 border-t border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">Product Description</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-6">
+                      Product Description
+                    </h3>
                     <div className="text-gray-700 leading-relaxed text-base space-y-3">
                       {product.description ? (
                         <div
                           dangerouslySetInnerHTML={{
-                            __html: product.description.replace(/\n/g, "<br />"),
+                            __html: product.description.replace(
+                              /\n/g,
+                              '<br />'
+                            ),
                           }}
                         />
                       ) : (
-                        <p className="text-gray-500">No description available for this product.</p>
+                        <p className="text-gray-500">
+                          No description available for this product.
+                        </p>
                       )}
                     </div>
                   </div>
@@ -298,7 +324,7 @@ export default function ProductDetailsPage() {
         show={showSuccessModal}
         onClose={() => {
           setShowSuccessModal(false);
-          router.push("/store/products");
+          router.push('/store/products');
         }}
         title="Product deleted successfully"
       />

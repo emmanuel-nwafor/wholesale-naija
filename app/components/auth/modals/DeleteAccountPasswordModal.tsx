@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Lock, X } from "lucide-react";
-import { fetchWithToken } from "@/app/utils/fetchWithToken"; 
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Lock, X } from 'lucide-react';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
 interface DeleteAccountPasswordModalProps {
   isOpen: boolean;
@@ -16,29 +16,29 @@ export default function DeleteAccountPasswordModal({
   onClose,
   onSuccess,
 }: DeleteAccountPasswordModalProps) {
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
-    if (!password) return setError("Please enter your password");
+    if (!password) return setError('Please enter your password');
 
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
-      await fetchWithToken("/auth/delete-account", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+      await fetchWithToken('/auth/delete-account', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword: password }),
       });
 
-      onSuccess(); 
+      onSuccess();
     } catch (err: any) {
-      setError(err.message || "Incorrect password. Try again.");
+      setError(err.message || 'Incorrect password. Try again.');
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,10 @@ export default function DeleteAccountPasswordModal({
         className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-5 right-5 text-gray-500">
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 text-gray-500"
+        >
           <X size={24} />
         </button>
 
@@ -66,7 +69,9 @@ export default function DeleteAccountPasswordModal({
           <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
             <Lock className="w-8 h-8 text-red-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Verify Your Identity</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Verify Your Identity
+          </h2>
           <p className="text-gray-600 mt-2">Enter your password to continue</p>
         </div>
 
@@ -78,7 +83,7 @@ export default function DeleteAccountPasswordModal({
 
         <div className="relative mb-8">
           <input
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your current password"
@@ -112,7 +117,7 @@ export default function DeleteAccountPasswordModal({
                 Verifying...
               </>
             ) : (
-              "Continue"
+              'Continue'
             )}
           </button>
         </div>

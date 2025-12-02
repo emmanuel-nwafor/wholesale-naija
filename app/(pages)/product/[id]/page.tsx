@@ -37,7 +37,9 @@ export default function ProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'description' | 'reviews' | 'store'>('description');
+  const [activeTab, setActiveTab] = useState<
+    'description' | 'reviews' | 'store'
+  >('description');
 
   const [related, setRelated] = useState<any[]>([]);
   const [sellerReviews, setSellerReviews] = useState<any[]>([]);
@@ -52,7 +54,9 @@ export default function ProductDetailsPage() {
         setLoading(true);
 
         // Fetch the main product
-        const res = await fetchWithToken<{ product?: any }>(`/v1/products/${id}`);
+        const res = await fetchWithToken<{ product?: any }>(
+          `/v1/products/${id}`
+        );
         const fetched = res?.product || res;
 
         if (!fetched) {
@@ -67,9 +71,13 @@ export default function ProductDetailsPage() {
         try {
           const sellerId = fetched?.seller?._id;
           if (sellerId) {
-            const relRes = await fetchWithToken<{ products?: any[] }>(`/v1/sellers/${sellerId}/products`);
+            const relRes = await fetchWithToken<{ products?: any[] }>(
+              `/v1/sellers/${sellerId}/products`
+            );
             if (relRes?.products) {
-              setRelated(relRes.products.filter((p: any) => p._id !== fetched._id));
+              setRelated(
+                relRes.products.filter((p: any) => p._id !== fetched._id)
+              );
             }
           }
         } catch (e) {
@@ -80,7 +88,10 @@ export default function ProductDetailsPage() {
         try {
           const sellerId = fetched?.seller?._id || getCurrentSellerId();
           if (sellerId) {
-            const revRes = await fetchWithToken<{ reviews?: any[]; avgRating?: number }>(`/v1/sellers/${sellerId}/reviews`);
+            const revRes = await fetchWithToken<{
+              reviews?: any[];
+              avgRating?: number;
+            }>(`/v1/sellers/${sellerId}/reviews`);
             if (revRes?.reviews) setSellerReviews(revRes.reviews);
             if (revRes?.avgRating !== undefined) setAvgRating(revRes.avgRating);
           }
@@ -88,7 +99,6 @@ export default function ProductDetailsPage() {
           console.error('Failed to fetch seller reviews', e);
           setSellerReviews([]);
         }
-
       } catch (err) {
         console.error('Failed to load product:', err);
       } finally {
@@ -122,12 +132,20 @@ export default function ProductDetailsPage() {
   }
 
   const images: string[] = Array.isArray(product.images) ? product.images : [];
-  const currentImage = !imgError && images[currentIndex] ? images[currentIndex] : FALLBACK_IMAGE;
+  const currentImage =
+    !imgError && images[currentIndex] ? images[currentIndex] : FALLBACK_IMAGE;
   const isVerifiedSeller = product.verified === true;
-  const sellerNameMasked = maskName(product?.seller?.fullName || product?.seller || '');
+  const sellerNameMasked = maskName(
+    product?.seller?.fullName || product?.seller || ''
+  );
 
-  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % Math.max(images.length, 1));
-  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + Math.max(images.length, 1)) % Math.max(images.length, 1));
+  const handleNext = () =>
+    setCurrentIndex((prev) => (prev + 1) % Math.max(images.length, 1));
+  const handlePrev = () =>
+    setCurrentIndex(
+      (prev) =>
+        (prev - 1 + Math.max(images.length, 1)) % Math.max(images.length, 1)
+    );
 
   return (
     <>
@@ -151,10 +169,16 @@ export default function ProductDetailsPage() {
 
             {images.length > 1 && (
               <>
-                <button onClick={handlePrev} className="absolute left-8 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md">
+                <button
+                  onClick={handlePrev}
+                  className="absolute left-8 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md"
+                >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <button onClick={handleNext} className="absolute right-8 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md">
+                <button
+                  onClick={handleNext}
+                  className="absolute right-8 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow-md"
+                >
                   <ChevronRight className="w-5 h-5" />
                 </button>
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
@@ -175,20 +199,34 @@ export default function ProductDetailsPage() {
             <div>
               <h1 className="text-2xl font-medium flex items-center gap-4 text-gray-900">
                 {product.name}
-                <HeartIcon height={27} width={27} className="p-1 bg-gray-100 rounded-full" />
-                <Share2 height={27} width={27} className="p-1 bg-gray-100 rounded-full" />
+                <HeartIcon
+                  height={27}
+                  width={27}
+                  className="p-1 bg-gray-100 rounded-full"
+                />
+                <Share2
+                  height={27}
+                  width={27}
+                  className="p-1 bg-gray-100 rounded-full"
+                />
               </h1>
 
               <div className="flex items-center gap-6 mt-2 text-sm text-gray-600">
                 <span className="flex items-center gap-2">
                   <span>{sellerNameMasked}</span>
-                  {isVerifiedSeller && <VerifiedIcon className="w-4 h-4 fill-green-400 text-white" />}
+                  {isVerifiedSeller && (
+                    <VerifiedIcon className="w-4 h-4 fill-green-400 text-white" />
+                  )}
                 </span>
 
                 <span className="flex items-center gap-1">
-                  <span className="font-medium">{avgRating ?? product.rating ?? '4.5'}</span>
+                  <span className="font-medium">
+                    {avgRating ?? product.rating ?? '4.5'}
+                  </span>
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-gray-500">({sellerReviews.length})</span>
+                  <span className="text-gray-500">
+                    ({sellerReviews.length})
+                  </span>
                 </span>
               </div>
             </div>
@@ -196,8 +234,12 @@ export default function ProductDetailsPage() {
             <div>
               <div className="flex rounded-2xl bg-gray-50 justify-between items-start">
                 <div className="p-6">
-                  <p className="text-2xl font-medium text-gray-900">₦{(product.price ?? 0).toLocaleString()}</p>
-                  <p className="text-xs text-gray-500 mt-1">MOQ: {product.moq ?? 'N/A'}</p>
+                  <p className="text-2xl font-medium text-gray-900">
+                    ₦{(product.price ?? 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    MOQ: {product.moq ?? 'N/A'}
+                  </p>
                 </div>
               </div>
 
@@ -217,15 +259,25 @@ export default function ProductDetailsPage() {
         <div className="mt-8 overflow-hidden">
           <div className="flex border-b border-gray-200">
             {[
-              { id: 'description', label: 'Product Descriptions', icon: Package },
-              { id: 'reviews', label: 'Ratings & Reviews', icon: MessageCircle },
+              {
+                id: 'description',
+                label: 'Product Descriptions',
+                icon: Package,
+              },
+              {
+                id: 'reviews',
+                label: 'Ratings & Reviews',
+                icon: MessageCircle,
+              },
               { id: 'store', label: 'Store Profile', icon: Store },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`hover:cursor-pointer py-4 px-6 flex items-center justify-center gap-2 text-sm font-medium transition ${
-                  activeTab === tab.id ? 'text-slate-600 border-b-2 border-slate-800' : 'text-gray-600 hover:text-gray-900'
+                  activeTab === tab.id
+                    ? 'text-slate-600 border-b-2 border-slate-800'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 {tab.label}
@@ -237,46 +289,87 @@ export default function ProductDetailsPage() {
             <AnimatePresence mode="wait">
               {/* Product Description */}
               {activeTab === 'description' && (
-                <motion.div key="desc" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 text-sm text-gray-600">
+                <motion.div
+                  key="desc"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-4 text-sm text-gray-600"
+                >
                   <p className="whitespace-pre-line">{product.description}</p>
                 </motion.div>
               )}
 
               {/* Seller Reviews */}
               {activeTab === 'reviews' && (
-                <motion.div key="reviews" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+                <motion.div
+                  key="reviews"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
                   <span className="flex items-center font-medium">
                     Ratings & Reviews
-                    <p className="font-light text-gray-400 ml-2">({sellerReviews.length})</p>
+                    <p className="font-light text-gray-400 ml-2">
+                      ({sellerReviews.length})
+                    </p>
                   </span>
 
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((i) => (
-                        <Star key={i} className={`w-5 h-5 ${i <= (avgRating ?? 0) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+                        <Star
+                          key={i}
+                          className={`w-5 h-5 ${i <= (avgRating ?? 0) ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`}
+                        />
                       ))}
                     </div>
-                    <span className="font-medium flex"> {avgRating ?? 0} out of 5</span>
+                    <span className="font-medium flex">
+                      {' '}
+                      {avgRating ?? 0} out of 5
+                    </span>
                   </div>
 
                   {sellerReviews.length > 0 ? (
                     sellerReviews.map((review) => (
-                      <div key={review._id} className="border-b border-gray-100 pb-4 last:border-0">
+                      <div
+                        key={review._id}
+                        className="border-b border-gray-100 pb-4 last:border-0"
+                      >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full overflow-hidden">
-                              <Image src={review.buyerId?.profilePicture?.url || FALLBACK_IMAGE} alt={review.buyerId?.fullName || 'User'} width={32} height={32} className="object-cover w-full h-full" />
+                              <Image
+                                src={
+                                  review.buyerId?.profilePicture?.url ||
+                                  FALLBACK_IMAGE
+                                }
+                                alt={review.buyerId?.fullName || 'User'}
+                                width={32}
+                                height={32}
+                                className="object-cover w-full h-full"
+                              />
                             </div>
-                            <span className="font-medium text-sm">{review.buyerId?.fullName || 'User'}</span>
+                            <span className="font-medium text-sm">
+                              {review.buyerId?.fullName || 'User'}
+                            </span>
                           </div>
-                          <span className="text-xs text-gray-500">{new Date(review.createdAt).toLocaleDateString()}</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                         <div className="flex gap-1 mb-1">
                           {[...Array(review.rating)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <Star
+                              key={i}
+                              className="w-4 h-4 fill-yellow-400 text-yellow-400"
+                            />
                           ))}
                         </div>
-                        <p className="text-sm text-gray-600">{review.comment || review.text}</p>
+                        <p className="text-sm text-gray-600">
+                          {review.comment || review.text}
+                        </p>
                       </div>
                     ))
                   ) : (
@@ -287,19 +380,41 @@ export default function ProductDetailsPage() {
 
               {/* Store Profile */}
               {activeTab === 'store' && (
-                <motion.div key="store" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="py-8">
+                <motion.div
+                  key="store"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="py-8"
+                >
                   <div className="flex items-start gap-4 mb-8">
                     <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
-                      <Image src={product?.seller?.profilePicture?.url || FALLBACK_IMAGE} alt={product?.seller?.fullName || 'Store'} width={64} height={64} className="object-cover w-full h-full" />
+                      <Image
+                        src={
+                          product?.seller?.profilePicture?.url || FALLBACK_IMAGE
+                        }
+                        alt={product?.seller?.fullName || 'Store'}
+                        width={64}
+                        height={64}
+                        className="object-cover w-full h-full"
+                      />
                     </div>
 
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-semibold">{product?.seller?.store?.name || product?.seller?.fullName || 'Store'}</h3>
-                        {isVerifiedSeller && <VerifiedIcon className="w-5 h-5 fill-green-500 text-white" />}
+                        <h3 className="text-xl font-semibold">
+                          {product?.seller?.store?.name ||
+                            product?.seller?.fullName ||
+                            'Store'}
+                        </h3>
+                        {isVerifiedSeller && (
+                          <VerifiedIcon className="w-5 h-5 fill-green-500 text-white" />
+                        )}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                        <span>{product?.seller?.store?.location || 'Lagos, Nigeria'}</span>
+                        <span>
+                          {product?.seller?.store?.location || 'Lagos, Nigeria'}
+                        </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
                           {avgRating ?? product.rating ?? '4.5'}
@@ -311,17 +426,28 @@ export default function ProductDetailsPage() {
                   </div>
 
                   <div className="mb-10">
-                    <h4 className="font-medium text-gray-900 mb-3">Store Description</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">{product?.seller?.store?.description || 'Supplier of phones, accessories & parts with 5+ years wholesale experience.'}</p>
+                    <h4 className="font-medium text-gray-900 mb-3">
+                      Store Description
+                    </h4>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {product?.seller?.store?.description ||
+                        'Supplier of phones, accessories & parts with 5+ years wholesale experience.'}
+                    </p>
                   </div>
 
                   <div>
-                    <h4 className="text-center text-lg font-medium text-gray-900 mb-6 bg-gray-50 py-3 rounded-xl">All Products</h4>
+                    <h4 className="text-center text-lg font-medium text-gray-900 mb-6 bg-gray-50 py-3 rounded-xl">
+                      All Products
+                    </h4>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                       {related.length > 0
-                        ? related.map((rp) => <ProductCard key={rp._id} product={rp} />)
-                        : Array.from({ length: 8 }).map((_, i) => <ProductCard key={`placeholder-${i}`} loading />)}
+                        ? related.map((rp) => (
+                            <ProductCard key={rp._id} product={rp} />
+                          ))
+                        : Array.from({ length: 8 }).map((_, i) => (
+                            <ProductCard key={`placeholder-${i}`} loading />
+                          ))}
                     </div>
                   </div>
                 </motion.div>

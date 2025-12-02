@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Check } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import React from 'react';
+import { Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface OkaySuccessModalProps {
   show: boolean;
@@ -13,7 +13,7 @@ interface OkaySuccessModalProps {
 export default function OkaySuccessModal({
   show,
   onClose,
-  title = "Success!",
+  title = 'Success!',
 }: OkaySuccessModalProps) {
   return (
     <AnimatePresence>
@@ -31,7 +31,7 @@ export default function OkaySuccessModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-sm mx-auto z-50"
           >
             <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">

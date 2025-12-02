@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
-import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
-import DashboardHeader from "@/app/components/header/DashboardHeader";
-import { getCurrentSellerId } from "@/app/utils/auth";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
+import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
+import DashboardHeader from '@/app/components/header/DashboardHeader';
+import { getCurrentSellerId } from '@/app/utils/auth';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
 interface Review {
   _id: string;
@@ -29,25 +29,36 @@ const ReviewItem = ({ review }: { review: Review }) => (
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-sm leading-snug text-gray-800">
-        {review.comment || "Great product and fast delivery!"}
+        {review.comment || 'Great product and fast delivery!'}
       </p>
       {review.images && review.images.length > 0 && (
         <div className="flex items-center gap-2 mt-2">
           <div className="flex gap-1">
             {review.images.slice(0, 3).map((img, i) => (
-              <div key={i} className="w-12 h-12 bg-gray-200 rounded-md border border-gray-300 overflow-hidden">
-                <img src={img} alt="Review" className="w-full h-full object-cover" />
+              <div
+                key={i}
+                className="w-12 h-12 bg-gray-200 rounded-md border border-gray-300 overflow-hidden"
+              >
+                <img
+                  src={img}
+                  alt="Review"
+                  className="w-full h-full object-cover"
+                />
               </div>
             ))}
           </div>
         </div>
       )}
       <p className="text-xs text-gray-500 mt-1">
-        Reviewed by {review.customerName || "Customer"}
+        Reviewed by {review.customerName || 'Customer'}
       </p>
     </div>
     <p className="text-xs text-gray-500 whitespace-nowrap">
-      {new Date(review.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+      {new Date(review.createdAt).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })}
     </p>
   </div>
 );
@@ -81,18 +92,19 @@ export default function ReviewsPage() {
     const fetchReviews = async () => {
       try {
         setLoading(true);
-        console.log("Fetching reviews for seller:", sellerId);
+        console.log('Fetching reviews for seller:', sellerId);
 
-        const res = await fetchWithToken<{ reviews: Review[], averageRating?: number }>(
-          `/v1/sellers/${sellerId}/reviews`
-        );
+        const res = await fetchWithToken<{
+          reviews: Review[];
+          averageRating?: number;
+        }>(`/v1/sellers/${sellerId}/reviews`);
 
-        console.log("Reviews data:", res);
+        console.log('Reviews data:', res);
 
         setReviews(res.reviews || []);
         setAverageRating(res.averageRating || 0);
       } catch (err) {
-        console.error("Failed to load reviews:", err);
+        console.error('Failed to load reviews:', err);
         setReviews([]);
       } finally {
         setLoading(false);
@@ -115,7 +127,7 @@ export default function ReviewsPage() {
             <div className="bg-gray-50 rounded-lg px-4 py-3 mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-base font-medium">
-                  {loading ? "—" : averageRating.toFixed(1) + "/5"}
+                  {loading ? '—' : averageRating.toFixed(1) + '/5'}
                 </span>
                 <div className="flex gap-0.5">
                   {[...Array(5)].map((_, i) => (
@@ -137,7 +149,9 @@ export default function ReviewsPage() {
 
             {/* Reviews List */}
             {loading ? (
-              <div className="text-center py-12 text-gray-500">Loading reviews...</div>
+              <div className="text-center py-12 text-gray-500">
+                Loading reviews...
+              </div>
             ) : reviews.length > 0 ? (
               <div className="divide-y divide-gray-200">
                 {reviews.map((review) => (
@@ -147,7 +161,10 @@ export default function ReviewsPage() {
             ) : (
               <div className="text-center py-16">
                 <p className="text-gray-500 text-lg">No reviews yet</p>
-                <p className="text-sm text-gray-400 mt-2">Your first review will appear here once a customer leaves feedback.</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Your first review will appear here once a customer leaves
+                  feedback.
+                </p>
               </div>
             )}
           </div>

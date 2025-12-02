@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Camera } from 'lucide-react';
 import Header from '@/app/components/header/Header';
@@ -21,12 +21,12 @@ export default function BuyersProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
-    profilePicture: "",
-    dateOfBirth: "",
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    profilePicture: '',
+    dateOfBirth: '',
   });
 
   useEffect(() => {
@@ -43,15 +43,15 @@ export default function BuyersProfilePage() {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      const data = await fetchWithToken<any>("/auth/profile");
+      const data = await fetchWithToken<any>('/auth/profile');
       const u = data.user;
       setForm({
-        firstName: u.firstName || "",
-        lastName: u.lastName || "",
-        phone: u.phone || "",
-        email: u.email || "",
-        profilePicture: u.profilePicture?.url || "",
-        dateOfBirth: u.dateOfBirth || "",
+        firstName: u.firstName || '',
+        lastName: u.lastName || '',
+        phone: u.phone || '',
+        email: u.email || '',
+        profilePicture: u.profilePicture?.url || '',
+        dateOfBirth: u.dateOfBirth || '',
       });
     } catch (err) {
       console.error(err);
@@ -63,19 +63,19 @@ export default function BuyersProfilePage() {
   const uploadPhoto = async (file: File) => {
     setUploading(true);
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append('file', file);
 
     try {
-      const res = await fetchWithToken<any>("/uploads/single", {
-        method: "POST",
+      const res = await fetchWithToken<any>('/uploads/single', {
+        method: 'POST',
         body: fd,
       });
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
-        profilePicture: res.uploaded[0].url + "?t=" + Date.now(),
+        profilePicture: res.uploaded[0].url + '?t=' + Date.now(),
       }));
     } catch (err) {
-      alert("Upload failed");
+      alert('Upload failed');
     } finally {
       setUploading(false);
     }
@@ -84,26 +84,25 @@ export default function BuyersProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await fetchWithToken("/auth/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      await fetchWithToken('/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firstName: form.firstName,
           lastName: form.lastName,
           phone: form.phone,
-          profilePicture: form.profilePicture.replace(/\?.*$/, ""),
+          profilePicture: form.profilePicture.replace(/\?.*$/, ''),
           dateOfBirth: form.dateOfBirth,
         }),
       });
       setIsEditing(false);
       setShowSuccess(true);
     } catch (err: any) {
-      alert(err.message || "Failed to save profile");
+      alert(err.message || 'Failed to save profile');
     } finally {
       setSaving(false);
     }
   };
-
 
   return (
     <>
@@ -123,8 +122,20 @@ export default function BuyersProfilePage() {
               )}
 
               <div className="flex flex-col lg:flex-row gap-8">
-                {isMobile && <BuyersProfileSidebar isMobile={true} isOpen={menuOpen} setIsOpen={setMenuOpen} />}
-                {!isMobile && <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />}
+                {isMobile && (
+                  <BuyersProfileSidebar
+                    isMobile={true}
+                    isOpen={menuOpen}
+                    setIsOpen={setMenuOpen}
+                  />
+                )}
+                {!isMobile && (
+                  <BuyersProfileSidebar
+                    isMobile={false}
+                    isOpen={true}
+                    setIsOpen={() => {}}
+                  />
+                )}
 
                 <div className="flex-1 bg-white rounded-3xl p-6 md:p-8">
                   <div className="flex justify-between items-center mb-8">
@@ -150,7 +161,7 @@ export default function BuyersProfilePage() {
                             className="w-full h-full object-cover rounded-full"
                           />
                         ) : (
-                          "AA"
+                          'AA'
                         )}
                       </div>
                       {isEditing && (
@@ -159,7 +170,10 @@ export default function BuyersProfilePage() {
                             type="file"
                             accept="image/*"
                             ref={fileInputRef}
-                            onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])}
+                            onChange={(e) =>
+                              e.target.files?.[0] &&
+                              uploadPhoto(e.target.files[0])
+                            }
                             className="hidden"
                           />
                           <button
@@ -173,8 +187,12 @@ export default function BuyersProfilePage() {
                       )}
                     </div>
                     <div>
-                      <h2 className="text-xl font-semibold">{form.firstName} {form.lastName}</h2>
-                      <p className="text-sm text-gray-500">Update your photo and personal details.</p>
+                      <h2 className="text-xl font-semibold">
+                        {form.firstName} {form.lastName}
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        Update your photo and personal details.
+                      </p>
                     </div>
                   </div>
 
@@ -182,37 +200,53 @@ export default function BuyersProfilePage() {
                   <form className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          First Name
+                        </label>
                         <input
                           type="text"
                           value={form.firstName}
-                          onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                          onChange={(e) =>
+                            setForm({ ...form, firstName: e.target.value })
+                          }
                           disabled={!isEditing}
                           className={`w-full px-4 py-3.5 rounded-xl border transition ${
-                            isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'
+                            isEditing
+                              ? 'border-gray-300 bg-white'
+                              : 'border-transparent bg-gray-50'
                           }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Last Name
+                        </label>
                         <input
                           type="text"
                           value={form.lastName}
-                          onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                          onChange={(e) =>
+                            setForm({ ...form, lastName: e.target.value })
+                          }
                           disabled={!isEditing}
                           className={`w-full px-4 py-3.5 rounded-xl border transition ${
-                            isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'
+                            isEditing
+                              ? 'border-gray-300 bg-white'
+                              : 'border-transparent bg-gray-50'
                           }`}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Date of Birth
+                      </label>
                       <input
                         type="date"
                         value={form.dateOfBirth}
-                        onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+                        onChange={(e) =>
+                          setForm({ ...form, dateOfBirth: e.target.value })
+                        }
                         disabled={!isEditing}
                         className={`w-full px-4 py-3.5 rounded-xl border transition ${
                           isEditing
@@ -223,20 +257,28 @@ export default function BuyersProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                      </label>
                       <input
                         type="tel"
                         value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        onChange={(e) =>
+                          setForm({ ...form, phone: e.target.value })
+                        }
                         disabled={!isEditing}
                         className={`w-full px-4 py-3.5 rounded-xl border transition ${
-                          isEditing ? 'border-gray-300 bg-white' : 'border-transparent bg-gray-50'
+                          isEditing
+                            ? 'border-gray-300 bg-white'
+                            : 'border-transparent bg-gray-50'
                         }`}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                      </label>
                       <input
                         type="email"
                         value={form.email}
@@ -249,7 +291,10 @@ export default function BuyersProfilePage() {
                       <div className="flex justify-end gap-4 pt-6">
                         <button
                           type="button"
-                          onClick={() => { setIsEditing(false); loadProfile(); }}
+                          onClick={() => {
+                            setIsEditing(false);
+                            loadProfile();
+                          }}
                           className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50"
                         >
                           Cancel
@@ -260,7 +305,7 @@ export default function BuyersProfilePage() {
                           disabled={saving}
                           className="px-8 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 disabled:opacity-70"
                         >
-                          {saving ? "Saving..." : "Save Changes"}
+                          {saving ? 'Saving...' : 'Save Changes'}
                         </button>
                       </div>
                     )}
@@ -269,7 +314,7 @@ export default function BuyersProfilePage() {
               </div>
             </div>
           </main>
-            <CarouselBanner />
+          <CarouselBanner />
         </div>
 
         <OkaySuccessModal

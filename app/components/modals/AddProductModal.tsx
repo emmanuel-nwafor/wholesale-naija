@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { X, ShoppingBag } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { X, ShoppingBag } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const modalVariants = {
   hidden: { opacity: 0 },
@@ -21,8 +21,13 @@ interface AddProductModalProps {
   onClose: () => void;
 }
 
-export default function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
-  const [selectedType, setSelectedType] = useState<"simple" | "variant" | null>(null);
+export default function AddProductModal({
+  isOpen,
+  onClose,
+}: AddProductModalProps) {
+  const [selectedType, setSelectedType] = useState<'simple' | 'variant' | null>(
+    null
+  );
   const router = useRouter();
 
   if (!isOpen) return null;
@@ -30,10 +35,10 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
   const handleNext = () => {
     if (!selectedType) return;
 
-    if (selectedType === "simple") {
-      router.push("/store/products/simple");
-    } else if (selectedType === "variant") {
-      router.push("/store/products/variant");
+    if (selectedType === 'simple') {
+      router.push('/store/products/simple');
+    } else if (selectedType === 'variant') {
+      router.push('/store/products/variant');
     }
     onClose();
   };
@@ -63,16 +68,18 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
         </div>
 
         <div className="mb-10">
-          <p className="text-sm text-gray-600 mb-6">Choose the type of product you want to add</p>
+          <p className="text-sm text-gray-600 mb-6">
+            Choose the type of product you want to add
+          </p>
 
           <div className="grid grid-cols-2 gap-6">
             {/* Simple Product */}
             <button
-              onClick={() => setSelectedType("simple")}
+              onClick={() => setSelectedType('simple')}
               className={`flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 transition-all duration-200 ${
-                selectedType === "simple"
-                  ? "border-slate-900 bg-slate-50"
-                  : "border-gray-200 hover:border-gray-300 bg-white hover:cursor-pointer"
+                selectedType === 'simple'
+                  ? 'border-slate-900 bg-slate-50'
+                  : 'border-gray-200 hover:border-gray-300 bg-white hover:cursor-pointer'
               }`}
             >
               <div className="p-4 bg-slate-100 rounded-full">
@@ -80,17 +87,19 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-gray-900">Simple Product</h3>
-                <p className="text-xs text-gray-500 mt-1">One price, one variant</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  One price, one variant
+                </p>
               </div>
             </button>
 
             {/* Variant Product */}
             <button
-              onClick={() => setSelectedType("variant")}
+              onClick={() => setSelectedType('variant')}
               className={`flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 transition-all duration-200 ${
-                selectedType === "variant"
-                  ? "border-slate-900 bg-slate-50"
-                  : "border-gray-200 hover:border-gray-300 bg-white hover:cursor-pointer"
+                selectedType === 'variant'
+                  ? 'border-slate-900 bg-slate-50'
+                  : 'border-gray-200 hover:border-gray-300 bg-white hover:cursor-pointer'
               }`}
             >
               <div className="p-4 bg-slate-100 rounded-full">
@@ -98,7 +107,9 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-gray-900">Variant Product</h3>
-                <p className="text-xs text-gray-500 mt-1">Multiple sizes, colors, etc.</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Multiple sizes, colors, etc.
+                </p>
               </div>
             </button>
           </div>
@@ -109,8 +120,8 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
           disabled={!selectedType}
           className={`w-full py-4 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
             selectedType
-              ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg"
-              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+              ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg'
+              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
           }`}
         >
           Next

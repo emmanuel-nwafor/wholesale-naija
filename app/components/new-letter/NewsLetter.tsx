@@ -6,9 +6,12 @@ export default function NewsLetter() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-left">
-            <h3 className="text-xl font-bold text-gray-900">Join Our Newsletter</h3>
+            <h3 className="text-xl font-bold text-gray-900">
+              Join Our Newsletter
+            </h3>
             <p className="text-sm text-gray-600 mt-1">
-              By subscribing you agree to our Terms & Conditions and Privacy & Cookies Policy.
+              By subscribing you agree to our Terms & Conditions and Privacy &
+              Cookies Policy.
             </p>
           </div>
           <form className="flex w-full md:w-auto gap-2">

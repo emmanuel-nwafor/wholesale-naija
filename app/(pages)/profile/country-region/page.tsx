@@ -1,18 +1,25 @@
 // app/profile/country-region/page.tsx
-"use client";
+'use client';
 import React, { useState, useEffect } from 'react';
 import { Menu, ChevronRight, Check } from 'lucide-react';
 import Header from '@/app/components/header/Header';
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
-import { Modal, StateSelection, LGASelection, AreaSelection } from '@/app/components/modals/LocationsModal';
+import {
+  Modal,
+  StateSelection,
+  LGASelection,
+  AreaSelection,
+} from '@/app/components/modals/LocationsModal';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 import DynamicHeader from '@/app/components/header/DynamicHeader';
 
 export default function ProfileCountryRegion() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [modalStep, setModalStep] = useState<'state' | 'lga' | 'area' | null>(null);
+  const [modalStep, setModalStep] = useState<'state' | 'lga' | 'area' | null>(
+    null
+  );
 
   const [selectedState, setSelectedState] = useState('');
   const [selectedLGA, setSelectedLGA] = useState('');
@@ -95,7 +102,8 @@ export default function ProfileCountryRegion() {
     }
   };
 
-  const displayValue = selectedArea || selectedLGA || selectedState || 'Select your location';
+  const displayValue =
+    selectedArea || selectedLGA || selectedState || 'Select your location';
 
   return (
     <>
@@ -117,11 +125,25 @@ export default function ProfileCountryRegion() {
               )}
 
               <div className="flex flex-col lg:flex-row gap-8">
-                {isMobile && <BuyersProfileSidebar isMobile={true} isOpen={menuOpen} setIsOpen={setMenuOpen} />}
-                {!isMobile && <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />}
+                {isMobile && (
+                  <BuyersProfileSidebar
+                    isMobile={true}
+                    isOpen={menuOpen}
+                    setIsOpen={setMenuOpen}
+                  />
+                )}
+                {!isMobile && (
+                  <BuyersProfileSidebar
+                    isMobile={false}
+                    isOpen={true}
+                    setIsOpen={() => {}}
+                  />
+                )}
 
                 <div className="flex-1 bg-white rounded-3xl p-6 md:p-8">
-                  <h1 className="text-xl md:text-2xl font-bold mb-8">Country/Region</h1>
+                  <h1 className="text-xl md:text-2xl font-bold mb-8">
+                    Country/Region
+                  </h1>
 
                   {loading ? (
                     <p className="text-gray-500">Loading your location...</p>
@@ -135,7 +157,11 @@ export default function ProfileCountryRegion() {
                           onClick={openModal}
                           className="w-full px-5 py-4 text-left bg-gray-50 rounded-xl flex items-center justify-between hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                          <span className={!selectedState ? 'text-gray-500' : 'text-gray-900'}>
+                          <span
+                            className={
+                              !selectedState ? 'text-gray-500' : 'text-gray-900'
+                            }
+                          >
                             {displayValue}
                           </span>
                           <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -146,15 +172,25 @@ export default function ProfileCountryRegion() {
                         <div className="p-5 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
                           <Check className="w-6 h-6 text-green-600 flex-shrink-0" />
                           <div>
-                            <p className="text-sm font-medium text-green-900">Location Saved</p>
+                            <p className="text-sm font-medium text-green-900">
+                              Location Saved
+                            </p>
                             <p className="text-xs text-green-700 mt-1">
                               {selectedState}
                               {selectedLGA && ` • ${selectedLGA}`}
                               {selectedArea && ` • ${selectedArea}`}
                             </p>
                           </div>
-                          {saving && <span className="ml-auto text-xs text-gray-600">Saving...</span>}
-                          {saved && <span className="ml-auto text-xs font-medium text-green-600">Saved!</span>}
+                          {saving && (
+                            <span className="ml-auto text-xs text-gray-600">
+                              Saving...
+                            </span>
+                          )}
+                          {saved && (
+                            <span className="ml-auto text-xs font-medium text-green-600">
+                              Saved!
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -163,8 +199,7 @@ export default function ProfileCountryRegion() {
               </div>
             </div>
           </main>
-      <CarouselBanner />
-
+          <CarouselBanner />
         </div>
       </div>
 
@@ -180,15 +215,21 @@ export default function ProfileCountryRegion() {
           modalStep === 'state'
             ? 'Select State'
             : modalStep === 'lga'
-            ? `LGA in ${selectedState}`
-            : `Area in ${selectedLGA}`
+              ? `LGA in ${selectedState}`
+              : `Area in ${selectedLGA}`
         }
         isMobile={isMobile}
         currentStep={modalStep}
       >
-        {modalStep === 'state' && <StateSelection onSelect={handleStateSelect} />}
-        {modalStep === 'lga' && <LGASelection state={selectedState} onSelect={handleLGASelect} />}
-        {modalStep === 'area' && <AreaSelection lga={selectedLGA} onSelect={handleAreaSelect} />}
+        {modalStep === 'state' && (
+          <StateSelection onSelect={handleStateSelect} />
+        )}
+        {modalStep === 'lga' && (
+          <LGASelection state={selectedState} onSelect={handleLGASelect} />
+        )}
+        {modalStep === 'area' && (
+          <AreaSelection lga={selectedLGA} onSelect={handleAreaSelect} />
+        )}
       </Modal>
     </>
   );

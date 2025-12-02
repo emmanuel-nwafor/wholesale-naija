@@ -11,12 +11,72 @@ export default function SavedProducts() {
   const [selectedStore, setSelectedStore] = useState<any>(null);
 
   const unlockedStores = [
-    { id: 1, name: 'ABSOLUTE Stores', location: 'Lagos, Nigeria', rating: 4.5, reviews: '3k+', phone: '+234 812 345 6789', address: '123, Eko Street, Computer Village Ikeja, Lagos State', description: 'Supplier of phones, phones accessories & part with 5+ years wholesale experience Supplier of phones, phones accessories & part with 5+ years wholesale experience......' },
-    { id: 2, name: 'ABSOLUTE Stores', location: 'Lagos, Nigeria', rating: 4.9, reviews: '5.3k+', phone: '+234 812 345 6789', address: '123, Eko Street, Computer Village Ikeja, Lagos State', description: 'Supplier of phones, phones accessories & part with 5+ years wholesale experience...' },
-    { id: 3, name: 'ABSOLUTE Stores', location: 'Lagos, Nigeria', rating: 4.8, reviews: '5k+', phone: '+234 812 345 6789', address: '123, Eko Street, Computer Village Ikeja, Lagos State', description: 'Supplier of phones, phones accessories & part with 5+ years wholesale experience...' },
-    { id: 4, name: 'ABSOLUTE Stores', location: 'Lagos, Nigeria', rating: 4.9, reviews: '1k+', phone: '+234 812 345 6789', address: '123, Eko Street, Computer Village Ikeja, Lagos State', description: 'Supplier of phones, phones accessories & part with 5+ years wholesale experience...' },
-    { id: 5, name: 'ABSOLUTE Stores', location: 'Lagos, Nigeria', rating: 4.7, reviews: '9.5k+', phone: '+234 812 345 6789', address: '123, Eko Street, Computer Village Ikeja, Lagos State', description: 'Supplier of phones, phones accessories & part with 5+ years wholesale experience...' },
-    { id: 6, name: 'ABSOLUTE Stores', location: 'Lagos, Nigeria', rating: 4.6, reviews: '3k+', phone: '+234 812 345 6789', address: '123, Eko Street, Computer Village Ikeja, Lagos State', description: 'Supplier of phones, phones accessories & part with 5+ years wholesale experience...' },
+    {
+      id: 1,
+      name: 'ABSOLUTE Stores',
+      location: 'Lagos, Nigeria',
+      rating: 4.5,
+      reviews: '3k+',
+      phone: '+234 812 345 6789',
+      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
+      description:
+        'Supplier of phones, phones accessories & part with 5+ years wholesale experience Supplier of phones, phones accessories & part with 5+ years wholesale experience......',
+    },
+    {
+      id: 2,
+      name: 'ABSOLUTE Stores',
+      location: 'Lagos, Nigeria',
+      rating: 4.9,
+      reviews: '5.3k+',
+      phone: '+234 812 345 6789',
+      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
+      description:
+        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
+    },
+    {
+      id: 3,
+      name: 'ABSOLUTE Stores',
+      location: 'Lagos, Nigeria',
+      rating: 4.8,
+      reviews: '5k+',
+      phone: '+234 812 345 6789',
+      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
+      description:
+        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
+    },
+    {
+      id: 4,
+      name: 'ABSOLUTE Stores',
+      location: 'Lagos, Nigeria',
+      rating: 4.9,
+      reviews: '1k+',
+      phone: '+234 812 345 6789',
+      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
+      description:
+        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
+    },
+    {
+      id: 5,
+      name: 'ABSOLUTE Stores',
+      location: 'Lagos, Nigeria',
+      rating: 4.7,
+      reviews: '9.5k+',
+      phone: '+234 812 345 6789',
+      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
+      description:
+        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
+    },
+    {
+      id: 6,
+      name: 'ABSOLUTE Stores',
+      location: 'Lagos, Nigeria',
+      rating: 4.6,
+      reviews: '3k+',
+      phone: '+234 812 345 6789',
+      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
+      description:
+        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
+    },
   ];
 
   return (
@@ -64,8 +124,18 @@ export default function SavedProducts() {
               <div className="flex justify-center mt-12">
                 <button className="flex items-center gap-2 px-8 py-4 bg-slate-800 text-white font-medium rounded-full hover:bg-slate-900 transition">
                   See more
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
               </div>
@@ -93,15 +163,17 @@ export default function SavedProducts() {
                       <Verified className="w-4 h-4 fill-green-500 text-white" />
                     </h3>
                     <div className="flex gap-5">
-                        <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
+                      <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
                         <MapPin className="w-3 h-3" />
                         {store.location}
-                        </div>
-                        <div className="flex items-center gap-1 mt-1 text-sm">
-                        <span className="font-medium text-gray-900">{store.rating}</span>
+                      </div>
+                      <div className="flex items-center gap-1 mt-1 text-sm">
+                        <span className="font-medium text-gray-900">
+                          {store.rating}
+                        </span>
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-gray-500">({store.reviews})</span>
-                        </div>
+                      </div>
                     </div>
                     <button
                       onClick={() => setSelectedStore(store)}
@@ -116,8 +188,18 @@ export default function SavedProducts() {
               <div className="flex justify-center mt-12">
                 <button className="flex items-center gap-2 px-8 py-4 bg-slate-800 text-white font-medium rounded-full hover:bg-slate-900 transition">
                   See more
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
               </div>

@@ -1,10 +1,10 @@
 // app/components/modals/LogoutModal.tsx
-"use client";
+'use client';
 
-import React from "react";
-import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import React from 'react';
+import { LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -15,8 +15,8 @@ export default function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/");
+    localStorage.removeItem('token');
+    router.push('/');
   };
 
   return (
@@ -40,7 +40,7 @@ export default function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{
-                type: "spring",
+                type: 'spring',
                 stiffness: 400,
                 damping: 30,
               }}

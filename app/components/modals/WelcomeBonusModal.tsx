@@ -1,10 +1,10 @@
 // app/components/modals/WelcomeBonusModal.tsx
-"use client";
+'use client';
 
-import React from "react";
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
-import Image from "next/image";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { X } from 'lucide-react';
+import Image from 'next/image';
 
 interface WelcomeBonusModalProps {
   isOpen: boolean;
@@ -57,8 +57,9 @@ export default function WelcomeBonusModal({
         </h2>
 
         <p className="text-sm text-gray-600 leading-relaxed mb-10">
-          You've been credited with <span className="font-bold text-gray-900">100 FREE coins</span> to start
-          start connecting with sellers.
+          You've been credited with{' '}
+          <span className="font-bold text-gray-900">100 FREE coins</span> to
+          start start connecting with sellers.
         </p>
 
         <button

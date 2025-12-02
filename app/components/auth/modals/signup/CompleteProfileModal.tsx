@@ -1,20 +1,27 @@
 // app/auth/modals/signup/CompleteProfileModal.tsx
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import {motion} from "framer-motion";
-import SelectCountryDropdown from "../SelectCountryDropdown";
-import WelcomeBonusModal from "@/app/components/modals/WelcomeBonusModal";
+import React, { useState } from 'react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { motion } from 'framer-motion';
+import SelectCountryDropdown from '../SelectCountryDropdown';
+import WelcomeBonusModal from '@/app/components/modals/WelcomeBonusModal';
 
 interface CompleteProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenLoginModal: () => void; 
+  onOpenLoginModal: () => void;
 }
 
-const overlayVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 }, exit: { opacity: 0 } };
-const contentVariants = { hidden: { y: -30, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.3 } } };
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+const contentVariants = {
+  hidden: { y: -30, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.3 } },
+};
 
 const API_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/complete-profile`;
 
@@ -26,43 +33,50 @@ export default function CompleteProfileModal({
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState({
-    name: "Nigeria",
-    code: "+234",
-    flag: "NG",
+    name: 'Nigeria',
+    code: '+234',
+    flag: 'NG',
   });
 
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   if (!isOpen) return null;
 
   const handleCreateAccount = async () => {
-    setError("");
+    setError('');
 
-    if (!phone || !email || !firstName || !lastName || !password || !confirmPassword) {
-      setError("All fields are required.");
+    if (
+      !phone ||
+      !email ||
+      !firstName ||
+      !lastName ||
+      !password ||
+      !confirmPassword
+    ) {
+      setError('All fields are required.');
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError('Passwords do not match.');
       return;
     }
 
-    const role = localStorage.getItem("selectedRole") || "buyer";
+    const role = localStorage.getItem('selectedRole') || 'buyer';
 
     setLoading(true);
     try {
       const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: email,
           password,
@@ -75,12 +89,13 @@ export default function CompleteProfileModal({
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to complete profile");
+      if (!res.ok)
+        throw new Error(data.message || 'Failed to complete profile');
 
       onClose();
       setShowWelcomeModal(true);
     } catch (err: any) {
-      setError(err.message || "Something went wrong");
+      setError(err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -114,7 +129,9 @@ export default function CompleteProfileModal({
             <ArrowLeft size={28} />
           </button>
 
-          <h2 className="text-2xl font-bold text-gray-900 mt-8 text-center">Complete Profile</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mt-8 text-center">
+            Complete Profile
+          </h2>
           <p className="text-sm text-gray-600 text-center mb-6">
             Create your account to start exploring trusted sellers.
           </p>
@@ -122,7 +139,9 @@ export default function CompleteProfileModal({
           <div className="space-y-4">
             {/* Phone Number */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Phone Number *</label>
+              <label className="text-sm font-medium text-gray-700">
+                Phone Number *
+              </label>
               <div className="relative mt-1 flex items-center gap-2 border border-gray-300 rounded-2xl px-2">
                 <SelectCountryDropdown
                   selectedCountry={selectedCountry}
@@ -133,14 +152,16 @@ export default function CompleteProfileModal({
                   placeholder="901247XXXX"
                   className="flex-1 py-3 focus:outline-none"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Email Address *</label>
+              <label className="text-sm font-medium text-gray-700">
+                Email Address *
+              </label>
               <input
                 type="email"
                 placeholder="johndoe@gmail.com"
@@ -153,7 +174,9 @@ export default function CompleteProfileModal({
             {/* Names */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium text-gray-700">First Name *</label>
+                <label className="text-sm font-medium text-gray-700">
+                  First Name *
+                </label>
                 <input
                   type="text"
                   placeholder="John"
@@ -163,7 +186,9 @@ export default function CompleteProfileModal({
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">Last Name *</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Last Name *
+                </label>
                 <input
                   type="text"
                   placeholder="Doe"
@@ -176,10 +201,12 @@ export default function CompleteProfileModal({
 
             {/* Password */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Password *</label>
+              <label className="text-sm font-medium text-gray-700">
+                Password *
+              </label>
               <div className="relative mt-1">
                 <input
-                  type={showPass ? "text" : "password"}
+                  type={showPass ? 'text' : 'password'}
                   placeholder="Use at least 8 characters"
                   className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-2xl focus:outline-none"
                   value={password}
@@ -197,10 +224,12 @@ export default function CompleteProfileModal({
 
             {/* Confirm Password */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Confirm Password *</label>
+              <label className="text-sm font-medium text-gray-700">
+                Confirm Password *
+              </label>
               <div className="relative mt-1">
                 <input
-                  type={showConfirm ? "text" : "password"}
+                  type={showConfirm ? 'text' : 'password'}
                   placeholder="Confirm password"
                   className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-2xl focus:outline-none"
                   value={confirmPassword}
@@ -217,14 +246,16 @@ export default function CompleteProfileModal({
             </div>
           </div>
 
-          {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-sm text-center mt-4">{error}</p>
+          )}
 
           <button
             onClick={handleCreateAccount}
             disabled={loading}
             className="w-full mt-8 py-4 bg-gray-900 text-white rounded-2xl font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </motion.div>
       </motion.div>

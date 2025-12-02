@@ -1,8 +1,17 @@
-"use client";
-import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
-import { Home, Package, Store, MessageSquare, User, Menu, X, Star } from "lucide-react";
+'use client';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useState } from 'react';
+import {
+  Home,
+  Package,
+  Store,
+  MessageSquare,
+  User,
+  Menu,
+  X,
+  Star,
+} from 'lucide-react';
 
 interface MenuItem {
   label: string;
@@ -12,12 +21,21 @@ interface MenuItem {
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { label: "Home", href: "/store/dashboard", icon: <Home size={20} /> },
-  { label: "Products", href: "/store/products", icon: <Package size={20} /> },
-  { label: "Store Management", href: "/store/management", icon: <Store size={20} /> },
-  { label: "Reviews", href: "/store/reviews", icon: <Star size={20} /> },
-  { label: "Messages", href: "/store/messages", icon: <MessageSquare size={20} />, badge: 5 },
-  { label: "Profile", href: "/store/profile", icon: <User size={20} /> },
+  { label: 'Home', href: '/store/dashboard', icon: <Home size={20} /> },
+  { label: 'Products', href: '/store/products', icon: <Package size={20} /> },
+  {
+    label: 'Store Management',
+    href: '/store/management',
+    icon: <Store size={20} />,
+  },
+  { label: 'Reviews', href: '/store/reviews', icon: <Star size={20} /> },
+  {
+    label: 'Messages',
+    href: '/store/messages',
+    icon: <MessageSquare size={20} />,
+    badge: 5,
+  },
+  { label: 'Profile', href: '/store/profile', icon: <User size={20} /> },
 ];
 
 export default function StoreSidebar() {
@@ -28,7 +46,7 @@ export default function StoreSidebar() {
       <div className="p-4 border-b border-gray-200">
         <Link href="/">
           <Image
-          src="/svgs/wholesale-ng-logo.png"
+            src="/svgs/wholesale-ng-logo.png"
             alt="Wholesale Naija"
             width={170}
             height={48}
@@ -46,9 +64,7 @@ export default function StoreSidebar() {
                   onClick={() => setIsOpen(false)}
                   className="hover:bg-white flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all"
                 >
-                  <span>
-                    {item.icon}
-                  </span>
+                  <span>{item.icon}</span>
                   <span className="flex-1">{item.label}</span>
                   {item.badge && (
                     <span className="bg-gray-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -62,8 +78,18 @@ export default function StoreSidebar() {
         </ul>
       </nav>
       <div className="p-4 flex gap-2">
-        <Image src="/svgs/playstore-logo.svg" alt="Google Play" width={120} height={40} />
-        <Image src="/svgs/apple-logo.svg" alt="App Store" width={120} height={40} />
+        <Image
+          src="/svgs/playstore-logo.svg"
+          alt="Google Play"
+          width={120}
+          height={40}
+        />
+        <Image
+          src="/svgs/apple-logo.svg"
+          alt="App Store"
+          width={120}
+          height={40}
+        />
       </div>
     </div>
   );
@@ -81,7 +107,7 @@ export default function StoreSidebar() {
 
       <div
         className={`fixed inset-0 z-40 md:hidden transition-transform ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div

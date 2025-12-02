@@ -16,10 +16,10 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
-            <img 
-              src="https://res.cloudinary.com/dqtjja88b/image/upload/v1760218941/wholesaleNaija-removebg-preview_tkw3tv.png" 
-              alt="Wholesale Naija" 
-              className="h-10 sm:h-14" 
+            <img
+              src="https://res.cloudinary.com/dqtjja88b/image/upload/v1760218941/wholesaleNaija-removebg-preview_tkw3tv.png"
+              alt="Wholesale Naija"
+              className="h-10 sm:h-14"
             />
           </div>
           <button
@@ -46,7 +46,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
         {/* Categories */}
         <div className="flex-1 p-3 sm:p-4 overflow-y-auto">
-          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Categories</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+            Categories
+          </h3>
           <ul className="space-y-2">
             <li>
               <Link

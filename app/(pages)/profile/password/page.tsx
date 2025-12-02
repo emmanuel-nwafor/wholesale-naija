@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
-import Header from "@/app/components/header/Header";
-import BuyersProfileSidebar from "@/app/components/sidebar/BuyersProfileSidebar";
-import ChangePasswordModal from "@/app/components/auth/modals/ChangePasswordModal";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import CarouselBanner from "@/app/components/carousels/CarouselBanner";
-import DynamicHeader from "@/app/components/header/DynamicHeader";
+import React, { useState, useEffect } from 'react';
+import { Menu } from 'lucide-react';
+import Header from '@/app/components/header/Header';
+import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
+import ChangePasswordModal from '@/app/components/auth/modals/ChangePasswordModal';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import CarouselBanner from '@/app/components/carousels/CarouselBanner';
+import DynamicHeader from '@/app/components/header/DynamicHeader';
 
 interface UserProfile {
   fullName: string;
@@ -29,18 +29,18 @@ export default function BuyersProfilePasswordPage() {
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
   // Fetch profile data from the same API as sellers
   const loadProfile = async () => {
     try {
       setLoading(true);
-      const data = await fetchWithToken<{ user: UserProfile }>("/auth/profile");
+      const data = await fetchWithToken<{ user: UserProfile }>('/auth/profile');
       setProfile(data.user);
     } catch (err) {
-      console.error("Failed to fetch profile:", err);
+      console.error('Failed to fetch profile:', err);
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,11 @@ export default function BuyersProfilePasswordPage() {
 
                 {/* Desktop Sidebar */}
                 {!isMobile && (
-                  <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />
+                  <BuyersProfileSidebar
+                    isMobile={false}
+                    isOpen={true}
+                    setIsOpen={() => {}}
+                  />
                 )}
 
                 {/* Main Content */}
@@ -92,7 +96,8 @@ export default function BuyersProfilePasswordPage() {
                   {/* Display profile info */}
                   <div className="space-y-4 max-w-lg">
                     <p className="text-gray-600">
-                      To keep your account secure, you can change your password anytime using the verification code sent to your email.
+                      To keep your account secure, you can change your password
+                      anytime using the verification code sent to your email.
                     </p>
                   </div>
 
@@ -111,7 +116,7 @@ export default function BuyersProfilePasswordPage() {
           </main>
         </div>
       </div>
-        <CarouselBanner />
+      <CarouselBanner />
 
       {/* Modal */}
       <ChangePasswordModal

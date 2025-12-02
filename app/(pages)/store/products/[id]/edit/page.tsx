@@ -1,11 +1,11 @@
-"use client";
-import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, Upload, X, Image as ImageIcon } from "lucide-react";
-import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
-import DashboardHeader from "@/app/components/header/DashboardHeader";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
+'use client';
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, Upload, X, Image as ImageIcon } from 'lucide-react';
+import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
+import DashboardHeader from '@/app/components/header/DashboardHeader';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface Category {
   _id: string;
@@ -35,17 +35,17 @@ export default function ProductEditPage() {
   const [product, setProduct] = useState<Product | null>(null);
 
   // Form state
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [moq, setMoq] = useState("");
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [moq, setMoq] = useState('');
   const [status, setStatus] = useState(true);
 
   // Category state
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCat, setSelectedCat] = useState("");
-  const [selectedSub, setSelectedSub] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCat, setSelectedCat] = useState('');
+  const [selectedSub, setSelectedSub] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState('');
   const [subcategories, setSubcategories] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
 
@@ -61,27 +61,27 @@ export default function ProductEditPage() {
       try {
         const [prodRes, catRes] = await Promise.all([
           fetchWithToken<{ product: Product }>(`/v1/products/${productId}`),
-          fetchWithToken<{ categories: Category[] }>("/v1/categories"),
+          fetchWithToken<{ categories: Category[] }>('/v1/categories'),
         ]);
 
         const p = prodRes.product;
         setProduct(p);
 
         setName(p.name);
-        setDescription(p.description || "");
+        setDescription(p.description || '');
         setPrice(p.price.toString());
-        setMoq(p.moq?.toString() || "");
-        setStatus(p.status === "active" || p.status === "approved");
+        setMoq(p.moq?.toString() || '');
+        setStatus(p.status === 'active' || p.status === 'approved');
         setExistingImages(p.images);
         setPreviewUrls(p.images);
 
-        setSelectedCat(p.categories[0] || "");
-        setSelectedSub(p.subcategory || "");
-        setSelectedBrand(p.brand || "");
+        setSelectedCat(p.categories[0] || '');
+        setSelectedSub(p.subcategory || '');
+        setSelectedBrand(p.brand || '');
 
         setCategories(catRes.categories);
       } catch (err) {
-        alert("Failed to load product");
+        alert('Failed to load product');
       } finally {
         setLoading(false);
       }
@@ -92,11 +92,11 @@ export default function ProductEditPage() {
   // Load subcategories
   useEffect(() => {
     if (selectedCat && categories.length > 0) {
-      const cat = categories.find(c => c._id === selectedCat);
+      const cat = categories.find((c) => c._id === selectedCat);
       setSubcategories(cat?.subcategories || []);
-      if (!cat?.subcategories.find(s => s.name === selectedSub)) {
-        setSelectedSub("");
-        setSelectedBrand("");
+      if (!cat?.subcategories.find((s) => s.name === selectedSub)) {
+        setSelectedSub('');
+        setSelectedBrand('');
       }
     }
   }, [selectedCat, categories]);
@@ -104,10 +104,12 @@ export default function ProductEditPage() {
   // Load brands
   useEffect(() => {
     if (selectedSub && subcategories.length > 0) {
-      const sub = subcategories.find(s => s.name === selectedSub);
+      const sub = subcategories.find((s) => s.name === selectedSub);
       setBrands(sub?.brands || []);
-      if (!sub?.brands.find((b: { name: string }) => b.name === selectedBrand)) {
-        setSelectedBrand("");
+      if (
+        !sub?.brands.find((b: { name: string }) => b.name === selectedBrand)
+      ) {
+        setSelectedBrand('');
       }
     }
   }, [selectedSub, subcategories]);
@@ -115,58 +117,58 @@ export default function ProductEditPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + existingImages.length + newImages.length > 4) {
-      alert("Maximum 4 images allowed");
+      alert('Maximum 4 images allowed');
       return;
     }
-    setNewImages(prev => [...prev, ...files]);
-    files.forEach(f => {
+    setNewImages((prev) => [...prev, ...files]);
+    files.forEach((f) => {
       const url = URL.createObjectURL(f);
-      setPreviewUrls(prev => [...prev, url]);
+      setPreviewUrls((prev) => [...prev, url]);
     });
   };
 
   const removeImage = (index: number) => {
     if (index < existingImages.length) {
-      setExistingImages(prev => prev.filter((_, i) => i !== index));
+      setExistingImages((prev) => prev.filter((_, i) => i !== index));
     } else {
       const newIndex = index - existingImages.length;
-      setNewImages(prev => prev.filter((_, i) => i !== newIndex));
+      setNewImages((prev) => prev.filter((_, i) => i !== newIndex));
     }
-    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !price || previewUrls.length === 0) {
-      alert("Please fill all required fields");
+      alert('Please fill all required fields');
       return;
     }
 
     setSaving(true);
     const formData = new FormData();
 
-    formData.append("name", name);
-    formData.append("description", description);
-    formData.append("price", price);
-    if (moq) formData.append("moq", moq);
-    formData.append("categories", selectedCat);
-    if (selectedSub) formData.append("subcategory", selectedSub);
-    if (selectedBrand) formData.append("brand", selectedBrand);
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('price', price);
+    if (moq) formData.append('moq', moq);
+    formData.append('categories', selectedCat);
+    if (selectedSub) formData.append('subcategory', selectedSub);
+    if (selectedBrand) formData.append('brand', selectedBrand);
 
     // Keep existing images
-    existingImages.forEach(img => formData.append("existingImages", img));
+    existingImages.forEach((img) => formData.append('existingImages', img));
     // Add new images
-    newImages.forEach(img => formData.append("images", img));
+    newImages.forEach((img) => formData.append('images', img));
 
     try {
       await fetchWithToken(`/v1/seller/products/${productId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         body: formData,
       });
-      alert("Product updated successfully!");
+      alert('Product updated successfully!');
       router.back();
     } catch (err: any) {
-      alert(err.message || "Failed to update");
+      alert(err.message || 'Failed to update');
     } finally {
       setSaving(false);
     }
@@ -190,13 +192,21 @@ export default function ProductEditPage() {
             <div className="max-w-4xl mx-auto">
               {/* Header */}
               <div className="flex items-center gap-4 mb-8">
-                <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg">
+                <button
+                  onClick={() => router.back()}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
-                <h1 className="text-2xl font-bold text-gray-900">Edit Product</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Edit Product
+                </h1>
               </div>
 
-              <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-sm p-8 space-y-8">
+              <form
+                onSubmit={handleSubmit}
+                className="bg-white rounded-3xl shadow-sm p-8 space-y-8"
+              >
                 {/* Images */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -209,7 +219,9 @@ export default function ProductEditPage() {
                     {previewUrls.length === 0 ? (
                       <div className="text-center py-12">
                         <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-sm text-gray-600">Click to upload (max 4 images)</p>
+                        <p className="text-sm text-gray-600">
+                          Click to upload (max 4 images)
+                        </p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-4 gap-4">
@@ -272,20 +284,26 @@ export default function ProductEditPage() {
                 {/* Category Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Category *
+                    </label>
                     <select
                       value={selectedCat}
                       onChange={(e) => setSelectedCat(e.target.value)}
                       className="w-full px-4 py-3 bg-gray-100 rounded-xl"
                     >
                       <option value="">Select category</option>
-                      {categories.map(c => (
-                        <option key={c._id} value={c._id}>{c.name}</option>
+                      {categories.map((c) => (
+                        <option key={c._id} value={c._id}>
+                          {c.name}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Sub-category</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Sub-category
+                    </label>
                     <select
                       value={selectedSub}
                       onChange={(e) => setSelectedSub(e.target.value)}
@@ -293,8 +311,10 @@ export default function ProductEditPage() {
                       className="w-full px-4 py-3 bg-gray-100 rounded-xl disabled:opacity-50"
                     >
                       <option value="">Select subcategory</option>
-                      {subcategories.map(s => (
-                        <option key={s.name} value={s.name}>{s.name}</option>
+                      {subcategories.map((s) => (
+                        <option key={s.name} value={s.name}>
+                          {s.name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -302,7 +322,9 @@ export default function ProductEditPage() {
 
                 {/* Brand */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Brand / Nested Category</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Brand / Nested Category
+                  </label>
                   <select
                     value={selectedBrand}
                     onChange={(e) => setSelectedBrand(e.target.value)}
@@ -310,15 +332,19 @@ export default function ProductEditPage() {
                     className="w-full px-4 py-3 bg-gray-100 rounded-xl disabled:opacity-50"
                   >
                     <option value="">e.g. apple</option>
-                    {brands.map(b => (
-                      <option key={b.name} value={b.name}>{b.name}</option>
+                    {brands.map((b) => (
+                      <option key={b.name} value={b.name}>
+                        {b.name}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Product description *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Product description *
+                  </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -331,7 +357,9 @@ export default function ProductEditPage() {
                 {/* Price & MOQ */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Price (per item) *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Price (per item) *
+                    </label>
                     <input
                       type="number"
                       value={price}
@@ -341,7 +369,9 @@ export default function ProductEditPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">MOQ (Minimum Order Quantity)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      MOQ (Minimum Order Quantity)
+                    </label>
                     <input
                       type="number"
                       value={moq}
@@ -360,9 +390,11 @@ export default function ProductEditPage() {
                   <button
                     type="button"
                     onClick={() => setStatus(!status)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${status ? "bg-blue-600" : "bg-gray-300"}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${status ? 'bg-blue-600' : 'bg-gray-300'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${status ? "translate-x-6" : "translate-x-1"}`} />
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${status ? 'translate-x-6' : 'translate-x-1'}`}
+                    />
                   </button>
                 </div>
 
@@ -380,7 +412,7 @@ export default function ProductEditPage() {
                     disabled={saving}
                     className="px-8 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 disabled:opacity-70 transition"
                   >
-                    {saving ? "Updating..." : "Update Changes"}
+                    {saving ? 'Updating...' : 'Update Changes'}
                   </button>
                 </div>
               </form>

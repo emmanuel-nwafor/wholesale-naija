@@ -1,5 +1,5 @@
 // app/profile/reviews/page.tsx
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Menu, Star, Verified } from 'lucide-react';
@@ -61,7 +61,9 @@ export default function ProfileReviewsPage() {
     const fetchSellers = async () => {
       try {
         setLoadingSellers(true);
-        const res = await fetchWithToken<{ sellers: any[] }>('/v1/users/sellers');
+        const res = await fetchWithToken<{ sellers: any[] }>(
+          '/v1/users/sellers'
+        );
 
         if (!res?.sellers || !Array.isArray(res.sellers)) {
           setAllSellers([]);
@@ -98,7 +100,9 @@ export default function ProfileReviewsPage() {
     const fetchGivenReviews = async () => {
       try {
         setLoadingReviews(true);
-        const res = await fetchWithToken<{ reviews: GivenReview[] }>('/v1/users/me/reviews-written');
+        const res = await fetchWithToken<{ reviews: GivenReview[] }>(
+          '/v1/users/me/reviews-written'
+        );
 
         if (res?.reviews && Array.isArray(res.reviews)) {
           setGivenReviews(res.reviews);
@@ -140,18 +144,35 @@ export default function ProfileReviewsPage() {
           <main className="flex-1 p-4 md:p-8">
             <div className="max-w-5xl mx-auto">
               {isMobile && (
-                <button onClick={() => setMenuOpen(true)} className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl p-3">
+                <button
+                  onClick={() => setMenuOpen(true)}
+                  className="mb-6 flex items-center gap-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl p-3"
+                >
                   <Menu className="w-5 h-5" />
                   Menu
                 </button>
               )}
 
               <div className="flex flex-col lg:flex-row gap-8">
-                {isMobile && <BuyersProfileSidebar isMobile={true} isOpen={menuOpen} setIsOpen={setMenuOpen} />}
-                {!isMobile && <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />}
+                {isMobile && (
+                  <BuyersProfileSidebar
+                    isMobile={true}
+                    isOpen={menuOpen}
+                    setIsOpen={setMenuOpen}
+                  />
+                )}
+                {!isMobile && (
+                  <BuyersProfileSidebar
+                    isMobile={false}
+                    isOpen={true}
+                    setIsOpen={() => {}}
+                  />
+                )}
 
                 <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-6">Your Reviews</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-6">
+                    Your Reviews
+                  </h1>
 
                   <div className="flex gap-8 border-b border-gray-200 mb-8">
                     <button
@@ -174,20 +195,33 @@ export default function ProfileReviewsPage() {
                       {loadingSellers ? (
                         <div className="text-center py-16">
                           <div className="w-12 h-12 border-4 border-gray-300 border-t-slate-900 rounded-full animate-spin mx-auto" />
-                          <p className="mt-4 text-gray-600">Loading sellers...</p>
+                          <p className="mt-4 text-gray-600">
+                            Loading sellers...
+                          </p>
                         </div>
                       ) : allSellers.length === 0 ? (
                         <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
-                          <p className="text-gray-500 text-lg">No sellers found</p>
+                          <p className="text-gray-500 text-lg">
+                            No sellers found
+                          </p>
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                           {allSellers.map((seller) => (
-                            <div key={seller._id} className="bg-white rounded-3xl p-6 border border-gray-100">
+                            <div
+                              key={seller._id}
+                              className="bg-white rounded-3xl p-6 border border-gray-100"
+                            >
                               <div className="flex flex-col items-start gap-4">
                                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
                                   {seller.profilePicture?.url ? (
-                                    <Image src={seller.profilePicture.url} alt={seller.store.name} width={64} height={64} className="w-full h-full object-cover" />
+                                    <Image
+                                      src={seller.profilePicture.url}
+                                      alt={seller.store.name}
+                                      width={64}
+                                      height={64}
+                                      className="w-full h-full object-cover"
+                                    />
                                   ) : (
                                     <div className="w-full h-full bg-gray-300" />
                                   )}
@@ -195,14 +229,23 @@ export default function ProfileReviewsPage() {
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-gray-900 flex items-center gap-1.5">
                                     {seller.store.name}
-                                    {seller.isVerifiedSeller && <Verified className="w-4 h-4 fill-green-500 text-white" />}
+                                    {seller.isVerifiedSeller && (
+                                      <Verified className="w-4 h-4 fill-green-500 text-white" />
+                                    )}
                                   </h3>
-                                  <p className="text-xs text-gray-600 mt-1">Wholesale Store</p>
+                                  <p className="text-xs text-gray-600 mt-1">
+                                    Wholesale Store
+                                  </p>
                                   <div className="flex gap-1 mt-3">
                                     {[1, 2, 3, 4, 5].map((i) => (
-                                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                                      <Star
+                                        key={i}
+                                        className="w-5 h-5 fill-yellow-400 text-yellow-400"
+                                      />
                                     ))}
-                                    <span className="text-sm text-gray-600 ml-1">(5.0)</span>
+                                    <span className="text-sm text-gray-600 ml-1">
+                                      (5.0)
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -225,21 +268,36 @@ export default function ProfileReviewsPage() {
                       {loadingReviews ? (
                         <div className="text-center py-16">
                           <div className="w-12 h-12 border-4 border-gray-300 border-t-slate-900 rounded-full animate-spin mx-auto" />
-                          <p className="mt-4 text-gray-600">Loading your reviews...</p>
+                          <p className="mt-4 text-gray-600">
+                            Loading your reviews...
+                          </p>
                         </div>
                       ) : givenReviews.length === 0 ? (
                         <div className="text-center py-20 bg-white rounded-3xl border border-gray-100">
-                          <p className="text-gray-500 text-lg">No reviews yet</p>
-                          <p className="text-sm text-gray-400 mt-2">Your reviews will appear here</p>
+                          <p className="text-gray-500 text-lg">
+                            No reviews yet
+                          </p>
+                          <p className="text-sm text-gray-400 mt-2">
+                            Your reviews will appear here
+                          </p>
                         </div>
                       ) : (
                         <div className="space-y-6">
                           {givenReviews.map((review) => (
-                            <div key={review._id} className="bg-white rounded-3xl p-6 border border-gray-100">
+                            <div
+                              key={review._id}
+                              className="bg-white rounded-3xl p-6 border border-gray-100"
+                            >
                               <div className="flex items-start gap-4">
                                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white">
                                   {review.sellerId.profilePicture?.url ? (
-                                    <Image src={review.sellerId.profilePicture.url} alt={review.sellerId.store.name} width={64} height={64} className="w-full h-full object-cover" />
+                                    <Image
+                                      src={review.sellerId.profilePicture.url}
+                                      alt={review.sellerId.store.name}
+                                      width={64}
+                                      height={64}
+                                      className="w-full h-full object-cover"
+                                    />
                                   ) : (
                                     <div className="w-full h-full bg-gray-300" />
                                   )}
@@ -247,9 +305,13 @@ export default function ProfileReviewsPage() {
                                 <div className="flex-1">
                                   <h3 className="font-semibold text-gray-900 flex items-center gap-1.5">
                                     {review.sellerId.store.name}
-                                    {review.sellerId.isVerifiedSeller && <Verified className="w-4 h-4 fill-green-500 text-white" />}
+                                    {review.sellerId.isVerifiedSeller && (
+                                      <Verified className="w-4 h-4 fill-green-500 text-white" />
+                                    )}
                                   </h3>
-                                  <p className="text-xs text-gray-600 mt-1">Reviewed: {review.productId.name}</p>
+                                  <p className="text-xs text-gray-600 mt-1">
+                                    Reviewed: {review.productId.name}
+                                  </p>
 
                                   <div className="flex gap-1 mt-3">
                                     {[...Array(5)].map((_, i) => (
@@ -260,18 +322,28 @@ export default function ProfileReviewsPage() {
                                     ))}
                                   </div>
 
-                                  <p className="mt-4 text-gray-800 font-medium">{review.comment}</p>
+                                  <p className="mt-4 text-gray-800 font-medium">
+                                    {review.comment}
+                                  </p>
 
                                   {review.productId.images[0] && (
                                     <div className="flex gap-3 mt-4">
                                       <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                                        <Image src={review.productId.images[0]} alt={review.productId.name} width={64} height={64} className="w-full h-full object-cover" />
+                                        <Image
+                                          src={review.productId.images[0]}
+                                          alt={review.productId.name}
+                                          width={64}
+                                          height={64}
+                                          className="w-full h-full object-cover"
+                                        />
                                       </div>
                                     </div>
                                   )}
 
                                   <p className="text-xs text-gray-500 mt-4">
-                                    {new Date(review.createdAt).toLocaleDateString()}
+                                    {new Date(
+                                      review.createdAt
+                                    ).toLocaleDateString()}
                                   </p>
                                 </div>
                               </div>
@@ -287,7 +359,7 @@ export default function ProfileReviewsPage() {
           </main>
         </div>
       </div>
-        <CarouselBanner />
+      <CarouselBanner />
 
       {/* Modal */}
       {selectedSeller && (

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Upload, Trash2, Plus } from 'lucide-react';
@@ -19,7 +19,11 @@ interface VariantData {
 interface AddVariantModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { name: string; image: File | null; rows: VariantRow[] }) => void;
+  onSave: (data: {
+    name: string;
+    image: File | null;
+    rows: VariantRow[];
+  }) => void;
   initialData?: VariantData;
 }
 
@@ -71,7 +75,8 @@ export default function AddVariantModal({
     );
   };
 
-  const addRow = () => setRows((prev) => [...prev, { minQty: '', maxQty: '', price: '' }]);
+  const addRow = () =>
+    setRows((prev) => [...prev, { minQty: '', maxQty: '', price: '' }]);
   const removeRow = (index: number) => {
     if (rows.length === 1) return;
     setRows((prev) => prev.filter((_, i) => i !== index));
@@ -80,9 +85,13 @@ export default function AddVariantModal({
   const handleSave = () => {
     if (!name.trim()) return alert('Variant name is required');
 
-    const validRows = rows.filter((r) => r.minQty.trim() !== '' && r.price.trim() !== '');
+    const validRows = rows.filter(
+      (r) => r.minQty.trim() !== '' && r.price.trim() !== ''
+    );
     if (validRows.length === 0)
-      return alert('Please add at least one pricing tier with Min Qty and Price');
+      return alert(
+        'Please add at least one pricing tier with Min Qty and Price'
+      );
 
     onSave({ name: name.trim(), image, rows: validRows });
     onClose();
@@ -124,7 +133,9 @@ export default function AddVariantModal({
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-4">
               Variant Image{' '}
-              <span className="text-gray-500 font-normal">(Optional - for preview only)</span>
+              <span className="text-gray-500 font-normal">
+                (Optional - for preview only)
+              </span>
             </label>
             <div className="flex items-center gap-6">
               <label htmlFor="variant-image" className="cursor-pointer">
@@ -138,7 +149,9 @@ export default function AddVariantModal({
                   ) : (
                     <>
                       <Upload className="w-10 h-10 text-gray-400 mb-2" />
-                      <span className="text-sm text-gray-500">Upload Image</span>
+                      <span className="text-sm text-gray-500">
+                        Upload Image
+                      </span>
                     </>
                   )}
                 </div>
@@ -202,7 +215,10 @@ export default function AddVariantModal({
 
             <div className="space-y-3">
               {rows.map((row, index) => (
-                <div key={index} className="grid grid-cols-3 gap-4 items-center">
+                <div
+                  key={index}
+                  className="grid grid-cols-3 gap-4 items-center"
+                >
                   <input
                     type="number"
                     value={row.minQty}
@@ -218,11 +234,15 @@ export default function AddVariantModal({
                     className="px-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600">₦</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600">
+                      ₦
+                    </span>
                     <input
                       type="number"
                       value={row.price}
-                      onChange={(e) => updateRow(index, 'price', e.target.value)}
+                      onChange={(e) =>
+                        updateRow(index, 'price', e.target.value)
+                      }
                       placeholder="120000"
                       className="w-full pl-10 pr-12 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />

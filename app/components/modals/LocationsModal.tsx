@@ -1,9 +1,9 @@
 // app/components/modals/LocationsModal.tsx
-"use client";
+'use client';
 
-import React from "react";
-import { X, ChevronRight, Search, MapPin } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import React from 'react';
+import { X, ChevronRight, Search, MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ModalProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   isMobile: boolean;
-  currentStep: "state" | "lga" | "area" | null;
+  currentStep: 'state' | 'lga' | 'area' | null;
 }
 
 export const Modal = ({
@@ -36,10 +36,10 @@ export const Modal = ({
           onClick={onClose}
         >
           <motion.div
-            initial={isMobile ? { y: "100%" } : { scale: 0.95, opacity: 0 }}
+            initial={isMobile ? { y: '100%' } : { scale: 0.95, opacity: 0 }}
             animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1 }}
-            exit={isMobile ? { y: "100%" } : { scale: 0.95, opacity: 0 }}
-            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+            exit={isMobile ? { y: '100%' } : { scale: 0.95, opacity: 0 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
             className="relative w-full max-w-md bg-white rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -59,7 +59,10 @@ export const Modal = ({
             </div>
 
             {/* Scrollable Content */}
-            <div className="overflow-y-auto" style={{ maxHeight: "calc(90vh - 80px)" }}>
+            <div
+              className="overflow-y-auto"
+              style={{ maxHeight: 'calc(90vh - 80px)' }}
+            >
               <div className="p-5 pb-10">{children}</div>
             </div>
           </motion.div>
@@ -70,22 +73,55 @@ export const Modal = ({
 };
 
 /* STATE SELECTION */
-export const StateSelection = ({ onSelect }: { onSelect: (state: string) => void }) => {
+export const StateSelection = ({
+  onSelect,
+}: {
+  onSelect: (state: string) => void;
+}) => {
   const states = [
-    "Abia State", "Adamawa State", "Akwa Ibom State", "Anambra State", "Bauchi State",
-    "Bayelsa State", "Benue State", "Borno State", "Cross River State", "Delta State",
-    "Ebonyi State", "Edo State", "Ekiti State", "Enugu State", "FCT", "Gombe State",
-    "Imo State", "Jigawa State", "Kaduna State", "Kano State", "Katsina State",
-    "Kebbi State", "Kogi State", "Kwara State", "Lagos State", "Nasarawa State",
-    "Niger State", "Ogun State", "Ondo State", "Osun State", "Oyo State",
-    "Plateau State", "Rivers State", "Sokoto State", "Taraba State", "Yobe State",
-    "Zamfara State",
+    'Abia State',
+    'Adamawa State',
+    'Akwa Ibom State',
+    'Anambra State',
+    'Bauchi State',
+    'Bayelsa State',
+    'Benue State',
+    'Borno State',
+    'Cross River State',
+    'Delta State',
+    'Ebonyi State',
+    'Edo State',
+    'Ekiti State',
+    'Enugu State',
+    'FCT',
+    'Gombe State',
+    'Imo State',
+    'Jigawa State',
+    'Kaduna State',
+    'Kano State',
+    'Katsina State',
+    'Kebbi State',
+    'Kogi State',
+    'Kwara State',
+    'Lagos State',
+    'Nasarawa State',
+    'Niger State',
+    'Ogun State',
+    'Ondo State',
+    'Osun State',
+    'Oyo State',
+    'Plateau State',
+    'Rivers State',
+    'Sokoto State',
+    'Taraba State',
+    'Yobe State',
+    'Zamfara State',
   ];
 
   return (
     <div className="space-y-4">
       <button
-        onClick={() => onSelect("current")}
+        onClick={() => onSelect('current')}
         className="w-full flex items-center gap-3 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition"
       >
         <MapPin className="w-5 h-5 text-blue-600" />
@@ -111,26 +147,95 @@ export const StateSelection = ({ onSelect }: { onSelect: (state: string) => void
 };
 
 /* LGA SELECTION */
-export const LGASelection = ({ state, onSelect }: { state: string; onSelect: (lga: string) => void }) => {
+export const LGASelection = ({
+  state,
+  onSelect,
+}: {
+  state: string;
+  onSelect: (lga: string) => void;
+}) => {
   const lgas: Record<string, string[]> = {
-    "Lagos State": [
-      "Agege", "Ajeromi-Ifelodun", "Alimosho", "Amuwo-Odofin", "Apapa", "Badagry",
-      "Epe", "Eti-Osa", "Ibeju-Lekki", "Ifako-Ijaiye", "Ikeja", "Ikorodu", "Kosofe",
-      "Lagos Island", "Lagos Mainland", "Mushin", "Ojo", "Oshodi-Isolo", "Shomolu", "Surulere",
+    'Lagos State': [
+      'Agege',
+      'Ajeromi-Ifelodun',
+      'Alimosho',
+      'Amuwo-Odofin',
+      'Apapa',
+      'Badagry',
+      'Epe',
+      'Eti-Osa',
+      'Ibeju-Lekki',
+      'Ifako-Ijaiye',
+      'Ikeja',
+      'Ikorodu',
+      'Kosofe',
+      'Lagos Island',
+      'Lagos Mainland',
+      'Mushin',
+      'Ojo',
+      'Oshodi-Isolo',
+      'Shomolu',
+      'Surulere',
     ],
-    "FCT": ["Abaji", "Bwari", "Gwagwalada", "Kuje", "Kwali", "Municipal Area Council"],
-    "Abia State": [
-      "Aba North", "Aba South", "Arochukwu", "Bende", "Ikwuano", "Isiala Ngwa North",
-      "Isiala Ngwa South", "Isuikwuato", "Obi Ngwa", "Ohafia", "Osisioma", "Ugwunagbo",
-      "Ukwa East", "Ukwa West", "Umunneochi",
+    FCT: [
+      'Abaji',
+      'Bwari',
+      'Gwagwalada',
+      'Kuje',
+      'Kwali',
+      'Municipal Area Council',
     ],
-    "Oyo State": [
-      "Afijio", "Akinyele", "Atiba", "Atisbo", "Egbeda", "Ibadan North", "Ibadan North-East",
-      "Ibadan North-West", "Ibadan South-East", "Ibadan South-West", "Ibarapa Central",
-      "Ibarapa East", "Ibarapa North", "Ido", "Irepo", "Iseyin", "Itesiwaju", "Iwajowa",
-      "Kajola", "Lagelu", "Ogbomosho North", "Ogbomosho South", "Ogo Oluwa", "Olorunsogo",
-      "Oluyole", "Ona Ara", "Orelope", "Ori Ire", "Oyo East", "Oyo West", "Saki East",
-      "Saki West", "Surulere",
+    'Abia State': [
+      'Aba North',
+      'Aba South',
+      'Arochukwu',
+      'Bende',
+      'Ikwuano',
+      'Isiala Ngwa North',
+      'Isiala Ngwa South',
+      'Isuikwuato',
+      'Obi Ngwa',
+      'Ohafia',
+      'Osisioma',
+      'Ugwunagbo',
+      'Ukwa East',
+      'Ukwa West',
+      'Umunneochi',
+    ],
+    'Oyo State': [
+      'Afijio',
+      'Akinyele',
+      'Atiba',
+      'Atisbo',
+      'Egbeda',
+      'Ibadan North',
+      'Ibadan North-East',
+      'Ibadan North-West',
+      'Ibadan South-East',
+      'Ibadan South-West',
+      'Ibarapa Central',
+      'Ibarapa East',
+      'Ibarapa North',
+      'Ido',
+      'Irepo',
+      'Iseyin',
+      'Itesiwaju',
+      'Iwajowa',
+      'Kajola',
+      'Lagelu',
+      'Ogbomosho North',
+      'Ogbomosho South',
+      'Ogo Oluwa',
+      'Olorunsogo',
+      'Oluyole',
+      'Ona Ara',
+      'Orelope',
+      'Ori Ire',
+      'Oyo East',
+      'Oyo West',
+      'Saki East',
+      'Saki West',
+      'Surulere',
     ],
   };
 
@@ -150,7 +255,9 @@ export const LGASelection = ({ state, onSelect }: { state: string; onSelect: (lg
       </div>
 
       {items.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">No LGAs found for this state</p>
+        <p className="text-center text-gray-500 py-8">
+          No LGAs found for this state
+        </p>
       ) : (
         items.map((lga) => (
           <button
@@ -168,18 +275,63 @@ export const LGASelection = ({ state, onSelect }: { state: string; onSelect: (lg
 };
 
 /* AREA SELECTION */
-export const AreaSelection = ({ lga, onSelect }: { lga: string; onSelect: (area: string) => void }) => {
+export const AreaSelection = ({
+  lga,
+  onSelect,
+}: {
+  lga: string;
+  onSelect: (area: string) => void;
+}) => {
   const areas: Record<string, string[]> = {
     Ikeja: [
-      "Adeniyi Jones", "Agidingbi", "Airport Road", "Alausa", "Allen Avenue", "Awolowo Way",
-      "Computer Village", "Ikeja GRA", "Opebi", "Oregun", "Maryland", "Anthony", "Omole", "Magodo",
+      'Adeniyi Jones',
+      'Agidingbi',
+      'Airport Road',
+      'Alausa',
+      'Allen Avenue',
+      'Awolowo Way',
+      'Computer Village',
+      'Ikeja GRA',
+      'Opebi',
+      'Oregun',
+      'Maryland',
+      'Anthony',
+      'Omole',
+      'Magodo',
     ],
     Surulere: [
-      "Adelabu", "Aguda", "Bode Thomas", "Coker", "Ijesha", "Masha", "Ogunlana Drive",
-      "Stadium", "Tejuosho", "Western Avenue", "Lawanson", "Itire", "Ojuelegba", "Yaba",
+      'Adelabu',
+      'Aguda',
+      'Bode Thomas',
+      'Coker',
+      'Ijesha',
+      'Masha',
+      'Ogunlana Drive',
+      'Stadium',
+      'Tejuosho',
+      'Western Avenue',
+      'Lawanson',
+      'Itire',
+      'Ojuelegba',
+      'Yaba',
     ],
-    Agege: ["Orile Agege", "Dopemu", "Iju Ishaga", "Oko Oba", "Abule Egba", "Pen Cinema"],
-    Alimosho: ["Igando", "Ikotun", "Egbeda", "Ipaja", "Ayobo", "Shasha", "Idimu"],
+    Agege: [
+      'Orile Agege',
+      'Dopemu',
+      'Iju Ishaga',
+      'Oko Oba',
+      'Abule Egba',
+      'Pen Cinema',
+    ],
+    Alimosho: [
+      'Igando',
+      'Ikotun',
+      'Egbeda',
+      'Ipaja',
+      'Ayobo',
+      'Shasha',
+      'Idimu',
+    ],
     // Add more as needed
   };
 
@@ -199,7 +351,9 @@ export const AreaSelection = ({ lga, onSelect }: { lga: string; onSelect: (area:
       </div>
 
       {items.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">No areas found for this LGA</p>
+        <p className="text-center text-gray-500 py-8">
+          No areas found for this LGA
+        </p>
       ) : (
         items.map((area) => (
           <button

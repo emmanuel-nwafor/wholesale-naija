@@ -1,13 +1,13 @@
 // app/(seller)/profile/page.tsx
-"use client";
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, Camera } from 'lucide-react';
-import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
-import DashboardHeader from "@/app/components/header/DashboardHeader";
+import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
+import DashboardHeader from '@/app/components/header/DashboardHeader';
 import ProfileSidebar from '@/app/components/sidebar/SellersProfileSidebar';
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import OkaySuccessModal from "@/app/components/modals/OkaySuccessModal";
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
 
 export default function SellerProfilePage() {
   const [isMobile, setIsMobile] = useState(false);
@@ -21,12 +21,12 @@ export default function SellerProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
-    fullName: "",
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
-    profilePicture: "",
+    fullName: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    profilePicture: '',
   });
 
   useEffect(() => {
@@ -43,16 +43,16 @@ export default function SellerProfilePage() {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      const data = await fetchWithToken<any>("/auth/profile");
+      const data = await fetchWithToken<any>('/auth/profile');
       const u = data.user;
 
       setForm({
-        fullName: u.fullName || "",
-        firstName: u.firstName || "",
-        lastName: u.lastName || "",
-        phone: u.phone || "",
-        email: u.email || "",
-        profilePicture: u.profilePicture?.url || "",
+        fullName: u.fullName || '',
+        firstName: u.firstName || '',
+        lastName: u.lastName || '',
+        phone: u.phone || '',
+        email: u.email || '',
+        profilePicture: u.profilePicture?.url || '',
       });
     } catch (err) {
       console.error(err);
@@ -64,23 +64,23 @@ export default function SellerProfilePage() {
   const uploadPhoto = async (file: File) => {
     setUploading(true);
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append('file', file);
 
     try {
-      const res = await fetchWithToken<any>("/uploads/single", {
-        method: "POST",
+      const res = await fetchWithToken<any>('/uploads/single', {
+        method: 'POST',
         body: fd,
       });
 
       const newUrl = res.uploaded[0].url;
 
       // Show image immediately with cache buster
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
-        profilePicture: newUrl + "?t=" + Date.now(),
+        profilePicture: newUrl + '?t=' + Date.now(),
       }));
     } catch (err) {
-      alert("Upload failed");
+      alert('Upload failed');
     } finally {
       setUploading(false);
     }
@@ -89,44 +89,45 @@ export default function SellerProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await fetchWithToken<any>("/auth/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetchWithToken<any>('/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: form.fullName,
           firstName: form.firstName,
           lastName: form.lastName,
           phone: form.phone,
-          profilePicture: form.profilePicture.replace(/\?.*$/, ""), 
+          profilePicture: form.profilePicture.replace(/\?.*$/, ''),
         }),
       });
 
       // Update form
       const u = response.user;
       setForm({
-        fullName: u.fullName || "",
-        firstName: u.firstName || "",
-        lastName: u.lastName || "",
-        phone: u.phone || "",
-        email: u.email || "",
-        profilePicture: u.profilePicture?.url || "",
+        fullName: u.fullName || '',
+        firstName: u.firstName || '',
+        lastName: u.lastName || '',
+        phone: u.phone || '',
+        email: u.email || '',
+        profilePicture: u.profilePicture?.url || '',
       });
 
       setIsEditing(false);
       setShowSuccess(true);
     } catch (err: any) {
-      alert(err.message || "Failed to save profile");
+      alert(err.message || 'Failed to save profile');
     } finally {
       setSaving(false);
     }
   };
 
-  const initials = form.fullName
-    .split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || "JJ";
+  const initials =
+    form.fullName
+      .split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'JJ';
 
   return (
     <div className="flex min-h-screen">
@@ -147,7 +148,11 @@ export default function SellerProfilePage() {
 
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
               <div className="lg:w-64">
-                <ProfileSidebar isMobile={isMobile} isOpen={menuOpen} setIsOpen={setMenuOpen} />
+                <ProfileSidebar
+                  isMobile={isMobile}
+                  isOpen={menuOpen}
+                  setIsOpen={setMenuOpen}
+                />
               </div>
 
               <div className="flex-1 bg-white rounded-2xl p-6">
@@ -184,7 +189,10 @@ export default function SellerProfilePage() {
                           type="file"
                           accept="image/*"
                           ref={fileInputRef}
-                          onChange={(e) => e.target.files?.[0] && uploadPhoto(e.target.files[0])}
+                          onChange={(e) =>
+                            e.target.files?.[0] &&
+                            uploadPhoto(e.target.files[0])
+                          }
                           className="hidden"
                         />
                         <button
@@ -203,8 +211,12 @@ export default function SellerProfilePage() {
                   </div>
 
                   <div className="ml-6">
-                    <h2 className="text-lg font-semibold">{form.fullName || "Your Name"}</h2>
-                    <p className="text-sm text-gray-500">Update your photo and personal details.</p>
+                    <h2 className="text-lg font-semibold">
+                      {form.fullName || 'Your Name'}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      Update your photo and personal details.
+                    </p>
                   </div>
                 </div>
 
@@ -212,21 +224,29 @@ export default function SellerProfilePage() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        First Name
+                      </label>
                       <input
                         type="text"
                         value={form.firstName}
-                        onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                        onChange={(e) =>
+                          setForm({ ...form, firstName: e.target.value })
+                        }
                         disabled={!isEditing}
                         className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name
+                      </label>
                       <input
                         type="text"
                         value={form.lastName}
-                        onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                        onChange={(e) =>
+                          setForm({ ...form, lastName: e.target.value })
+                        }
                         disabled={!isEditing}
                         className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
                       />
@@ -234,29 +254,39 @@ export default function SellerProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name
+                    </label>
                     <input
                       type="text"
                       value={form.fullName}
-                      onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, fullName: e.target.value })
+                      }
                       disabled={!isEditing}
                       className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
                     <input
                       type="tel"
                       value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, phone: e.target.value })
+                      }
                       disabled={!isEditing}
                       className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address
+                    </label>
                     <input
                       type="email"
                       value={form.email}
@@ -282,7 +312,7 @@ export default function SellerProfilePage() {
                       disabled={saving}
                       className="px-8 py-3 hover:cursor-pointer bg-slate-900 text-white rounded-xl disabled:opacity-70"
                     >
-                      {saving ? "Saving..." : "Save Changes"}
+                      {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 )}

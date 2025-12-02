@@ -1,26 +1,29 @@
 // app/components/modals/ChangePasswordModal.tsx
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Eye, EyeOff, Mail, Shield } from "lucide-react";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import OkaySuccessModal from "@/app/components/modals/OkaySuccessModal";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Eye, EyeOff, Mail, Shield } from 'lucide-react';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
+export default function ChangePasswordModal({
+  isOpen,
+  onClose,
+}: ChangePasswordModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -28,47 +31,50 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
   if (!isOpen) return null;
 
   const handleSendCode = async () => {
-    if (!email || !email.includes("@")) return setError("Enter a valid email");
+    if (!email || !email.includes('@')) return setError('Enter a valid email');
 
     setLoading(true);
-    setError("");
+    setError('');
     try {
-      await fetchWithToken("/auth/forgot-password", {
-        method: "POST",
+      await fetchWithToken('/auth/forgot-password', {
+        method: 'POST',
         body: JSON.stringify({ email }),
       });
       setStep(2);
     } catch (err: any) {
-      setError(err.message || "Failed to send code");
+      setError(err.message || 'Failed to send code');
     } finally {
       setLoading(false);
     }
   };
 
   const handleResetPassword = async () => {
-    if (code.length !== 4 || !/^\d+$/.test(code)) return setError("Enter valid 4-digit code");
-    if (newPassword.length < 6) return setError("Password must be 6+ characters");
-    if (newPassword !== confirmPassword) return setError("Passwords don't match");
+    if (code.length !== 4 || !/^\d+$/.test(code))
+      return setError('Enter valid 4-digit code');
+    if (newPassword.length < 6)
+      return setError('Password must be 6+ characters');
+    if (newPassword !== confirmPassword)
+      return setError("Passwords don't match");
 
     setLoading(true);
-    setError("");
+    setError('');
     try {
-      await fetchWithToken("/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await fetchWithToken('/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, token: code, newPassword }),
       });
       setShowSuccess(true);
       setTimeout(() => onClose(), 1800);
     } catch (err: any) {
-      setError(err.message || "Wrong or expired code");
+      setError(err.message || 'Wrong or expired code');
     } finally {
       setLoading(false);
     }
   };
 
   const goBack = () => {
-    setError("");
+    setError('');
     step === 1 ? onClose() : setStep(1);
   };
 
@@ -87,16 +93,21 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="relative w-full max-w-md max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="p-6 border-b border-gray-100">
-            <button onClick={goBack} className="text-gray-600 hover:text-gray-900">
+            <button
+              onClick={goBack}
+              className="text-gray-600 hover:text-gray-900"
+            >
               <ArrowLeft size={28} />
             </button>
-            <h2 className="text-2xl font-bold text-center -mt-8">Change Password</h2>
+            <h2 className="text-2xl font-bold text-center -mt-8">
+              Change Password
+            </h2>
           </div>
 
           {/* Scrollable Body */}
@@ -113,8 +124,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
               )}
               <p className="text-gray-600 text-sm">
                 {step === 1
-                  ? "Enter your email to receive a 4-digit code"
-                  : "Check your email for the code"}
+                  ? 'Enter your email to receive a 4-digit code'
+                  : 'Check your email for the code'}
               </p>
             </div>
 
@@ -137,10 +148,10 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 />
                 <button
                   onClick={handleSendCode}
-                  disabled={loading || !email.includes("@")}
+                  disabled={loading || !email.includes('@')}
                   className="w-full py-4 bg-slate-900 text-white font-medium rounded-2xl hover:bg-slate-800 disabled:bg-gray-400 transition"
                 >
-                  {loading ? "Sending..." : "Send Code"}
+                  {loading ? 'Sending...' : 'Send Code'}
                 </button>
               </div>
             )}
@@ -149,12 +160,14 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">4-Digit Code</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    4-Digit Code
+                  </label>
                   <input
                     type="text"
                     maxLength={4}
                     value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                     placeholder="0000"
                     className="mt-2 w-full px-6 py-5 text-center text-3xl tracking-widest font-mono bg-gray-50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900"
                     autoFocus
@@ -162,10 +175,12 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700">New Password</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    New Password
+                  </label>
                   <div className="relative mt-2">
                     <input
-                      type={showPass ? "text" : "password"}
+                      type={showPass ? 'text' : 'password'}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="••••••••"
@@ -182,10 +197,12 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Confirm Password</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Confirm Password
+                  </label>
                   <div className="relative mt-2">
                     <input
-                      type={showConfirm ? "text" : "password"}
+                      type={showConfirm ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
@@ -206,7 +223,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                   disabled={loading}
                   className="w-full py-4 bg-slate-900 text-white font-medium rounded-2xl hover:bg-slate-800 disabled:opacity-50 transition"
                 >
-                  {loading ? "Changing Password..." : "Change Password"}
+                  {loading ? 'Changing Password...' : 'Change Password'}
                 </button>
               </div>
             )}

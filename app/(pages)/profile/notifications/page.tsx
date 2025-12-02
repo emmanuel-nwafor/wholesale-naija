@@ -1,5 +1,5 @@
 // app/profile/notifications/page.tsx
-"use client";
+'use client';
 import React, { useState, useEffect } from 'react';
 import { Menu, Bell, Mail } from 'lucide-react';
 import Header from '@/app/components/header/Header';
@@ -52,12 +52,18 @@ export default function ProfileNotifications() {
 
                 {/* Desktop Sidebar */}
                 {!isMobile && (
-                  <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />
+                  <BuyersProfileSidebar
+                    isMobile={false}
+                    isOpen={true}
+                    setIsOpen={() => {}}
+                  />
                 )}
 
                 {/* Main Content */}
                 <div className="flex-1 bg-white rounded-3xl p-6 md:p-8">
-                  <h1 className="text-xl font-bold mb-8">Notification Settings</h1>
+                  <h1 className="text-xl font-bold mb-8">
+                    Notification Settings
+                  </h1>
 
                   <div className="space-y-8">
                     {/* Push Notifications */}
@@ -67,8 +73,12 @@ export default function ProfileNotifications() {
                           <Bell className="w-6 h-6 text-gray-700" />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">Push Notifications</p>
-                          <p className="text-sm text-gray-500">Receive notifications in the app</p>
+                          <p className="font-medium text-gray-900">
+                            Push Notifications
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Receive notifications in the app
+                          </p>
                         </div>
                       </div>
                       <button
@@ -92,8 +102,12 @@ export default function ProfileNotifications() {
                           <Mail className="w-6 h-6 text-gray-700" />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">Email Notifications</p>
-                          <p className="text-sm text-gray-500">Receive updates via email</p>
+                          <p className="font-medium text-gray-900">
+                            Email Notifications
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Receive updates via email
+                          </p>
                         </div>
                       </div>
                       <button
@@ -116,7 +130,7 @@ export default function ProfileNotifications() {
           </main>
         </div>
       </div>
-        <CarouselBanner />
+      <CarouselBanner />
     </>
   );
 }

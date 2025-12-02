@@ -1,8 +1,8 @@
-"use client";
-import { ShoppingCartIcon, Store, X } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState } from "react";
-import Image from "next/image";
+'use client';
+import { ShoppingCartIcon, Store, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import Image from 'next/image';
 
 const modalVariants = {
   hidden: { opacity: 0 },
@@ -20,7 +20,7 @@ interface ChooseModalProps {
   onClose: () => void;
   onSelectBuyer: () => void;
   onSelectSeller: () => void;
-  onOpenLogin: () => void; 
+  onOpenLogin: () => void;
 }
 
 export default function ChooseModal({
@@ -30,15 +30,17 @@ export default function ChooseModal({
   onSelectSeller,
   onOpenLogin,
 }: ChooseModalProps) {
-  const [selectedRole, setSelectedRole] = useState<"buyer" | "seller" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'buyer' | 'seller' | null>(
+    null
+  );
 
   if (!isOpen) return null;
 
   const handleNext = () => {
     if (!selectedRole) return;
-    localStorage.setItem("selectedRole", selectedRole);
-    if (selectedRole === "buyer") onSelectBuyer();
-    if (selectedRole === "seller") onSelectSeller();
+    localStorage.setItem('selectedRole', selectedRole);
+    if (selectedRole === 'buyer') onSelectBuyer();
+    if (selectedRole === 'seller') onSelectSeller();
     onClose();
     onOpenLogin();
   };
@@ -58,8 +60,13 @@ export default function ChooseModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Create Account</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Create Account
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X size={24} />
           </button>
         </div>
@@ -67,34 +74,38 @@ export default function ChooseModal({
         <div className="grid grid-cols-2 gap-4 mb-8">
           {/* Buyer */}
           <div
-            onClick={() => setSelectedRole("buyer")}
+            onClick={() => setSelectedRole('buyer')}
             className={`border rounded-xl p-6 text-center cursor-pointer transition ${
-              selectedRole === "buyer"
-                ? "border-green-500 bg-green-50"
-                : "border-gray-300 hover:border-green-500"
+              selectedRole === 'buyer'
+                ? 'border-green-500 bg-green-50'
+                : 'border-gray-300 hover:border-green-500'
             }`}
           >
             <div className="rounded-xl mx-auto mb-3">
               <ShoppingCartIcon className="mx-auto" height={40} width={40} />
             </div>
             <h3 className="font-medium text-gray-900">I am a buyer</h3>
-            <p className="text-xs text-gray-500 mt-1">Browse and connect with sellers</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Browse and connect with sellers
+            </p>
           </div>
 
           {/* Seller */}
           <div
-            onClick={() => setSelectedRole("seller")}
+            onClick={() => setSelectedRole('seller')}
             className={`border rounded-xl p-6 text-center cursor-pointer transition ${
-              selectedRole === "seller"
-                ? "border-green-500 bg-green-50"
-                : "border-gray-300 hover:border-green-500"
+              selectedRole === 'seller'
+                ? 'border-green-500 bg-green-50'
+                : 'border-gray-300 hover:border-green-500'
             }`}
           >
             <div className="rounded-xl mx-auto mb-3">
               <Store className="mx-auto" height={40} width={40} />
             </div>
             <h3 className="font-medium text-gray-900">I am a seller</h3>
-            <p className="text-xs text-gray-500 mt-1">List your product/services and reach buyers</p>
+            <p className="text-xs text-gray-500 mt-1">
+              List your product/services and reach buyers
+            </p>
           </div>
         </div>
 
@@ -103,8 +114,8 @@ export default function ChooseModal({
           disabled={!selectedRole}
           className={`w-full py-3 hover:cursor-pointer rounded-2xl font-medium transition ${
             selectedRole
-              ? "bg-slate-900 text-white hover:bg-slate-800"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              ? 'bg-slate-900 text-white hover:bg-slate-800'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
           Next

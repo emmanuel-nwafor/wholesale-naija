@@ -1,8 +1,8 @@
-"use client";
-import React, { useEffect } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+'use client';
+import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -10,7 +10,10 @@ interface SuccessModalProps {
 }
 
 const overlayVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
-const contentVariants = { hidden: { scale: 0.8, opacity: 0 }, visible: { scale: 1, opacity: 1 } };
+const contentVariants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: { scale: 1, opacity: 1 },
+};
 
 export default function SuccessModal({ isOpen, userRole }: SuccessModalProps) {
   const router = useRouter();
@@ -18,8 +21,8 @@ export default function SuccessModal({ isOpen, userRole }: SuccessModalProps) {
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
-        if (userRole === "seller") router.push("/store/dashboard");
-        else router.push("/profile");
+        if (userRole === 'seller') router.push('/store/dashboard');
+        else router.push('/profile');
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -39,7 +42,7 @@ export default function SuccessModal({ isOpen, userRole }: SuccessModalProps) {
         variants={contentVariants}
         className="relative w-full max-w-md bg-white rounded-3xl p-10 text-center shadow-2xl"
       >
-        <Image 
+        <Image
           src={`/svgs/modal-success.svg`}
           alt="success svg"
           height={44}

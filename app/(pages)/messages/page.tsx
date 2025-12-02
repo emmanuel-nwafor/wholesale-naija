@@ -27,17 +27,64 @@ interface Chat {
 }
 
 const mockChats: Chat[] = [
-  { id: '1', name: 'ABSOLUTE Stores', message: 'Office ipsum you must be muted. Quarter be anyway.', time: '03:48 PM', online: true },
-  { id: '2', name: 'ABSOLUTE Stores', message: 'Office ipsum you must be muted. Quarter be anyway.', time: '2 hours ago', online: true },
-  { id: '3', name: 'ABSOLUTE Stores', message: 'Office ipsum you must be muted. Quarter be anyway.', time: '03:48 PM', online: false, date: '10/08/2025' },
-  { id: '4', name: 'ABSOLUTE Stores', message: 'Office ipsum you must be muted. Quarter be anyway.', time: '', online: true, date: '09/08/2025' },
+  {
+    id: '1',
+    name: 'ABSOLUTE Stores',
+    message: 'Office ipsum you must be muted. Quarter be anyway.',
+    time: '03:48 PM',
+    online: true,
+  },
+  {
+    id: '2',
+    name: 'ABSOLUTE Stores',
+    message: 'Office ipsum you must be muted. Quarter be anyway.',
+    time: '2 hours ago',
+    online: true,
+  },
+  {
+    id: '3',
+    name: 'ABSOLUTE Stores',
+    message: 'Office ipsum you must be muted. Quarter be anyway.',
+    time: '03:48 PM',
+    online: false,
+    date: '10/08/2025',
+  },
+  {
+    id: '4',
+    name: 'ABSOLUTE Stores',
+    message: 'Office ipsum you must be muted. Quarter be anyway.',
+    time: '',
+    online: true,
+    date: '09/08/2025',
+  },
 ];
 
 const mockMessages: Message[] = [
-  { id: '1', text: 'iPhone 15 Pro Max (Blue)... N28,000 - N30,500 MOQ: 20 bags', time: 'Today', sender: 'other', isImage: true },
-  { id: '2', text: 'What are the main points in this document?', time: '03:48 PM', sender: 'user' },
-  { id: '3', text: 'Startups are advised to outsource non-core tasks, invest in compliance, and use partnerships to scale effectively in a new on', time: '03:48 PM', sender: 'other' },
-  { id: '4', text: 'What are the main points in this document?', time: '03:49 PM', sender: 'user' },
+  {
+    id: '1',
+    text: 'iPhone 15 Pro Max (Blue)... N28,000 - N30,500 MOQ: 20 bags',
+    time: 'Today',
+    sender: 'other',
+    isImage: true,
+  },
+  {
+    id: '2',
+    text: 'What are the main points in this document?',
+    time: '03:48 PM',
+    sender: 'user',
+  },
+  {
+    id: '3',
+    text: 'Startups are advised to outsource non-core tasks, invest in compliance, and use partnerships to scale effectively in a new on',
+    time: '03:48 PM',
+    sender: 'other',
+  },
+  {
+    id: '4',
+    text: 'What are the main points in this document?',
+    time: '03:49 PM',
+    sender: 'user',
+  },
 ];
 
 export default function BuyersChatPage() {
@@ -65,7 +112,7 @@ export default function BuyersChatPage() {
   };
 
   const toggleActions = () => {
-    setShowActions(prev => !prev);
+    setShowActions((prev) => !prev);
   };
 
   const openDeleteModal = () => {
@@ -96,10 +143,15 @@ export default function BuyersChatPage() {
               />
 
               {selectedChat && (
-                <div className={`flex-1 flex flex-col ${isMobileOrTablet ? 'w-full' : 'ml-4 rounded-xl shadow-sm'} overflow-hidden`}>
+                <div
+                  className={`flex-1 flex flex-col ${isMobileOrTablet ? 'w-full' : 'ml-4 rounded-xl shadow-sm'} overflow-hidden`}
+                >
                   <div className="px-4 py-3 flex items-center gap-3 bg-white border-b border-gray-200 relative">
                     {isMobileOrTablet && (
-                      <button onClick={handleBack} className="p-1 hover:bg-gray-100 rounded-lg">
+                      <button
+                        onClick={handleBack}
+                        className="p-1 hover:bg-gray-100 rounded-lg"
+                      >
                         <ArrowLeft className="w-5 h-5" />
                       </button>
                     )}
@@ -109,11 +161,16 @@ export default function BuyersChatPage() {
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                       </div>
                       <div>
-                        <h2 className="font-medium text-sm">{selectedChat.name}</h2>
+                        <h2 className="font-medium text-sm">
+                          {selectedChat.name}
+                        </h2>
                         <p className="text-xs text-green-600">Online</p>
                       </div>
                     </div>
-                    <button onClick={toggleActions} className="p-2 hover:bg-gray-100 rounded-lg">
+                    <button
+                      onClick={toggleActions}
+                      className="p-2 hover:bg-gray-100 rounded-lg"
+                    >
                       <MoreHorizontal className="h-5 w-5" />
                     </button>
                   </div>
@@ -126,7 +183,9 @@ export default function BuyersChatPage() {
                       >
                         <div
                           className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
-                            msg.sender === 'user' ? 'bg-white text-gray-800 shadow-xs' : 'bg-gray-100'
+                            msg.sender === 'user'
+                              ? 'bg-white text-gray-800 shadow-xs'
+                              : 'bg-gray-100'
                           }`}
                         >
                           {msg.isImage && (
@@ -140,7 +199,13 @@ export default function BuyersChatPage() {
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-                              <p className={msg.sender === 'user' ? 'text-gray-800' : ''}>{msg.text}</p>
+                              <p
+                                className={
+                                  msg.sender === 'user' ? 'text-gray-800' : ''
+                                }
+                              >
+                                {msg.text}
+                              </p>
                             </div>
                           )}
                           {!msg.isImage && <p>{msg.text}</p>}

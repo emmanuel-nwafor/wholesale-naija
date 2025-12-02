@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import { Edit3, Check, XCircle, ImageIcon, X } from "lucide-react";
-import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
-import DashboardHeader from "@/app/components/header/DashboardHeader";
-import ReviewStatusModal from "@/app/components/modals/ReviewStatusModal";
-import OkaySuccessModal from "@/app/components/modals/OkaySuccessModal";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import { getCurrentSellerId } from "@/app/utils/auth";
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { Edit3, Check, XCircle, ImageIcon, X } from 'lucide-react';
+import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
+import DashboardHeader from '@/app/components/header/DashboardHeader';
+import ReviewStatusModal from '@/app/components/modals/ReviewStatusModal';
+import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import { getCurrentSellerId } from '@/app/utils/auth';
 
 export default function StoreManagement() {
   const [isEditing, setIsEditing] = useState(false);
@@ -21,54 +21,53 @@ export default function StoreManagement() {
   const [loading, setLoading] = useState(true);
 
   const [store, setStore] = useState({
-    name: "",
-    location: "",
-    address: "",
-    description: "",
-    phone: "",
-    whatsapp: "",
-    openingDays: "",
+    name: '',
+    location: '',
+    address: '',
+    description: '',
+    phone: '',
+    whatsapp: '',
+    openingDays: '',
     bannerUrl: null as string | null,
   });
 
   // Load store data
-const loadStore = async () => {
-  try {
-    setLoading(true);
-    const res = await fetchWithToken<{ user: any }>("/auth/profile");
-    const s = res.user.store;
+  const loadStore = async () => {
+    try {
+      setLoading(true);
+      const res = await fetchWithToken<{ user: any }>('/auth/profile');
+      const s = res.user.store;
 
-    if (!s) {
+      if (!s) {
+        setLoading(false);
+        return;
+      }
+
+      const street =
+        typeof s.address === 'object' && s.address?.street
+          ? s.address.street
+          : typeof s.address === 'string'
+            ? s.address
+            : '';
+
+      setStore({
+        name: s.name || '',
+        location: s.location || '',
+        address: street || '',
+        description: s.description || '',
+        phone: s.contactPhone || '',
+        whatsapp: s.whatsapp || s.contactPhone || '',
+        openingDays: s.openingDays || '',
+        bannerUrl: s.bannerUrl || null,
+      });
+
+      setBannerUrl(s.bannerUrl || null);
+    } catch (err: any) {
+      console.error('Failed to load store:', err);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const street =
-      typeof s.address === "object" && s.address?.street
-        ? s.address.street
-        : typeof s.address === "string"
-        ? s.address
-        : "";
-
-    setStore({
-      name: s.name || "",
-      location: s.location || "",
-      address: street || "",
-      description: s.description || "",
-      phone: s.contactPhone || "",
-      whatsapp: s.whatsapp || s.contactPhone || "",
-      openingDays: s.openingDays || "",
-      bannerUrl: s.bannerUrl || null,
-    });
-
-    setBannerUrl(s.bannerUrl || null);
-  } catch (err: any) {
-    console.error("Failed to load store:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   useEffect(() => {
     loadStore();
@@ -77,7 +76,7 @@ const loadStore = async () => {
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (bannerUrl?.startsWith("blob:")) URL.revokeObjectURL(bannerUrl);
+      if (bannerUrl?.startsWith('blob:')) URL.revokeObjectURL(bannerUrl);
       setBannerFile(file);
       setBannerUrl(URL.createObjectURL(file));
     }
@@ -87,15 +86,17 @@ const loadStore = async () => {
     if (!bannerFile) return store.bannerUrl;
 
     const formData = new FormData();
-    formData.append("file", bannerFile);
+    formData.append('file', bannerFile);
 
-    const uploadRes = await fetchWithToken<{ uploaded: Array<{ url: string }> }>("/uploads/single", {
-      method: "POST",
+    const uploadRes = await fetchWithToken<{
+      uploaded: Array<{ url: string }>;
+    }>('/uploads/single', {
+      method: 'POST',
       body: formData,
     });
 
     const uploadedUrl = uploadRes?.uploaded?.[0]?.url;
-    if (!uploadedUrl) throw new Error("Banner upload failed.");
+    if (!uploadedUrl) throw new Error('Banner upload failed.');
     return uploadedUrl;
   };
 
@@ -109,32 +110,32 @@ const loadStore = async () => {
 
       const payload = {
         store: {
-          name: store.name || "",
-          description: store.description || "",
-          bannerUrl: uploadedBannerUrl || "",
-          contactEmail: store.phone || "",
-          contactPhone: store.phone || "",
-          whatsapp: store.whatsapp || "",
-          location: store.location || "",
-          openingDays: store.openingDays || "",
+          name: store.name || '',
+          description: store.description || '',
+          bannerUrl: uploadedBannerUrl || '',
+          contactEmail: store.phone || '',
+          contactPhone: store.phone || '',
+          whatsapp: store.whatsapp || '',
+          location: store.location || '',
+          openingDays: store.openingDays || '',
           openingHours: {
-            key_0: "12-6",
-            key_1: "8-5",
-            key_2: "10-4",
+            key_0: '12-6',
+            key_1: '8-5',
+            key_2: '10-4',
           },
           address: {
-            street: store.address || "",
-            city: "",
-            state: "",
-            country: "",
-            postalCode: "",
+            street: store.address || '',
+            city: '',
+            state: '',
+            country: '',
+            postalCode: '',
           },
         },
       };
 
-      await fetchWithToken("/auth/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      await fetchWithToken('/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
@@ -142,8 +143,8 @@ const loadStore = async () => {
       setShowSuccess(true);
       await loadStore();
     } catch (err) {
-      console.error("Update failed:", err);
-      alert("Store update failed.");
+      console.error('Update failed:', err);
+      alert('Store update failed.');
     } finally {
       setLoading(false);
     }
@@ -152,7 +153,7 @@ const loadStore = async () => {
   const cancelEditing = () => {
     setIsEditing(false);
     setBannerFile(null);
-    if (bannerUrl?.startsWith("blob:")) {
+    if (bannerUrl?.startsWith('blob:')) {
       URL.revokeObjectURL(bannerUrl);
     }
     loadStore();
@@ -191,12 +192,19 @@ const loadStore = async () => {
             <form onSubmit={handleSubmit} className="space-y-8 mt-8">
               {/* Banner */}
               <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Store Banner</h2>
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  Store Banner
+                </h2>
                 <div className="flex items-center gap-6">
                   <div className="relative">
                     {bannerUrl ? (
                       <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-300">
-                        <Image src={bannerUrl} alt="Store banner" fill className="object-cover rounded-xl" />
+                        <Image
+                          src={bannerUrl}
+                          alt="Store banner"
+                          fill
+                          className="object-cover rounded-xl"
+                        />
                         {isEditing && (
                           <button
                             type="button"
@@ -234,12 +242,16 @@ const loadStore = async () => {
               {/* Form Fields */}
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Store Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Store Name
+                  </label>
                   {isEditing ? (
                     <input
                       type="text"
                       value={store.name}
-                      onChange={(e) => setStore({ ...store, name: e.target.value })}
+                      onChange={(e) =>
+                        setStore({ ...store, name: e.target.value })
+                      }
                       className="w-full px-4 py-3 bg-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500"
                       required
                       autoComplete="name"
@@ -251,12 +263,16 @@ const loadStore = async () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">State / Region</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      State / Region
+                    </label>
                     {isEditing ? (
                       <input
                         type="text"
                         value={store.location}
-                        onChange={(e) => setStore({ ...store, location: e.target.value })}
+                        onChange={(e) =>
+                          setStore({ ...store, location: e.target.value })
+                        }
                         className="w-full px-4 py-3 bg-gray-100 rounded-xl"
                         autoComplete="address-level1"
                       />
@@ -266,12 +282,16 @@ const loadStore = async () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Street Address
+                    </label>
                     {isEditing ? (
                       <input
                         type="text"
                         value={store.address}
-                        onChange={(e) => setStore({ ...store, address: e.target.value })}
+                        onChange={(e) =>
+                          setStore({ ...store, address: e.target.value })
+                        }
                         className="w-full px-4 py-3 bg-gray-100 rounded-xl"
                         autoComplete="street-address"
                       />
@@ -282,11 +302,15 @@ const loadStore = async () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
                   {isEditing ? (
                     <textarea
                       value={store.description}
-                      onChange={(e) => setStore({ ...store, description: e.target.value })}
+                      onChange={(e) =>
+                        setStore({ ...store, description: e.target.value })
+                      }
                       rows={4}
                       className="w-full px-4 py-3 bg-gray-100 rounded-xl resize-none"
                     />
@@ -296,11 +320,15 @@ const loadStore = async () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Opening Days</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Opening Days
+                  </label>
                   {isEditing ? (
                     <select
                       value={store.openingDays}
-                      onChange={(e) => setStore({ ...store, openingDays: e.target.value })}
+                      onChange={(e) =>
+                        setStore({ ...store, openingDays: e.target.value })
+                      }
                       className="w-full px-4 py-3 bg-gray-100 rounded-xl"
                     >
                       <option>Mon - Sun</option>
@@ -314,12 +342,16 @@ const loadStore = async () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
                     {isEditing ? (
                       <input
                         type="text"
                         value={store.phone}
-                        onChange={(e) => setStore({ ...store, phone: e.target.value })}
+                        onChange={(e) =>
+                          setStore({ ...store, phone: e.target.value })
+                        }
                         className="w-full px-4 py-3 bg-gray-100 rounded-xl"
                         autoComplete="tel"
                       />
@@ -329,12 +361,16 @@ const loadStore = async () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      WhatsApp
+                    </label>
                     {isEditing ? (
                       <input
                         type="text"
                         value={store.whatsapp}
-                        onChange={(e) => setStore({ ...store, whatsapp: e.target.value })}
+                        onChange={(e) =>
+                          setStore({ ...store, whatsapp: e.target.value })
+                        }
                         className="w-full px-4 py-3 bg-gray-100 rounded-xl"
                         autoComplete="tel"
                       />

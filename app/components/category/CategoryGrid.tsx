@@ -2,11 +2,27 @@ import React from 'react';
 import Image from 'next/image';
 
 const categories = [
-  { name: 'Phones & Tablets', img: '/svgs/grid-1.svg', span: 'col-span-2 row-span-1' },
-  { name: 'Computers & Accessories', img: '/svgs/grid-2.svg', span: 'col-span-1 row-span-1' },
-  { name: 'Home Appliances', img: '/svgs/grid-3.svg', span: 'col-span-1 row-span-1' },
+  {
+    name: 'Phones & Tablets',
+    img: '/svgs/grid-1.svg',
+    span: 'col-span-2 row-span-1',
+  },
+  {
+    name: 'Computers & Accessories',
+    img: '/svgs/grid-2.svg',
+    span: 'col-span-1 row-span-1',
+  },
+  {
+    name: 'Home Appliances',
+    img: '/svgs/grid-3.svg',
+    span: 'col-span-1 row-span-1',
+  },
   { name: 'Fashion', img: '/svgs/grid-4.svg', span: 'col-span-1 row-span-1' },
-  { name: 'Cosmetics & Health', img: '/svgs/grid-5.svg', span: 'col-span-1 row-span-1' },
+  {
+    name: 'Cosmetics & Health',
+    img: '/svgs/grid-5.svg',
+    span: 'col-span-1 row-span-1',
+  },
 ];
 
 export default function CategoryGrid() {

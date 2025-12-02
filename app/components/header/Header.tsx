@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
-import { Menu, ChevronRight } from "lucide-react";
-import Sidebar from "../../components/sidebar/Sidebar";
-import { AnimatePresence } from "framer-motion";
-import ChooseModal from "../auth/modals/ChooseModal";
-import SignupWithEmailModal from "../auth/modals/signup/SignupWithEmailModal";
-import VerifyPhoneOrEmailOtpModal from "../auth/modals/VerifyPhoneOrEmailOtpModal";
-import LoginWithEmailModal from "../auth/modals/login/LoginWithEmailModal";
-import CompleteProfileModal from "../auth/modals/signup/CompleteProfileModal";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import { useRouter } from "next/navigation";
-import LoginAlertModal from "../auth/modals/login/LoginAlertModal";
+import Link from 'next/link';
+import Image from 'next/image';
+import { useState, useRef, useEffect } from 'react';
+import { Menu, ChevronRight } from 'lucide-react';
+import Sidebar from '../../components/sidebar/Sidebar';
+import { AnimatePresence } from 'framer-motion';
+import ChooseModal from '../auth/modals/ChooseModal';
+import SignupWithEmailModal from '../auth/modals/signup/SignupWithEmailModal';
+import VerifyPhoneOrEmailOtpModal from '../auth/modals/VerifyPhoneOrEmailOtpModal';
+import LoginWithEmailModal from '../auth/modals/login/LoginWithEmailModal';
+import CompleteProfileModal from '../auth/modals/signup/CompleteProfileModal';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import { useRouter } from 'next/navigation';
+import LoginAlertModal from '../auth/modals/login/LoginAlertModal';
 
 const suggestions = [
-  "iPhone 15 Pro Max",
-  "iPhone 14 Pro",
-  "iPhone Chargers",
-  "iPhone Cases",
+  'iPhone 15 Pro Max',
+  'iPhone 14 Pro',
+  'iPhone Chargers',
+  'iPhone Cases',
 ];
 
 interface UserProfile {
   fullName: string;
-  role: "buyer" | "seller";
+  role: 'buyer' | 'seller';
   profilePicture?: {
     url: string;
   };
@@ -46,7 +46,7 @@ export default function Header() {
   // Signup states
   const [signupEmailOpen, setSignupEmailOpen] = useState(false);
   const [otpModalOpen, setOtpModalOpen] = useState(false);
-  const [otpIdentifier, setOtpIdentifier] = useState("");
+  const [otpIdentifier, setOtpIdentifier] = useState('');
   const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
 
   // Login states
@@ -57,7 +57,7 @@ export default function Header() {
   // Create Account ChooseModal state
   const [signupChooseModalOpen, setSignupChooseModalOpen] = useState(false);
 
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
 
   const [token, setToken] = useState<string | null>(null);
@@ -71,7 +71,7 @@ export default function Header() {
 
   // Load token and user profile
   useEffect(() => {
-    const t = localStorage.getItem("token");
+    const t = localStorage.getItem('token');
     setToken(t);
 
     if (t) {
@@ -81,19 +81,19 @@ export default function Header() {
 
   const loadUserProfile = async (authToken: string) => {
     try {
-      const res = await fetchWithToken<{ user: UserProfile }>("/auth/profile");
+      const res = await fetchWithToken<{ user: UserProfile }>('/auth/profile');
 
       if (res?.user) {
         setUser(res.user);
       }
     } catch (err) {
-      console.error("Failed to fetch user profile:", err);
+      console.error('Failed to fetch user profile:', err);
     }
   };
 
   // Signup helpers
   const openEmailModal = () => {
-    const t = localStorage.getItem("token");
+    const t = localStorage.getItem('token');
     setToken(t);
     setSignupChooseModalOpen(true);
   };
@@ -126,10 +126,20 @@ export default function Header() {
 
           <div className="hidden md:flex space-x-2">
             <button>
-              <Image src="/svgs/playstore.svg" alt="play store" height={130} width={130} />
+              <Image
+                src="/svgs/playstore.svg"
+                alt="play store"
+                height={130}
+                width={130}
+              />
             </button>
             <button>
-              <Image src="/svgs/apple.svg" alt="apple store" height={130} width={130} />
+              <Image
+                src="/svgs/apple.svg"
+                alt="apple store"
+                height={130}
+                width={130}
+              />
             </button>
           </div>
 
@@ -159,16 +169,26 @@ export default function Header() {
         <div className="flex gap-3 w-full md:w-auto items-center">
           {user ? (
             <>
-              <button onClick={() => {router.push("")}} className="p-2 hover:cursor-pointer text-white hover:text-gray-300">
-                <Image 
+              <button
+                onClick={() => {
+                  router.push('');
+                }}
+                className="p-2 hover:cursor-pointer text-white hover:text-gray-300"
+              >
+                <Image
                   src={`/svgs/heart.svg`}
                   alt="heart"
                   width={40}
                   height={40}
                 />
               </button>
-              <button onClick={() => {router.push("/messages")}} className="p-2 hover:cursor-pointer text-white hover:text-gray-300">
-                <Image 
+              <button
+                onClick={() => {
+                  router.push('/messages');
+                }}
+                className="p-2 hover:cursor-pointer text-white hover:text-gray-300"
+              >
+                <Image
                   src={`/svgs/message.svg`}
                   alt="message"
                   width={40}
@@ -176,29 +196,27 @@ export default function Header() {
                 />
               </button>
               <div className="flex items-center gap-2 bg-gray-700 text-white px-3 py-2  rounded-2xl font-semibold">
-                <Image 
+                <Image
                   src={`/svgs/coin-1.svg`}
                   alt="message"
                   width={30}
                   height={30}
                 />
-                <p className="text-xs">
-                  115 Coins
-                </p>
+                <p className="text-xs">115 Coins</p>
               </div>
               <button
                 onClick={() => {
-                  if (user?.role === "seller") {
-                    router.push("/store/dashboard");
+                  if (user?.role === 'seller') {
+                    router.push('/store/dashboard');
                   } else {
-                    router.push("/profile");
+                    router.push('/profile');
                   }
                 }}
                 className="flex items-center gap-2 bg-gray-700 rounded-full px-3 py-2 hover:cursor-pointer hover:bg-gray-600 transition"
               >
                 <div className="w-8 h-8 sm:w-9 sm:h-9 relative flex-shrink-0">
                   <Image
-                    src={user.profilePicture?.url || "/svgs/logo.svg"}
+                    src={user.profilePicture?.url || '/svgs/logo.svg'}
                     alt="User"
                     fill
                     className="rounded-full object-cover"
@@ -206,7 +224,9 @@ export default function Header() {
                 </div>
 
                 <span className="text-sm sm:text-base text-white truncate max-w-[120px]">
-                  {user.fullName.length > 15 ? user.fullName.slice(0, 15) + "..." : user.fullName}
+                  {user.fullName.length > 15
+                    ? user.fullName.slice(0, 15) + '...'
+                    : user.fullName}
                 </span>
 
                 <ChevronRight color="white" />
@@ -255,12 +275,12 @@ export default function Header() {
             isOpen={signupChooseModalOpen}
             onClose={() => setSignupChooseModalOpen(false)}
             onSelectBuyer={() => {
-              localStorage.setItem("selectedRole", "buyer");
+              localStorage.setItem('selectedRole', 'buyer');
               setSignupChooseModalOpen(false);
               token ? setLoginModalOpen(true) : setSignupEmailOpen(true);
             }}
             onSelectSeller={() => {
-              localStorage.setItem("selectedRole", "seller");
+              localStorage.setItem('selectedRole', 'seller');
               setSignupChooseModalOpen(false);
               token ? setLoginModalOpen(true) : setSignupEmailOpen(true);
             }}

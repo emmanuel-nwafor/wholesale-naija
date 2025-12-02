@@ -18,8 +18,8 @@ export default function DeleteModal({
   show,
   onClose,
   onConfirm,
-  title = "Delete this item?",
-  message = "This action cannot be undone.",
+  title = 'Delete this item?',
+  message = 'This action cannot be undone.',
   itemName,
   loading = false,
 }: DeleteModalProps) {
@@ -41,7 +41,7 @@ export default function DeleteModal({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto bg-white rounded-2xl shadow-2xl z-50 p-6"
           >
             <div className="text-center">
@@ -49,9 +49,7 @@ export default function DeleteModal({
                 <Trash2 className="w-7 h-7 text-red-600" />
               </div>
 
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                {title}
-              </h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
 
               {/* {itemName && (
                 <p className="text-lg font-medium text-gray-800 mb-2">
@@ -82,7 +80,7 @@ export default function DeleteModal({
                       Deleting...
                     </>
                   ) : (
-                    "Delete"
+                    'Delete'
                   )}
                 </button>
               </div>

@@ -24,9 +24,12 @@ export default function NewProducts() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/new`, {
-          method: 'GET',
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/new`,
+          {
+            method: 'GET',
+          }
+        );
 
         const data = await res.json();
 

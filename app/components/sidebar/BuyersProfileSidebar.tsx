@@ -1,8 +1,17 @@
 // app/components/sidebar/BuyersProfileSidebar.tsx
-"use client";
+'use client';
 
 import React, { useState } from 'react';
-import { Bell, Lock, Trash2, LogOut, User, X, MapPin, Star } from 'lucide-react';
+import {
+  Bell,
+  Lock,
+  Trash2,
+  LogOut,
+  User,
+  X,
+  MapPin,
+  Star,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LogoutModal from '@/app/components/modals/LogoutModal';
@@ -14,17 +23,25 @@ interface ProfileSidebarProps {
   setIsOpen: (v: boolean) => void;
 }
 
-export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: ProfileSidebarProps) {
+export default function BuyersProfileSidebar({
+  isMobile,
+  isOpen,
+  setIsOpen,
+}: ProfileSidebarProps) {
   const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false); // New state
 
   const items = [
-    { icon: User, label: "Profile Info", href: "/profile" },
-    { icon: Star, label: "Reviews", href: "/profile/reviews" },
-    { icon: MapPin, label: "Country/Region", href: "/profile/country-region" },
-    { icon: Bell, label: "Notification Settings", href: "/profile/notifications" },
-    { icon: Lock, label: "Password Settings", href: "/profile/password" },
+    { icon: User, label: 'Profile Info', href: '/profile' },
+    { icon: Star, label: 'Reviews', href: '/profile/reviews' },
+    { icon: MapPin, label: 'Country/Region', href: '/profile/country-region' },
+    {
+      icon: Bell,
+      label: 'Notification Settings',
+      href: '/profile/notifications',
+    },
+    { icon: Lock, label: 'Password Settings', href: '/profile/password' },
     // Delete Account now triggers modal instead of direct navigation
   ];
 
@@ -44,7 +61,7 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
 
   const handleConfirmDelete = () => {
     // Replace with actual delete logic or redirect
-    console.log("Account deletion confirmed");
+    console.log('Account deletion confirmed');
     // Example: router.push('/profile/delete') or API call
     setShowDeleteModal(false);
   };
@@ -94,8 +111,13 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
   if (isMobile) {
     return (
       <>
-        {isOpen && <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setIsOpen(false)} />}
-        
+        {isOpen && (
+          <div
+            className="fixed inset-0 bg-black/30 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+
         <div
           className={`fixed left-0 top-0 h-full w-72 bg-white shadow-2xl z-50 transition-transform duration-300 ease-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -111,7 +133,10 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
         </div>
 
         {/* Modals */}
-        <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
+        <LogoutModal
+          isOpen={showLogoutModal}
+          onClose={() => setShowLogoutModal(false)}
+        />
         <DeleteModal
           show={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
@@ -128,7 +153,10 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
     <div className="bg-white rounded-3xl p-6">
       {content}
 
-      <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+      />
       <DeleteModal
         show={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

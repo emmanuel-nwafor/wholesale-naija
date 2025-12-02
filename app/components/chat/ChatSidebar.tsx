@@ -32,7 +32,11 @@ export default function ChatSidebar({
   return (
     <div
       className={`bg-white flex flex-col overflow-hidden ${
-        isMobileOrTablet && selectedChat ? 'hidden' : isMobileOrTablet ? 'w-full' : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-sm'
+        isMobileOrTablet && selectedChat
+          ? 'hidden'
+          : isMobileOrTablet
+            ? 'w-full'
+            : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-sm'
       }`}
     >
       <div className="p-4 mb-5 border-gray-200">
@@ -73,7 +77,9 @@ export default function ChatSidebar({
                   <span className="text-xs text-gray-500">{chat.time}</span>
                 </div>
                 <p className="text-sm text-gray-600 truncate">{chat.message}</p>
-                {chat.date && <p className="text-xs text-gray-400 mt-1">{chat.date}</p>}
+                {chat.date && (
+                  <p className="text-xs text-gray-400 mt-1">{chat.date}</p>
+                )}
               </div>
             </div>
           </motion.div>

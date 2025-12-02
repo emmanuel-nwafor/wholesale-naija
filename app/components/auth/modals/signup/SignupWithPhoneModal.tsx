@@ -1,15 +1,15 @@
-"use client";
-import React, { useState } from "react";
-import { X } from "lucide-react";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import SelectCountryDropdown from "../SelectCountryDropdown";
+'use client';
+import React, { useState } from 'react';
+import { X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import SelectCountryDropdown from '../SelectCountryDropdown';
 
 interface SignupWithPhoneModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSwitchToEmail?: () => void;
-  onContinue?: (phone: string) => void; 
+  onContinue?: (phone: string) => void;
 }
 
 interface Country {
@@ -29,7 +29,7 @@ const contentVariants = {
   visible: { y: 0, opacity: 1, transition: { delay: 0.05 } },
 };
 
-const defaultCountry: Country = { name: "Nigeria", code: "+234", flag: "🇳🇬" };
+const defaultCountry: Country = { name: 'Nigeria', code: '+234', flag: '🇳🇬' };
 
 export default function SignupWithPhoneModal({
   isOpen,
@@ -37,8 +37,9 @@ export default function SignupWithPhoneModal({
   onSwitchToEmail,
   onContinue, // ✅ Added here
 }: SignupWithPhoneModalProps) {
-  const [phone, setPhone] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState<Country>(defaultCountry);
+  const [phone, setPhone] = useState('');
+  const [selectedCountry, setSelectedCountry] =
+    useState<Country>(defaultCountry);
 
   if (!isOpen) return null;
 
@@ -65,11 +66,13 @@ export default function SignupWithPhoneModal({
         </button>
 
         <div className="flex items-center justify-between mt-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Create Account</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            Create Account
+          </h2>
 
           {onSwitchToEmail && (
             <button
-              onClick={onSwitchToEmail} 
+              onClick={onSwitchToEmail}
               className="bg-gray-50 p-2 text-gray-600 hover:cursor-pointer rounded-xl"
             >
               Use email instead
@@ -82,7 +85,9 @@ export default function SignupWithPhoneModal({
         </p>
 
         <div className="mb-6">
-          <label className="text-sm font-medium text-gray-700">Phone Number</label>
+          <label className="text-sm font-medium text-gray-700">
+            Phone Number
+          </label>
           <div className="mt-2 relative">
             <input
               type="tel"
@@ -143,8 +148,13 @@ export default function SignupWithPhoneModal({
 
         <p className="text-center text-xs text-gray-500 mb-4">
           By continuing you agree to Wholesale Naija <br />
-          <a href="#" className="underline">Terms of Service</a> and{" "}
-          <a href="#" className="underline">Privacy Policies</a>
+          <a href="#" className="underline">
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a href="#" className="underline">
+            Privacy Policies
+          </a>
         </p>
       </motion.div>
     </motion.div>

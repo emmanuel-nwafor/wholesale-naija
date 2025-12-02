@@ -12,7 +12,7 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <Image
                 src="https://res.cloudinary.com/dqtjja88b/image/upload/v1760219419/Screenshot_2025-10-11_224658_q8bjy2.png"
-                alt='wholesale naija logo'
+                alt="wholesale naija logo"
                 height={70}
                 width={70}
               />
@@ -53,7 +53,9 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li className="hover:text-white cursor-pointer">Home</li>
               <li className="hover:text-white cursor-pointer">Categories</li>
-              <li className="hover:text-white cursor-pointer">Become A Seller</li>
+              <li className="hover:text-white cursor-pointer">
+                Become A Seller
+              </li>
             </ul>
           </div>
 

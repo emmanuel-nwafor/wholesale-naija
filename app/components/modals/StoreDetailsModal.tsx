@@ -19,7 +19,11 @@ interface StoreDetailsModalProps {
   };
 }
 
-export default function StoreDetailsModal({ isOpen, onClose, store }: StoreDetailsModalProps) {
+export default function StoreDetailsModal({
+  isOpen,
+  onClose,
+  store,
+}: StoreDetailsModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -68,7 +72,9 @@ export default function StoreDetailsModal({ isOpen, onClose, store }: StoreDetai
                       {store.location}
                       <span className="mx-2">•</span>
                       <span className="flex items-center gap-1">
-                        {store.rating} <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /> ({store.reviews})
+                        {store.rating}{' '}
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />{' '}
+                        ({store.reviews})
                       </span>
                     </div>
                   </div>
@@ -91,7 +97,9 @@ export default function StoreDetailsModal({ isOpen, onClose, store }: StoreDetai
 
                 {/* Description */}
                 <div className="mb-8">
-                  <h4 className="font-semibold text-gray-900 mb-3 mt-5">Store Description</h4>
+                  <h4 className="font-semibold text-gray-900 mb-3 mt-5">
+                    Store Description
+                  </h4>
                   <p className="text-sm text-gray-600 leading-relaxed">
                     {store.description}
                   </p>
@@ -99,12 +107,16 @@ export default function StoreDetailsModal({ isOpen, onClose, store }: StoreDetai
 
                 {/* Address */}
                 <div className="mb-8">
-                  <h4 className="font-semibold text-gray-900 mb-3">Store Address</h4>
+                  <h4 className="font-semibold text-gray-900 mb-3">
+                    Store Address
+                  </h4>
                   <p className="text-sm text-gray-600 flex items-start gap-2">
                     <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                     {store.address}
                   </p>
-                  <p className="text-xs text-gray-500 mt-2">Mon - Sat | 09:00 AM - 06:00 PM</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Mon - Sat | 09:00 AM - 06:00 PM
+                  </p>
                 </div>
 
                 {/* Products Section */}

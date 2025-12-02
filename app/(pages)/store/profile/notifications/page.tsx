@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from 'react';
 import { Menu, Bell, Mail } from 'lucide-react';
 import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
@@ -36,24 +36,34 @@ export default function ProfileNotification() {
 
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
               <div className="lg:w-64">
-                <ProfileSidebar isMobile={isMobile} isOpen={menuOpen} setIsOpen={setMenuOpen} />
+                <ProfileSidebar
+                  isMobile={isMobile}
+                  isOpen={menuOpen}
+                  setIsOpen={setMenuOpen}
+                />
               </div>
 
               <div className="flex-1 bg-white rounded-2xl p-6">
-                <h1 className="text-xl font-semibold mb-6">Notification Settings</h1>
-                
+                <h1 className="text-xl font-semibold mb-6">
+                  Notification Settings
+                </h1>
+
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
                         <Bell className="w-5 h-5 text-gray-700" />
                       </div>
-                      <span className="text-sm font-medium text-gray-900">Push Notifications</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        Push Notifications
+                      </span>
                     </div>
                     <button
                       onClick={() => setPushEnabled(!pushEnabled)}
                       className={`relative w-11 h-6 rounded-full transition-colors ${
-                        pushEnabled ? 'bg-slate-800 hover:cursor-pointer' : 'bg-gray-300'
+                        pushEnabled
+                          ? 'bg-slate-800 hover:cursor-pointer'
+                          : 'bg-gray-300'
                       }`}
                     >
                       <span
@@ -69,12 +79,16 @@ export default function ProfileNotification() {
                       <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
                         <Mail className="w-5 h-5 text-gray-700" />
                       </div>
-                      <span className="text-sm font-medium text-gray-900">Email Notifications</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        Email Notifications
+                      </span>
                     </div>
                     <button
                       onClick={() => setEmailEnabled(!emailEnabled)}
                       className={`relative w-11 h-6 rounded-full transition-colors ${
-                        emailEnabled ? 'bg-slate-800 hover:cursor-pointer' : 'bg-gray-300'
+                        emailEnabled
+                          ? 'bg-slate-800 hover:cursor-pointer'
+                          : 'bg-gray-300'
                       }`}
                     >
                       <span

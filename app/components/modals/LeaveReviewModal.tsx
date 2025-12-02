@@ -12,6 +12,7 @@ interface LeaveReviewModalProps {
   sellerName?: string;
   sellerVerified?: boolean;
   storeBannerUrl?: string;
+  storeProfileImageUrl?: string; // New prop
   onSuccess?: () => void;
 }
 
@@ -21,6 +22,7 @@ export default function LeaveReviewModal({
   sellerName = 'This Store',
   sellerVerified = false,
   storeBannerUrl = '',
+  storeProfileImageUrl = '', // New prop
 }: LeaveReviewModalProps) {
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
@@ -41,27 +43,23 @@ export default function LeaveReviewModal({
 
     setLoading(true);
 
-    // Simulate API delay
     setTimeout(() => {
-      // Create review object
       const newReview = {
         id: Date.now().toString(),
         sellerId,
         storeName: sellerName,
         productId,
-        productName: 'Unknown Product', 
-        productImage: '/placeholder.jpg', 
+        productName: 'Unknown Product',
+        productImage: '/placeholder.jpg',
         rating,
         comment: comment.trim(),
         date: new Date().toISOString(),
       };
 
-      // Save to localStorage
       const existing = JSON.parse(localStorage.getItem('userReviews') || '[]');
       const updated = [...existing, newReview];
       localStorage.setItem('userReviews', JSON.stringify(updated));
 
-      // Show success
       setShowSuccess(true);
       setLoading(false);
     }, 800);
@@ -91,40 +89,58 @@ export default function LeaveReviewModal({
           className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Store Banner */}
-          {storeBannerUrl ? (
-            <div className="h-32 bg-gray-200">
-              <img src={storeBannerUrl} alt="Store banner" className="w-full h-full object-cover" />
+          {/* Store Profile Image + Name (positioned over banner) */}
+          <div className="px-6 relative z-10">
+            {/* header */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold mt-4">Leave a Review</h2>
+
+              <div className="flex items-center justify-between px-6 pt-4 pb-3 bg-white">
+                <button
+                  onClick={onClose}
+                  className="text-gray-400 hover:text-gray-600 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="h-32 bg-gradient-to-r from-slate-700 to-slate-900" />
-          )}
-
-          {/* Header */}
-          <div className="flex items-center justify-between p-5 bg-white border-b border-gray-100">
-            <h2 className="text-lg font-semibold">Leave a Review</h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-            {/* Store Info */}
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gray-200 rounded-full border-2 border-white shadow" />
-              <div>
+            <div className="flex items-end gap-4">
+              <div className="w-20 h-20 bg-white rounded-full p-1 shadow-lg">
+                {storeProfileImageUrl ? (
+                  <img
+                    src={storeProfileImageUrl}
+                    alt={sellerName}
+                    className="w-full h-full rounded-full object-cover border-4 border-white"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-600">
+                      {sellerName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-900">{sellerName}</span>
-                  {sellerVerified && <Check className="w-4 h-4 bg-green-500 text-white rounded-full" />}
+                  <h3 className="text-sm font-bold text-gray-900">
+                    {sellerName}
+                  </h3>
+                  {sellerVerified && (
+                    <Check className="w-5 h-5 bg-green-500 text-white rounded-full p-0.5" />
+                  )}
                 </div>
                 <p className="text-sm text-gray-500">Wholesale Store</p>
               </div>
             </div>
+          </div>
 
+          {/* Scrollable Body */}
+          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
             {/* Review Textarea */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Review</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Review
+              </label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -134,14 +150,26 @@ export default function LeaveReviewModal({
                 maxLength={300}
               />
               <div className="flex justify-end mt-1">
-                <span className="text-xs text-gray-400">{comment.length}/300</span>
+                <span className="text-xs text-gray-400">
+                  {comment.length}/300
+                </span>
               </div>
             </div>
 
             {/* Rating Stars */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
-                {rating >= 5 ? 'Excellent' : rating >= 4 ? 'Very Good' : rating >= 3 ? 'Good' : rating >= 2 ? 'Fair' : rating >= 1 ? 'Poor' : 'Tap a star to rate'}
+                {rating >= 5
+                  ? 'Excellent'
+                  : rating >= 4
+                    ? 'Very Good'
+                    : rating >= 3
+                      ? 'Good'
+                      : rating >= 2
+                        ? 'Fair'
+                        : rating >= 1
+                          ? 'Poor'
+                          : 'Tap a star to rate'}
               </label>
               <div className="flex justify-center gap-5">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -170,14 +198,14 @@ export default function LeaveReviewModal({
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-50 transition"
+                className="flex-1 hover:cursor-pointer py-3 border border-gray-300 rounded-xl font-medium hover:bg-gray-50 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={loading || rating === 0 || !comment.trim()}
-                className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+                className="flex-1 hover:cursor-pointer py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

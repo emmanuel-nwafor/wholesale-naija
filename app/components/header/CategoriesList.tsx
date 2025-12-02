@@ -6,24 +6,35 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
-interface Brand { name: string; }
-interface SubCategory { name: string; brands: Brand[]; }
-interface Category { _id: string; name: string; subcategories: SubCategory[]; }
+interface Brand {
+  name: string;
+}
+interface SubCategory {
+  name: string;
+  brands: Brand[];
+}
+interface Category {
+  _id: string;
+  name: string;
+  subcategories: SubCategory[];
+}
 
 export default function CategoriesList() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
   const [visibleCount, setVisibleCount] = useState(4);
 
   // Update visible count based on window width
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      if (width >= 1024) setVisibleCount(4); 
+      if (width >= 1024) setVisibleCount(4);
       else if (width >= 768) setVisibleCount(4);
-      else setVisibleCount(0); 
+      else setVisibleCount(0);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -34,7 +45,9 @@ export default function CategoriesList() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const res = await fetchWithToken<{ categories: Category[] }>('/v1/categories');
+        const res = await fetchWithToken<{ categories: Category[] }>(
+          '/v1/categories'
+        );
         if (res?.categories) {
           setCategories(res.categories);
           setSelectedCategory(res.categories[0]);
@@ -65,7 +78,8 @@ export default function CategoriesList() {
               onClick={() => setShowModal(true)}
               className="flex items-center text-white whitespace-nowrap flex-shrink-0 px-2 py-1 hover:cursor-pointer"
             >
-              All Categories <Menu className="text-white text-sm ml-1" height={18} />
+              All Categories{' '}
+              <Menu className="text-white text-sm ml-1" height={18} />
             </button>
 
             {/* Top categories */}
@@ -144,14 +158,19 @@ export default function CategoriesList() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.05 }}
                           >
-                            <h3 className="font-semibold text-md text-gray-500 mb-2">{sub.name}</h3>
+                            <h3 className="font-semibold text-md text-gray-500 mb-2">
+                              {sub.name}
+                            </h3>
                             <ul className="space-y-1 text-sm text-gray-600">
                               {sub.brands.map((brand) => (
                                 <li
                                   key={brand.name}
                                   className="hover:text-green-600 cursor-pointer"
                                 >
-                                  <Link href="/" onClick={() => setShowModal(false)}>
+                                  <Link
+                                    href="/"
+                                    onClick={() => setShowModal(false)}
+                                  >
                                     {brand.name}
                                   </Link>
                                 </li>

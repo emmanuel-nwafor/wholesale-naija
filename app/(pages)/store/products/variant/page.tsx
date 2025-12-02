@@ -1,5 +1,5 @@
-"use client";
-import React, { useState, useEffect, useRef } from "react";
+'use client';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Plus,
   Trash2,
@@ -7,15 +7,15 @@ import {
   ChevronRight,
   ChevronLeft,
   ImageIcon,
-} from "lucide-react";
-import StoreSidebar from "@/app/components/sidebar/StoreSidebar";
-import DashboardHeader from "@/app/components/header/DashboardHeader";
-import AddVariantModal from "@/app/components/modals/AddvariantModal";
-import Image from "next/image";
-import ReviewStatusModal from "@/app/components/modals/ReviewStatusModal";
-import { fetchWithToken } from "@/app/utils/fetchWithToken";
-import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
+} from 'lucide-react';
+import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
+import DashboardHeader from '@/app/components/header/DashboardHeader';
+import AddVariantModal from '@/app/components/modals/AddvariantModal';
+import Image from 'next/image';
+import ReviewStatusModal from '@/app/components/modals/ReviewStatusModal';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 interface Category {
   _id: string;
@@ -36,7 +36,8 @@ interface VariantData {
   rows: { minQty: string; maxQty: string; price: string }[];
 }
 
-const inputStyles = "w-full px-4 py-3 bg-gray-100 rounded-xl focus:outline-none";
+const inputStyles =
+  'w-full px-4 py-3 bg-gray-100 rounded-xl focus:outline-none';
 
 export default function AddProductVariantPage() {
   const router = useRouter();
@@ -49,9 +50,9 @@ export default function AddProductVariantPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [mainImage, setMainImage] = useState<File | null>(null);
-  const [mainImageUrl, setMainImageUrl] = useState<string>("");
-  const [productName, setProductName] = useState("");
-  const [description, setDescription] = useState("");
+  const [mainImageUrl, setMainImageUrl] = useState<string>('');
+  const [productName, setProductName] = useState('');
+  const [description, setDescription] = useState('');
   const [selectedCat, setSelectedCat] = useState<Category | null>(null);
   const [selectedSub, setSelectedSub] = useState<Subcategory | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
@@ -63,7 +64,7 @@ export default function AddProductVariantPage() {
 
   // Fetch categories
   useEffect(() => {
-    fetchWithToken<{ categories: Category[] }>("/v1/categories")
+    fetchWithToken<{ categories: Category[] }>('/v1/categories')
       .then((d) => setCategories(d.categories))
       .catch(() => {});
   }, []);
@@ -109,7 +110,7 @@ export default function AddProductVariantPage() {
   const handleSaveVariant = (data: {
     name: string;
     image: File | null;
-    rows: VariantData["rows"];
+    rows: VariantData['rows'];
   }) => {
     const imageUrl = data.image ? URL.createObjectURL(data.image) : null;
     const newVariant = { ...data, imageUrl };
@@ -147,31 +148,31 @@ export default function AddProductVariantPage() {
   // Submit & Reset Form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!productName.trim()) return alert("Product name required");
-    if (!selectedCat) return alert("Select a category");
-    if (!mainImage) return alert("Main image required");
-    if (!description.trim()) return alert("Description required");
-    if (variants.length === 0) return alert("Add at least one variant");
+    if (!productName.trim()) return alert('Product name required');
+    if (!selectedCat) return alert('Select a category');
+    if (!mainImage) return alert('Main image required');
+    if (!description.trim()) return alert('Description required');
+    if (variants.length === 0) return alert('Add at least one variant');
 
     setIsSubmitting(true);
     try {
       const uploadForm = new FormData();
-      uploadForm.append("files", mainImage);
-      variants.forEach((v) => v.image && uploadForm.append("files", v.image));
+      uploadForm.append('files', mainImage);
+      variants.forEach((v) => v.image && uploadForm.append('files', v.image));
 
       const uploadRes = await fetchWithToken<{ uploaded: { url: string }[] }>(
-        "/uploads/multiple",
-        { method: "POST", body: uploadForm }
+        '/uploads/multiple',
+        { method: 'POST', body: uploadForm }
       );
 
-      if (!uploadRes?.uploaded) throw new Error("Image upload failed");
+      if (!uploadRes?.uploaded) throw new Error('Image upload failed');
 
       const uploadedUrls = uploadRes.uploaded.map((u) => u.url);
       const mainImageUrlFromServer = uploadedUrls[0];
       const variantImageUrls = uploadedUrls.slice(1);
 
       if (uploadedUrls.length !== 1 + variants.filter((v) => v.image).length) {
-        throw new Error("Some images failed to upload");
+        throw new Error('Some images failed to upload');
       }
 
       const productVariants = variants.map((v, index) => {
@@ -185,7 +186,9 @@ export default function AddProductVariantPage() {
           .sort((a, b) => a.minQty - b.minQty);
 
         if (validRows.length === 0)
-          throw new Error(`Variant "${v.name}" must have at least one pricing tier`);
+          throw new Error(
+            `Variant "${v.name}" must have at least one pricing tier`
+          );
 
         return {
           name: v.name,
@@ -201,7 +204,7 @@ export default function AddProductVariantPage() {
 
       const productPayload = {
         name: productName.trim(),
-        type: "Variant",
+        type: 'Variant',
         description: description.trim(),
         categories: selectedCat._id,
         subcategory: selectedSub?.name || null,
@@ -212,27 +215,27 @@ export default function AddProductVariantPage() {
         images: [mainImageUrlFromServer, ...variantImageUrls],
       };
 
-      await fetchWithToken("/v1/seller/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await fetchWithToken('/v1/seller/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productPayload),
       });
 
       // SUCCESS → FULL RESET + REDIRECT
-      setProductName("");
-      setDescription("");
+      setProductName('');
+      setDescription('');
       setMainImage(null);
       if (mainImageUrl) URL.revokeObjectURL(mainImageUrl);
-      setMainImageUrl("");
+      setMainImageUrl('');
       setVariants([]);
       setSelectedCat(null);
       setSelectedSub(null);
       setSelectedBrand(null);
       setStep(1);
 
-      router.push("/store/products");
+      router.push('/store/products');
     } catch (err: any) {
-      alert(err.message || "Product upload failed");
+      alert(err.message || 'Product upload failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -250,23 +253,34 @@ export default function AddProductVariantPage() {
 
               <div className="mb-10">
                 <div className="flex items-center justify-between text-sm font-medium text-gray-700">
-                  <span className={step === 1 ? "text-slate-900 font-bold" : "text-gray-500"}>
+                  <span
+                    className={
+                      step === 1 ? 'text-slate-900 font-bold' : 'text-gray-500'
+                    }
+                  >
                     Product details
                   </span>
-                  <span className={step === 2 ? "text-slate-900 font-bold" : "text-gray-500"}>
+                  <span
+                    className={
+                      step === 2 ? 'text-slate-900 font-bold' : 'text-gray-500'
+                    }
+                  >
                     Variant Setup
                   </span>
                 </div>
                 <div className="mt-3 relative h-2 bg-gray-200 rounded-full overflow-hidden">
                   <motion.div
                     className="absolute left-0 top-0 h-full bg-slate-900"
-                    animate={{ width: step === 1 ? "50%" : "100%" }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    animate={{ width: step === 1 ? '50%' : '100%' }}
+                    transition={{ duration: 0.5, ease: 'easeInOut' }}
                   />
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="relative overflow-hidden">
+              <form
+                onSubmit={handleSubmit}
+                className="relative overflow-hidden"
+              >
                 <AnimatePresence mode="wait">
                   {step === 1 && (
                     <motion.div
@@ -274,54 +288,91 @@ export default function AddProductVariantPage() {
                       initial={{ x: 300, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       exit={{ x: -300, opacity: 0 }}
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      transition={{ duration: 0.4, ease: 'easeInOut' }}
                       className="space-y-10"
                     >
                       <div>
-                        <h2 className="text-lg font-medium text-gray-900 mb-2">Product details</h2>
-                        <p className="text-sm text-gray-600 mb-8">Add basic info about the product.</p>
+                        <h2 className="text-lg font-medium text-gray-900 mb-2">
+                          Product details
+                        </h2>
+                        <p className="text-sm text-gray-600 mb-8">
+                          Add basic info about the product.
+                        </p>
 
                         <div className="space-y-6">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Product Media *</label>
-                            <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer">
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                              Product Media *
+                            </label>
+                            <div
+                              onClick={() => fileInputRef.current?.click()}
+                              className="cursor-pointer"
+                            >
                               {mainImageUrl ? (
-                                <img src={mainImageUrl} alt="main" className="w-full max-w-44 h-44 object-cover rounded-xl border" />
+                                <img
+                                  src={mainImageUrl}
+                                  alt="main"
+                                  className="w-full max-w-44 h-44 object-cover rounded-xl border"
+                                />
                               ) : (
                                 <div className="w-full max-w-44 h-44 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center hover:border-gray-400 transition">
                                   <ImageIcon className="w-16 h-16 text-gray-400 mb-3" />
-                                  <p className="text-sm text-gray-600">Click to upload</p>
+                                  <p className="text-sm text-gray-600">
+                                    Click to upload
+                                  </p>
                                 </div>
                               )}
-                              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleMainImage} className="hidden" />
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleMainImage}
+                                className="hidden"
+                              />
                             </div>
                           </div>
 
-                          <input type="text" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="Product name *" className={inputStyles} />
+                          <input
+                            type="text"
+                            value={productName}
+                            onChange={(e) => setProductName(e.target.value)}
+                            placeholder="Product name *"
+                            className={inputStyles}
+                          />
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Category *
+                              </label>
                               <select
-                                value={selectedCat?._id || ""}
+                                value={selectedCat?._id || ''}
                                 onChange={(e) => {
-                                  const cat = categories.find((c) => c._id === e.target.value);
+                                  const cat = categories.find(
+                                    (c) => c._id === e.target.value
+                                  );
                                   setSelectedCat(cat || null);
                                 }}
                                 className={`${inputStyles} disabled:opacity-50`}
                               >
                                 <option value="">Select category</option>
                                 {categories.map((c) => (
-                                  <option key={c._id} value={c._id}>{c.name}</option>
+                                  <option key={c._id} value={c._id}>
+                                    {c.name}
+                                  </option>
                                 ))}
                               </select>
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Sub-category</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Sub-category
+                              </label>
                               <select
-                                value={selectedSub?.name || ""}
+                                value={selectedSub?.name || ''}
                                 onChange={(e) => {
-                                  const sub = subcategories.find((s) => s.name === e.target.value);
+                                  const sub = subcategories.find(
+                                    (s) => s.name === e.target.value
+                                  );
                                   setSelectedSub(sub || null);
                                 }}
                                 disabled={!selectedCat}
@@ -329,18 +380,24 @@ export default function AddProductVariantPage() {
                               >
                                 <option value="">Select subcategory</option>
                                 {subcategories.map((s) => (
-                                  <option key={s.name} value={s.name}>{s.name}</option>
+                                  <option key={s.name} value={s.name}>
+                                    {s.name}
+                                  </option>
                                 ))}
                               </select>
                             </div>
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Brand / Nested Category</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Brand / Nested Category
+                            </label>
                             <select
-                              value={selectedBrand?.name || ""}
+                              value={selectedBrand?.name || ''}
                               onChange={(e) => {
-                                const brand = brands.find((b) => b.name === e.target.value);
+                                const brand = brands.find(
+                                  (b) => b.name === e.target.value
+                                );
                                 setSelectedBrand(brand || null);
                               }}
                               disabled={!selectedSub}
@@ -348,7 +405,9 @@ export default function AddProductVariantPage() {
                             >
                               <option value="">Select brand</option>
                               {brands.map((b) => (
-                                <option key={b.name} value={b.name}>{b.name}</option>
+                                <option key={b.name} value={b.name}>
+                                  {b.name}
+                                </option>
                               ))}
                             </select>
                           </div>
@@ -362,7 +421,11 @@ export default function AddProductVariantPage() {
                           />
 
                           <div className="flex justify-end">
-                            <button type="button" onClick={() => setStep(2)} className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 flex items-center gap-2 transition">
+                            <button
+                              type="button"
+                              onClick={() => setStep(2)}
+                              className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 flex items-center gap-2 transition"
+                            >
                               Next <ChevronRight className="w-5 h-5" />
                             </button>
                           </div>
@@ -377,44 +440,84 @@ export default function AddProductVariantPage() {
                       initial={{ x: 300, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       exit={{ x: -300, opacity: 0 }}
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      transition={{ duration: 0.4, ease: 'easeInOut' }}
                       className="space-y-10"
                     >
                       <div>
-                        <h2 className="text-lg font-medium text-gray-900 mb-2">Variant Setup</h2>
-                        <p className="text-sm text-gray-600 mb-8">Add product options or variations</p>
+                        <h2 className="text-lg font-medium text-gray-900 mb-2">
+                          Variant Setup
+                        </h2>
+                        <p className="text-sm text-gray-600 mb-8">
+                          Add product options or variations
+                        </p>
 
                         <div className="space-y-6">
                           <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-gray-700">Variants ({variants.length})</h3>
-                            <button type="button" onClick={addVariant} className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50">
+                            <h3 className="text-sm font-medium text-gray-700">
+                              Variants ({variants.length})
+                            </h3>
+                            <button
+                              type="button"
+                              onClick={addVariant}
+                              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50"
+                            >
                               <Plus className="h-4 w-4" /> Add variant
                             </button>
                           </div>
 
                           {variants.map((variant, index) => (
-                            <div key={`${variant.name}-${index}`} className="bg-gray-50 rounded-xl overflow-hidden">
-                              <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition" onClick={() => toggleExpand(index)}>
+                            <div
+                              key={`${variant.name}-${index}`}
+                              className="bg-gray-50 rounded-xl overflow-hidden"
+                            >
+                              <div
+                                className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition"
+                                onClick={() => toggleExpand(index)}
+                              >
                                 <div className="flex items-center gap-4 flex-1">
                                   <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-300">
                                     {variant.imageUrl ? (
-                                      <Image src={variant.imageUrl} alt={variant.name} width={64} height={64} className="w-full h-full object-cover" />
+                                      <Image
+                                        src={variant.imageUrl}
+                                        alt={variant.name}
+                                        width={64}
+                                        height={64}
+                                        className="w-full h-full object-cover"
+                                      />
                                     ) : (
                                       <div className="w-full h-full bg-gray-200 border-2 border-dashed rounded-xl flex items-center justify-center">
                                         <ImageIcon className="h-8 w-8 text-gray-400" />
                                       </div>
                                     )}
                                   </div>
-                                  <div className="px-3 py-2 bg-white rounded-lg text-sm font-medium">{variant.name}</div>
+                                  <div className="px-3 py-2 bg-white rounded-lg text-sm font-medium">
+                                    {variant.name}
+                                  </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <button type="button" onClick={(e) => { e.stopPropagation(); handleEditVariant(index); }} className="p-2 text-gray-500 hover:text-gray-700">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditVariant(index);
+                                    }}
+                                    className="p-2 text-gray-500 hover:text-gray-700"
+                                  >
                                     <Edit2 className="h-4 w-4" />
                                   </button>
-                                  <button type="button" onClick={(e) => { e.stopPropagation(); removeVariant(index); }} className="p-2 text-red-500 hover:text-red-700">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      removeVariant(index);
+                                    }}
+                                    className="p-2 text-red-500 hover:text-red-700"
+                                  >
                                     <Trash2 className="h-4 w-4" />
                                   </button>
-                                  <ChevronRight className={`h-5 w-5 text-gray-500 transition-transform ${expandedIndex === index ? "rotate-90" : ""}`} />
+                                  <ChevronRight
+                                    className={`h-5 w-5 text-gray-500 transition-transform ${expandedIndex === index ? 'rotate-90' : ''}`}
+                                  />
                                 </div>
                               </div>
 
@@ -422,10 +525,19 @@ export default function AddProductVariantPage() {
                                 <div className="border-t border-gray-200 px-4 py-3 bg-white">
                                   <div className="space-y-2">
                                     {variant.rows.map((row, i) => (
-                                      <div key={i} className="grid grid-cols-3 gap-2 text-sm">
-                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.minQty || "-"}</div>
-                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">{row.maxQty || "-"}</div>
-                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">₦{row.price || "-"}</div>
+                                      <div
+                                        key={i}
+                                        className="grid grid-cols-3 gap-2 text-sm"
+                                      >
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">
+                                          {row.minQty || '-'}
+                                        </div>
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">
+                                          {row.maxQty || '-'}
+                                        </div>
+                                        <div className="px-3 py-2 bg-gray-50 rounded-lg">
+                                          ₦{row.price || '-'}
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
@@ -436,7 +548,11 @@ export default function AddProductVariantPage() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row justify-between gap-4 pt-8">
-                          <button type="button" onClick={() => setStep(1)} className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition">
+                          <button
+                            type="button"
+                            onClick={() => setStep(1)}
+                            className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition"
+                          >
                             <ChevronLeft className="w-5 h-5" /> Back
                           </button>
                           <button
@@ -444,7 +560,7 @@ export default function AddProductVariantPage() {
                             disabled={isSubmitting || variants.length === 0}
                             className="px-10 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-medium transition disabled:opacity-70 disabled:cursor-not-allowed"
                           >
-                            {isSubmitting ? "Adding Product..." : "Add Product"}
+                            {isSubmitting ? 'Adding Product...' : 'Add Product'}
                           </button>
                         </div>
                       </div>
@@ -471,7 +587,7 @@ export default function AddProductVariantPage() {
         isOpen={showReviewModal}
         onClose={() => setShowReviewModal(false)}
         status="review"
-        productName={productName || "Your Product"}
+        productName={productName || 'Your Product'}
       />
     </>
   );
