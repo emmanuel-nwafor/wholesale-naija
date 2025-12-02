@@ -13,6 +13,7 @@ import LoginWithEmailModal from "../auth/modals/login/LoginWithEmailModal";
 import CompleteProfileModal from "../auth/modals/signup/CompleteProfileModal";
 import { fetchWithToken } from "@/app/utils/fetchWithToken";
 import { useRouter } from "next/navigation";
+import LoginAlertModal from "../auth/modals/login/LoginAlertModal";
 
 const suggestions = [
   "iPhone 15 Pro Max",
@@ -51,6 +52,7 @@ export default function Header() {
   // Login states
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [loginEmailOpen, setLoginEmailOpen] = useState(false);
+  const [loginAlertOpen, setLoginAlertOpen] = useState(false);
 
   // Create Account ChooseModal state
   const [signupChooseModalOpen, setSignupChooseModalOpen] = useState(false);
@@ -233,9 +235,9 @@ export default function Header() {
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <AnimatePresence>
-        {/* Modals */}
         {loginModalOpen && (
           <ChooseModal
+            key="login-modal"
             isOpen={loginModalOpen}
             onClose={() => setLoginModalOpen(false)}
             onSelectBuyer={() => {}}
@@ -249,6 +251,7 @@ export default function Header() {
 
         {signupChooseModalOpen && (
           <ChooseModal
+            key="signup-choose-modal"
             isOpen={signupChooseModalOpen}
             onClose={() => setSignupChooseModalOpen(false)}
             onSelectBuyer={() => {
@@ -267,6 +270,7 @@ export default function Header() {
 
         {loginEmailOpen && (
           <LoginWithEmailModal
+            key="login-email-modal"
             isOpen={loginEmailOpen}
             onClose={() => setLoginEmailOpen(false)}
           />
@@ -274,6 +278,7 @@ export default function Header() {
 
         {signupEmailOpen && (
           <SignupWithEmailModal
+            key="signup-email-modal"
             isOpen={signupEmailOpen}
             onClose={() => setSignupEmailOpen(false)}
             onContinue={handleContinueWithEmail}
@@ -282,6 +287,7 @@ export default function Header() {
 
         {otpModalOpen && (
           <VerifyPhoneOrEmailOtpModal
+            key="otp-modal"
             isOpen={otpModalOpen}
             type="email"
             identifier={otpIdentifier}
@@ -292,9 +298,19 @@ export default function Header() {
 
         {completeProfileOpen && (
           <CompleteProfileModal
+            key="complete-profile-modal"
             isOpen={completeProfileOpen}
             onClose={() => setCompleteProfileOpen(false)}
             onOpenLoginModal={() => setLoginEmailOpen(true)}
+          />
+        )}
+
+        {loginAlertOpen && (
+          <LoginAlertModal
+            key="login-alert-modal"
+            isOpen={loginAlertOpen}
+            onClose={() => setLoginAlertOpen(false)}
+            onOpenChooseModal={() => setSignupChooseModalOpen(true)}
           />
         )}
       </AnimatePresence>

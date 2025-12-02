@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import ProductCard from '../product-card/ProductCard';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
 interface NewProduct {
   _id: string;
@@ -25,12 +24,18 @@ export default function NewProducts() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetchWithToken<{ products: NewProduct[] }>('/v1/products/new');
-        if (res?.products) setProducts(res.products);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/new`, {
+          method: 'GET',
+        });
+
+        const data = await res.json();
+
+        if (data?.products) setProducts(data.products);
       } catch (err) {
         console.error('Failed to fetch new products:', err);
       }
     };
+
     loadProducts();
   }, []);
 
@@ -39,7 +44,10 @@ export default function NewProducts() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex bg-gray-50 rounded-xl p-2 items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">Newest Products</h2>
-          <Link href="#" className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1">
+          <Link
+            href="#"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1"
+          >
             See All
             <ArrowRight />
           </Link>

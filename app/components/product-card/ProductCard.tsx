@@ -27,7 +27,7 @@ function maskName(name?: string) {
   if (!name || name.trim() === "") return "AB******";
   const clean = name.replace(/\s+/g, "");
   if (clean.length <= 2) return clean;
-  return clean.slice(0, 2) + "*".repeat(clean.length - 2);
+  return clean.slice(0, 2) + "*****";
 }
 
 export default function ProductCard({ product, loading = false }: ProductCardProps) {
@@ -59,7 +59,7 @@ export default function ProductCard({ product, loading = false }: ProductCardPro
   // Determine correct image
   const mainImage =
     imgError || !p.images?.[0] || p.images[0].trim() === ""
-      ? "/svgs/logo.svg"
+      ? "https://i.pinimg.com/736x/51/5f/c5/515fc584baa97d0aae930bc6161a864f.jpg"
       : p.images[0];
 
   // Fetch seller reviews & average rating
@@ -87,7 +87,7 @@ export default function ProductCard({ product, loading = false }: ProductCardPro
     <Link href={`/product/${p._id}`}>
       <div className="overflow-hidden hover:cursor-pointer z-10">
         {/* Image */}
-        <div className="aspect-square bg-gray-400 rounded-xl flex items-center justify-center">
+        <div className="aspect-square bg-gray-100 rounded-xl flex items-center justify-center">
           <Image
             src={mainImage}
             alt={p.name}

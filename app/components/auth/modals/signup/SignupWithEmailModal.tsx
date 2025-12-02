@@ -76,7 +76,7 @@ export default function SignupWithEmailModal({
       >
         <motion.div
           variants={contentVariants}
-          className="w-full max-w-[30rem] bg-white rounded-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto relative"
+          className="w-full max-w-[30rem] max-h-[90vh] overflow-y-auto bg-white rounded-2xl p-6 sm:p-8 shadow-xl relative"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -105,7 +105,7 @@ export default function SignupWithEmailModal({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="mt-2 w-full px-4 py-4 bg-gray-100 rounded-2xl text-lg focus:outline-none"
+              className="mt-2 w-full px-4 py-4 sm:py-3 bg-gray-100 rounded-2xl text-lg focus:outline-none"
             />
           </div>
 
@@ -114,7 +114,7 @@ export default function SignupWithEmailModal({
           <button
             onClick={handleContinue}
             disabled={!email || loading}
-            className={`w-full py-4 rounded-2xl text-sm font-medium mb-4 transition ${
+            className={`w-full py-4 sm:py-3 rounded-2xl text-sm font-medium mb-4 transition ${
               email && !loading
                 ? "bg-gray-900 text-white hover:bg-gray-800 cursor-pointer"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"

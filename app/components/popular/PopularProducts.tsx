@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import ProductCard from '../product-card/ProductCard';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
 interface PopularProduct {
   _id: string;
@@ -28,12 +27,18 @@ export default function PopularProducts() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetchWithToken<{ products: PopularProduct[] }>('/v1/products/popular');
-        if (res?.products) setProducts(res.products);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/popular`, {
+          method: 'GET',
+        });
+
+        const data = await res.json();
+
+        if (data?.products) setProducts(data.products);
       } catch (err) {
         console.error('Failed to fetch popular products:', err);
       }
     };
+
     loadProducts();
   }, []);
 

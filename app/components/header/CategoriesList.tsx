@@ -15,14 +15,14 @@ export default function CategoriesList() {
   const [showModal, setShowModal] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [visibleCount, setVisibleCount] = useState(5);
+  const [visibleCount, setVisibleCount] = useState(4);
 
   // Update visible count based on window width
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      if (width >= 1024) setVisibleCount(7); 
-      else if (width >= 768) setVisibleCount(5);
+      if (width >= 1024) setVisibleCount(4); 
+      else if (width >= 768) setVisibleCount(4);
       else setVisibleCount(0); 
     };
     handleResize();

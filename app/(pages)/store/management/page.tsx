@@ -31,53 +31,44 @@ export default function StoreManagement() {
     bannerUrl: null as string | null,
   });
 
-  const loadStore = async () => {
-    const sellerId = getCurrentSellerId();
-    if (!sellerId) {
-      console.error("No sellerId found");
+  // Load store data
+const loadStore = async () => {
+  try {
+    setLoading(true);
+    const res = await fetchWithToken<{ user: any }>("/auth/profile");
+    const s = res.user.store;
+
+    if (!s) {
       setLoading(false);
       return;
     }
 
-    try {
-      setLoading(true);
+    const street =
+      typeof s.address === "object" && s.address?.street
+        ? s.address.street
+        : typeof s.address === "string"
+        ? s.address
+        : "";
 
-      const res = await fetchWithToken<any>(`/v1/seller/store/${sellerId}`);
+    setStore({
+      name: s.name || "",
+      location: s.location || "",
+      address: street || "",
+      description: s.description || "",
+      phone: s.contactPhone || "",
+      whatsapp: s.whatsapp || s.contactPhone || "",
+      openingDays: s.openingDays || "",
+      bannerUrl: s.bannerUrl || null,
+    });
 
-      if (!res?.store) {
-        setLoading(false);
-        return;
-      }
+    setBannerUrl(s.bannerUrl || null);
+  } catch (err: any) {
+    console.error("Failed to load store:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
-      const s = res.store;
-
-      const street =
-        typeof s.address === "object" && s.address?.street
-          ? s.address.street
-          : typeof s.address === "string"
-          ? s.address
-          : "";
-
-      const banner = s.bannerUrl || null;
-
-      setStore({
-        name: s.name || "",
-        location: s.location || "",
-        address: street || "",
-        description: s.description || "",
-        phone: s.contactPhone || "",
-        whatsapp: s.whatsapp || s.contactPhone || "",
-        openingDays: s.openingDays || "",
-        bannerUrl: banner,
-      });
-
-      setBannerUrl(banner);
-    } catch (err: any) {
-      console.error("Failed to load store:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     loadStore();
@@ -104,9 +95,7 @@ export default function StoreManagement() {
     });
 
     const uploadedUrl = uploadRes?.uploaded?.[0]?.url;
-
     if (!uploadedUrl) throw new Error("Banner upload failed.");
-
     return uploadedUrl;
   };
 
@@ -150,9 +139,8 @@ export default function StoreManagement() {
       });
 
       setIsEditing(false);
-      setShowSuccess(true); // success modal opens
+      setShowSuccess(true);
       await loadStore();
-
     } catch (err) {
       console.error("Update failed:", err);
       alert("Store update failed.");
@@ -174,8 +162,8 @@ export default function StoreManagement() {
     return (
       <div className="flex min-h-screen">
         <StoreSidebar />
-        <div className="flex-1 flex items-center justify-center text-lg">
-          Loading store...
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <p className="mt-6 text-lg">Loading store...</p>
         </div>
       </div>
     );
@@ -186,7 +174,7 @@ export default function StoreManagement() {
       <StoreSidebar />
       <div className="flex-1 flex flex-col">
         <DashboardHeader />
-        <main className="flex-1 p-4 md:p-10 lg:p-10 md:ml-64 bg-gray-50">
+        <main className="flex-1 p-4 md:p-10 lg:p-10 md:ml-64 bg-gray-50 overflow-y-auto">
           <div className="max-w-4xl">
             <div className="flex items-center justify-between mb-8">
               <h1 className="text-2xl font-semibold">Store Information</h1>
@@ -208,7 +196,7 @@ export default function StoreManagement() {
                   <div className="relative">
                     {bannerUrl ? (
                       <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-300">
-                        <Image src={bannerUrl} alt="Store banner" fill className="object-cover" />
+                        <Image src={bannerUrl} alt="Store banner" fill className="object-cover rounded-xl" />
                         {isEditing && (
                           <button
                             type="button"
@@ -254,6 +242,7 @@ export default function StoreManagement() {
                       onChange={(e) => setStore({ ...store, name: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500"
                       required
+                      autoComplete="name"
                     />
                   ) : (
                     <p className="font-medium">{store.name}</p>
@@ -269,6 +258,7 @@ export default function StoreManagement() {
                         value={store.location}
                         onChange={(e) => setStore({ ...store, location: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-100 rounded-xl"
+                        autoComplete="address-level1"
                       />
                     ) : (
                       <p>{store.location}</p>
@@ -283,6 +273,7 @@ export default function StoreManagement() {
                         value={store.address}
                         onChange={(e) => setStore({ ...store, address: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-100 rounded-xl"
+                        autoComplete="street-address"
                       />
                     ) : (
                       <p>{store.address}</p>
@@ -330,6 +321,7 @@ export default function StoreManagement() {
                         value={store.phone}
                         onChange={(e) => setStore({ ...store, phone: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-100 rounded-xl"
+                        autoComplete="tel"
                       />
                     ) : (
                       <p>{store.phone}</p>
@@ -344,6 +336,7 @@ export default function StoreManagement() {
                         value={store.whatsapp}
                         onChange={(e) => setStore({ ...store, whatsapp: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-100 rounded-xl"
+                        autoComplete="tel"
                       />
                     ) : (
                       <p>{store.whatsapp}</p>

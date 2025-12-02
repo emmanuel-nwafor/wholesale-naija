@@ -1,19 +1,15 @@
 // utils/fetchWithToken.ts
 export interface FetchWithTokenOptions extends RequestInit {
   headers?: Record<string, string>;
+  timeout?: number; 
+  onShowLoginAlert?: () => void;
 }
 
 export async function fetchWithToken<T = unknown>(
   endpoint: string,
   options: FetchWithTokenOptions = {},
 ): Promise<T> {
-  // Check if token exists in local storage
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  if (!token) {
-    throw new Error("No token found in localStorage");
-  }
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const BASE_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -29,20 +25,25 @@ export async function fetchWithToken<T = unknown>(
     headers["Content-Type"] = "application/json";
   }
 
-  headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const controller = new AbortController();
+  const timeout = options.timeout || 20000;
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
       headers,
+      signal: controller.signal,
       cache: "no-store",
     });
 
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(
-        `Request failed (${res.status}): ${errorText || res.statusText}`,
-      );
+      throw new Error(`Request failed (${res.status}): ${errorText || res.statusText}`);
     }
 
     const contentType = res.headers.get("content-type") || "";
@@ -51,8 +52,16 @@ export async function fetchWithToken<T = unknown>(
     }
 
     return (await res.text()) as T;
-  } catch (err) {
+  } catch (err: any) {
+    if (!token || err.name === "AbortError") {
+      console.warn("FetchWithToken: No token or request timed out");
+      if (options.onShowLoginAlert) options.onShowLoginAlert();
+      throw new Error("login-required");
+    }
+
     console.error("FetchWithToken error:", err);
     throw err instanceof Error ? err : new Error("Unknown error occurred");
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

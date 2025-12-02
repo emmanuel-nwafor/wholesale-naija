@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import ProductCard from '../product-card/ProductCard';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
 interface FeaturedProduct {
   _id: string;
@@ -23,16 +22,24 @@ interface FeaturedProduct {
 
 export default function FeaturedGrid() {
   const [products, setProducts] = useState<FeaturedProduct[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetchWithToken<{ products: FeaturedProduct[] }>('/v1/products/featured');
-        if (res?.products) setProducts(res.products);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/featured`);
+        const data = await res.json();
+
+        if (data?.products) {
+          setProducts(data.products);
+        }
       } catch (err) {
         console.error('Failed to fetch featured products:', err);
+      } finally {
+        setLoading(false);
       }
     };
+
     loadProducts();
   }, []);
 
@@ -41,17 +48,42 @@ export default function FeaturedGrid() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex bg-gray-50 rounded-xl p-2 items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">Featured Products</h2>
-          <Link href="#" className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1">
+          <Link
+            href="/products?filter=featured"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center gap-1"
+          >
             See All
             <ArrowRight />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
+        {/* Loading State */}
+        {loading && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="h-40 bg-gray-200 animate-pulse rounded-xl"
+              ></div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && products.length === 0 && (
+          <p className="text-gray-600 py-10">
+            No featured products available.
+          </p>
+        )}
+
+        {/* Product Grid */}
+        {!loading && products.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {products.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
