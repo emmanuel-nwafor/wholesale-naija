@@ -8,7 +8,7 @@ import ProfileSidebar from "@/app/components/sidebar/SellersProfileSidebar";
 import { fetchWithToken } from "@/app/utils/fetchWithToken";
 import { Modal, StateSelection, LGASelection, AreaSelection } from "@/app/components/modals/LocationsModal";
 
-export default function ProfileCountryRegion() {
+export default function SellerProfileCountryRegion() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalStep, setModalStep] = useState<"state" | "lga" | "area" | null>(null);

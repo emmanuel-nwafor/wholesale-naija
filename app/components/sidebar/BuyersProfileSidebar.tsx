@@ -1,8 +1,10 @@
+// app/components/sidebar/BuyersProfileSidebar.tsx
 "use client";
-import React from 'react';
-import { Bell, Lock, Trash2, LogOut, User, X, Store, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, Lock, Trash2, LogOut, User, X, MapPin, Star } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import LogoutModal from '@/app/components/modals/LogoutModal';
 
 interface ProfileSidebarProps {
   isMobile: boolean;
@@ -12,18 +14,24 @@ interface ProfileSidebarProps {
 
 export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: ProfileSidebarProps) {
   const pathname = usePathname();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const items = [
     { icon: User, label: "Profile Info", href: "/profile" },
     { icon: Star, label: "Reviews", href: "/profile/reviews" },
-    { icon: Bell, label: "Country/Region", href: "/profile/country-region" },
-    { icon: Lock, label: "Notification Settings", href: "/profile/notifications" },
-    { icon: Store, label: "Password Settings", href: "/profile/password" },
-    { icon: Trash2, label: "Delete Account", href: "/profile/profile/delete", danger: true },
-    { icon: LogOut, label: "Log Out", href: "/logout", danger: true },
+    { icon: MapPin, label: "Country/Region", href: "/profile/country-region" },
+    { icon: Bell, label: "Notification Settings", href: "/profile/notifications" },
+    { icon: Lock, label: "Password Settings", href: "/profile/password" },
+    { icon: Trash2, label: "Delete Account", href: "/profile/delete", danger: true },
   ];
 
   const isActive = (href: string) => pathname === href;
+
+  const handleLogoutClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowLogoutModal(true);
+    if (isMobile) setIsOpen(false);
+  };
 
   const content = (
     <nav className="space-y-1">
@@ -34,36 +42,58 @@ export default function BuyersProfileSidebar({ isMobile, isOpen, setIsOpen }: Pr
             key={item.href}
             href={item.href}
             onClick={() => isMobile && setIsOpen(false)}
-            className={`flex cursor-pointer items-center gap-3 px-4 py-3 w-full text-left rounded-xl text-sm font-medium transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
               active
                 ? 'bg-gray-100 text-gray-900'
                 : item.danger
                 ? 'text-red-600 hover:bg-red-50'
-                : 'text-gray-600 hover:bg-gray-50'
+                : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            <item.icon className="w-4 h-4" />
+            <item.icon className="w-5 h-5" />
             {item.label}
           </Link>
         );
       })}
+
+      {/* Logout Item */}
+      <button
+        onClick={handleLogoutClick}
+        className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+      >
+        <LogOut className="w-5 h-5" />
+        Log Out
+      </button>
     </nav>
   );
 
   if (isMobile) {
     return (
       <>
-        {isOpen && <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setIsOpen(false)} />}
-        <div className={`fixed left-0 top-0 h-full w-64 bg-white z-50 transition-transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-4 border-b border-gray-50 flex justify-between items-center">
-            <h3 className="font-medium">Account Settings</h3>
-            <button onClick={() => setIsOpen(false)}><X className="w-5 h-5" /></button>
+        {isOpen && <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setIsOpen(false)} />}
+        <div
+          className={`fixed left-0 top-0 h-full w-72 bg-white shadow-2xl z-50 transition-transform duration-300 ease-out ${
+            isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="p-5 border-b flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Account Settings</h3>
+            <button onClick={() => setIsOpen(false)} className="p-1">
+              <X className="w-6 h-6" />
+            </button>
           </div>
           <div className="p-4">{content}</div>
         </div>
+
+        <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
       </>
     );
   }
 
-  return <div className="bg-white rounded-2xl p-4">{content}</div>;
+  return (
+    <div className="bg-white rounded-3xl p-6">
+      {content}
+      <LogoutModal isOpen={showLogoutModal} onClose={() => setShowLogoutModal(false)} />
+    </div>
+  );
 }

@@ -1,18 +1,24 @@
-// app/profile/country-region/page.tsx (Buyers version)
+// app/profile/country-region/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Menu, ChevronRight } from 'lucide-react';
+import { Menu, ChevronRight, Check } from 'lucide-react';
 import Header from '@/app/components/header/Header';
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import { Modal, StateSelection, LGASelection, AreaSelection } from '@/app/components/modals/LocationsModal';
 
 export default function ProfileCountryRegion() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [modalStep, setModalStep] = useState<'state' | 'lga' | 'area' | null>(null);
+
   const [selectedState, setSelectedState] = useState('');
   const [selectedLGA, setSelectedLGA] = useState('');
   const [selectedArea, setSelectedArea] = useState('');
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -21,41 +27,73 @@ export default function ProfileCountryRegion() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  const openStateModal = () => setModalStep('state');
+  // Load saved location from API
+  useEffect(() => {
+    const loadLocation = async () => {
+      try {
+        const data = await fetchWithToken<any>('/auth/profile');
+        const addr = data.user.address || {};
+        setSelectedState(addr.state || '');
+        setSelectedLGA(addr.city || '');
+        setSelectedArea(addr.street || '');
+      } catch (err) {
+        console.error('Failed to load location');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadLocation();
+  }, []);
+
+  const openModal = () => setModalStep('state');
   const closeModal = () => setModalStep(null);
 
   const handleStateSelect = (state: string) => {
     if (state === 'current') {
       setSelectedState('Current Location');
       closeModal();
-    } else {
-      setSelectedState(state);
-      setModalStep('lga');
+      return;
     }
+    setSelectedState(state);
+    setSelectedLGA('');
+    setSelectedArea('');
+    setModalStep('lga');
   };
 
   const handleLGASelect = (lga: string) => {
     setSelectedLGA(lga);
+    setSelectedArea('');
     setModalStep('area');
   };
 
-  const handleAreaSelect = (area: string) => {
+  const handleAreaSelect = async (area: string) => {
     setSelectedArea(area);
     closeModal();
-  };
 
-  const displayValue = selectedArea || selectedLGA || selectedState || 'Select location';
-
-  const getCurrentStepIndex = () => {
-    switch (modalStep) {
-      case 'state': return 0;
-      case 'lga': return 1;
-      case 'area': return 2;
-      default: return -1;
+    // Save to backend
+    setSaving(true);
+    try {
+      await fetchWithToken('/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: {
+            state: selectedState,
+            city: selectedLGA,
+            street: area,
+          },
+        }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      alert('Failed to save location. Please try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const currentStep = getCurrentStepIndex();
+  const displayValue = selectedArea || selectedLGA || selectedState || 'Select your location';
 
   return (
     <>
@@ -65,7 +103,6 @@ export default function ProfileCountryRegion() {
         <div className="flex-1 flex flex-col">
           <main className="flex-1 p-4 md:p-8">
             <div className="max-w-5xl mx-auto">
-              {/* Mobile Menu Trigger */}
               {isMobile && (
                 <button
                   onClick={() => setMenuOpen(true)}
@@ -77,46 +114,48 @@ export default function ProfileCountryRegion() {
               )}
 
               <div className="flex flex-col lg:flex-row gap-8">
-                {/* Mobile Sidebar */}
-                {isMobile && (
-                  <BuyersProfileSidebar
-                    isMobile={true}
-                    isOpen={menuOpen}
-                    setIsOpen={setMenuOpen}
-                  />
-                )}
+                {isMobile && <BuyersProfileSidebar isMobile={true} isOpen={menuOpen} setIsOpen={setMenuOpen} />}
+                {!isMobile && <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />}
 
-                {/* Desktop Sidebar */}
-                {!isMobile && (
-                  <BuyersProfileSidebar isMobile={false} isOpen={true} setIsOpen={() => {}} />
-                )}
-
-                {/* Main Content */}
                 <div className="flex-1 bg-white rounded-3xl p-6 md:p-8">
-                  <h1 className="text-xl font-bold mb-8">Country/Region</h1>
+                  <h1 className="text-xl md:text-2xl font-bold mb-8">Country/Region</h1>
 
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Select your location
-                      </label>
-                      <button
-                        onClick={openStateModal}
-                        className="w-full px-5 py-4 text-left bg-gray-50 rounded-xl flex items-center justify-between hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <span className="text-gray-900">{displayValue}</span>
-                        <ChevronRight className="w-5 h-5 text-gray-400" />
-                      </button>
-                    </div>
-
-                    {(selectedState || selectedLGA || selectedArea) && (
-                      <div className="p-5 bg-blue-50 rounded-xl">
-                        <p className="text-sm text-blue-900 font-medium">
-                          Selected: {selectedState} {selectedLGA && `→ ${selectedLGA}`} {selectedArea && `→ ${selectedArea}`}
-                        </p>
+                  {loading ? (
+                    <p className="text-gray-500">Loading your location...</p>
+                  ) : (
+                    <div className="max-w-lg space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                          Delivery Location
+                        </label>
+                        <button
+                          onClick={openModal}
+                          className="w-full px-5 py-4 text-left bg-gray-50 rounded-xl flex items-center justify-between hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <span className={!selectedState ? 'text-gray-500' : 'text-gray-900'}>
+                            {displayValue}
+                          </span>
+                          <ChevronRight className="w-5 h-5 text-gray-400" />
+                        </button>
                       </div>
-                    )}
-                  </div>
+
+                      {selectedState && (
+                        <div className="p-5 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+                          <Check className="w-6 h-6 text-green-600 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-green-900">Location Saved</p>
+                            <p className="text-xs text-green-700 mt-1">
+                              {selectedState}
+                              {selectedLGA && ` • ${selectedLGA}`}
+                              {selectedArea && ` • ${selectedArea}`}
+                            </p>
+                          </div>
+                          {saving && <span className="ml-auto text-xs text-gray-600">Saving...</span>}
+                          {saved && <span className="ml-auto text-xs font-medium text-green-600">Saved!</span>}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -124,81 +163,28 @@ export default function ProfileCountryRegion() {
         </div>
       </div>
 
-      {/* Desktop: Sliding modals */}
-      {!isMobile && (
-        <>
-          <Modal
-            isOpen={modalStep !== null}
-            onClose={closeModal}
-            title="Select Location"
-            isMobile={false}
-            stepIndex={0}
-            currentStep={currentStep}
-          >
-            {modalStep === 'state' && <StateSelection onSelect={handleStateSelect} />}
-          </Modal>
-
-          <Modal
-            isOpen={modalStep === 'lga' || modalStep === 'area'}
-            onClose={closeModal}
-            title="Select Location"
-            isMobile={false}
-            stepIndex={1}
-            currentStep={currentStep}
-          >
-            {modalStep === 'lga' && <LGASelection state={selectedState} onSelect={handleLGASelect} />}
-          </Modal>
-
-          <Modal
-            isOpen={modalStep === 'area'}
-            onClose={closeModal}
-            title="Select Location"
-            isMobile={false}
-            stepIndex={2}
-            currentStep={currentStep}
-          >
-            {modalStep === 'area' && <AreaSelection lga={selectedLGA} onSelect={handleAreaSelect} />}
-          </Modal>
-        </>
-      )}
-
-      {/* Mobile: Full-screen modals */}
-      {isMobile && (
-        <>
-          <Modal
-            isOpen={modalStep === 'state'}
-            onClose={closeModal}
-            title="Select Location"
-            isMobile={true}
-            stepIndex={0}
-            currentStep={currentStep}
-          >
-            <StateSelection onSelect={handleStateSelect} />
-          </Modal>
-
-          <Modal
-            isOpen={modalStep === 'lga'}
-            onClose={closeModal}
-            title="Select Location"
-            isMobile={true}
-            stepIndex={1}
-            currentStep={currentStep}
-          >
-            <LGASelection state={selectedState} onSelect={handleLGASelect} />
-          </Modal>
-
-          <Modal
-            isOpen={modalStep === 'area'}
-            onClose={closeModal}
-            title="Select Location"
-            isMobile={true}
-            stepIndex={2}
-            currentStep={currentStep}
-          >
-            <AreaSelection lga={selectedLGA} onSelect={handleAreaSelect} />
-          </Modal>
-        </>
-      )}
+      {/* Single Smart Modal – Works on Mobile & Desktop */}
+      <Modal
+        isOpen={!!modalStep}
+        onClose={closeModal}
+        onBack={() => {
+          if (modalStep === 'lga') setModalStep('state');
+          if (modalStep === 'area') setModalStep('lga');
+        }}
+        title={
+          modalStep === 'state'
+            ? 'Select State'
+            : modalStep === 'lga'
+            ? `LGA in ${selectedState}`
+            : `Area in ${selectedLGA}`
+        }
+        isMobile={isMobile}
+        currentStep={modalStep}
+      >
+        {modalStep === 'state' && <StateSelection onSelect={handleStateSelect} />}
+        {modalStep === 'lga' && <LGASelection state={selectedState} onSelect={handleLGASelect} />}
+        {modalStep === 'area' && <AreaSelection lga={selectedLGA} onSelect={handleAreaSelect} />}
+      </Modal>
     </>
   );
 }

@@ -218,7 +218,6 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         show={showSuccess}
         onClose={onClose}
         title="Password Changed!"
-        message="Your password has been updated successfully."
       />
     </>
   );

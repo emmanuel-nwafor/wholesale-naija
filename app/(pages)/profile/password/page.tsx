@@ -54,7 +54,7 @@ export default function ProfilePasswordPage() {
                 )}
 
                 {/* Main Content */}
-                <div className="flex-1 rounded-3xl p-6 md:p-8">
+                <div className="flex-1 rounded-3xl p-6 md:p-8 bg-white">
                   <h1 className="text-xl font-bold mb-8">Change Password</h1>
 
                   <div className="space-y-6 max-w-lg">

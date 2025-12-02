@@ -22,7 +22,6 @@ export const Modal = ({
   title,
   children,
   isMobile,
-  currentStep,
 }: ModalProps) => {
   if (!isOpen) return null;
 
