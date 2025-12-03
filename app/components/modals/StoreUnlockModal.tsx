@@ -7,9 +7,16 @@ import Image from 'next/image';
 interface StoreUnlockModalProps {
   isOpen: boolean;
   onClose: () => void;
+  storeName?: string;
+  phoneNumber?: string;
 }
 
-export default function StoreUnlockModal({ isOpen, onClose }: StoreUnlockModalProps) {
+export default function StoreUnlockModal({
+  isOpen,
+  onClose,
+  storeName = 'This Store',
+  phoneNumber = '',
+}: StoreUnlockModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -20,7 +27,7 @@ export default function StoreUnlockModal({ isOpen, onClose }: StoreUnlockModalPr
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
           {/* Modal */}
@@ -42,7 +49,7 @@ export default function StoreUnlockModal({ isOpen, onClose }: StoreUnlockModalPr
                   className="mb-6 flex justify-center"
                 >
                   <Image
-                    src="/svgs/unlock-success.svg" // Replace with your actual success/check icon path
+                    src="/svgs/unlock-success.svg"
                     alt="Store Unlocked"
                     width={80}
                     height={80}
@@ -57,7 +64,7 @@ export default function StoreUnlockModal({ isOpen, onClose }: StoreUnlockModalPr
                   transition={{ delay: 0.3 }}
                   className="text-2xl font-bold text-gray-900 mb-3"
                 >
-                  Store Contact Unlocked!
+                  {storeName} Unlocked!
                 </motion.h2>
 
                 {/* Description */}
@@ -65,10 +72,32 @@ export default function StoreUnlockModal({ isOpen, onClose }: StoreUnlockModalPr
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-gray-600 text-sm leading-relaxed"
+                  className="text-gray-600 text-sm leading-relaxed mb-6"
                 >
-                  You can now reach this store directly. Their contact details
-                  have also been saved to this store&apos;s profile.
+                  You can now reach this store directly via:
+                </motion.p>
+
+                {/* Phone Number */}
+                {phoneNumber && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="bg-green-50 border border-green-200 rounded-2xl py-4 px-6 mb-6"
+                  >
+                    <p className="text-green-800 font-semibold text-lg">
+                      {phoneNumber}
+                    </p>
+                  </motion.div>
+                )}
+
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="text-xs text-gray-500"
+                >
+                  Contact details saved to store profile
                 </motion.p>
               </div>
 
@@ -77,7 +106,7 @@ export default function StoreUnlockModal({ isOpen, onClose }: StoreUnlockModalPr
                 <motion.button
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.7 }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={onClose}

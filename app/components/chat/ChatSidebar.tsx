@@ -4,6 +4,7 @@
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface Chat {
   id: string;
@@ -12,6 +13,7 @@ interface Chat {
   time: string;
   online: boolean;
   date?: string;
+  avatar?: string; // Added support for real avatar
 }
 
 interface ChatSidebarProps {
@@ -53,37 +55,55 @@ export default function ChatSidebar({
           />
         </div>
       </div>
+
       <div className="flex-1 overflow-y-auto mb-80">
-        {chats.map((chat) => (
-          <motion.div
-            key={chat.id}
-            onClick={() => onChatClick(chat)}
-            className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-              selectedChatId === chat.id ? 'bg-gray-50' : ''
-            }`}
-            whileHover={{ backgroundColor: 'rgb(249 250 251)' }}
-            whileTap={{ scale: 0.99 }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-12 h-12 bg-gray-300 rounded-full" />
-                {chat.online && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-sm truncate">{chat.name}</h3>
-                  <span className="text-xs text-gray-500">{chat.time}</span>
+        {chats.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            <p>No conversations yet</p>
+          </div>
+        ) : (
+          chats.map((chat) => (
+            <motion.div
+              key={chat.id}
+              onClick={() => onChatClick(chat)}
+              className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                selectedChatId === chat.id ? 'bg-gray-50' : ''
+              }`}
+              whileHover={{ backgroundColor: 'rgb(249 250 251)' }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  {chat.avatar ? (
+                    <Image
+                      src={chat.avatar}
+                      alt={chat.name}
+                      width={48}
+                      height={48}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-300 rounded-full" />
+                  )}
+                  {chat.online && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                  )}
                 </div>
-                <p className="text-sm text-gray-600 truncate">{chat.message}</p>
-                {chat.date && (
-                  <p className="text-xs text-gray-400 mt-1">{chat.date}</p>
-                )}
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-sm truncate">{chat.name}</h3>
+                    <span className="text-xs text-gray-500">{chat.time}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 truncate">{chat.message}</p>
+                  {chat.date && (
+                    <p className="text-xs text-gray-400 mt-1">{chat.date}</p>
+                  )}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))
+        )}
       </div>
     </div>
   );

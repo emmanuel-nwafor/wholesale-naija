@@ -19,11 +19,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/app/components/header/Header';
 import ProductCard from '@/app/components/product-card/ProductCard';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { getCurrentSellerId } from '@/app/utils/auth';
 import DynamicHeader from '@/app/components/header/DynamicHeader';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 import StoreUnlockModal from '@/app/components/modals/StoreUnlockModal';
+import Spinner from '@/app/components/spinner/Spinner';
 
 const FALLBACK_IMAGE = 'https://i.pinimg.com/736x/75/92/1a/75921a9653409e76f63f904530687fe0.jpg';
 
@@ -41,6 +42,7 @@ function maskPhone(phone?: string) {
 
 export default function ProductDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id as string;
 
   const [product, setProduct] = useState<any | null>(null);
@@ -107,7 +109,6 @@ export default function ProductDetailsPage() {
   // Toggle wishlist
   const toggleWishlist = async () => {
     if (!id || isAnimating) return;
-
     setIsAnimating(true);
 
     try {
@@ -159,59 +160,55 @@ export default function ProductDetailsPage() {
     run();
   }, [id]);
 
-  // Unlock handler — shows modal on success
+  // Unlock handler
   const handleUnlock = async () => {
     if (!sellerId || unlocking || unlocked || !buyerId) return;
 
     setUnlocking(true);
     try {
-      const res = await fetchWithToken(`/wallet/unlock/${sellerId}`, { method: 'POST' });
+      const res = await fetchWithToken<any>(`/wallet/unlock/${sellerId}`, { method: 'POST' });
 
-      const unlockRes = res as { unlocked?: boolean; contact?: { phone?: string } };
-
-      if (unlockRes.unlocked && unlockRes.contact?.phone) {
+      if (res && res.unlocked === true && res.contact?.phone) {
         setUnlocked(true);
-        setSellerPhone(unlockRes.contact.phone);
-        setUnlockModalOpen(true); // Show modal
+        setSellerPhone(res.contact.phone);
+        setUnlockModalOpen(true);
+      } else {
+        throw new Error('Unlock failed');
       }
     } catch (err: any) {
-      alert(err.message || 'Unlock failed');
+      alert(err.message || 'Failed to unlock store.');
     } finally {
       setUnlocking(false);
     }
   };
 
-  if (loading) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="grid lg:grid-cols-2 gap-8">
-              <div className="rounded-2xl bg-gray-200 aspect-[4/3] animate-pulse" />
-              <div className="space-y-6">
-                <div className="h-8 w-3/4 bg-gray-200 rounded animate-pulse" />
-                <div className="h-6 w-1/2 bg-gray-200 rounded animate-pulse" />
-                <div className="h-10 w-full bg-gray-200 rounded animate-pulse" />
-                <div className="h-40 w-full bg-gray-100 rounded animate-pulse" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+  // NEW: Open chat with product context
+  const openChatWithProduct = () => {
+    const chatData = {
+      sellerId: product.seller._id,
+      sellerName: displaySellerName,
+      sellerAvatar: product.seller?.profilePicture?.url || FALLBACK_IMAGE,
+      product: {
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        moq: product.moq || 20,
+        image: product.images?.[0] || FALLBACK_IMAGE,
+      },
+    };
 
-  if (!product) {
-    return (
-      <>
-        <Header />
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-gray-600">Product not found.</p>
-        </div>
-      </>
-    );
-  }
+    sessionStorage.setItem('pendingChatWithProduct', JSON.stringify(chatData));
+    router.push('/messages');
+  };
+
+  if (loading) return <div className="min-h-screen flex flex-col items-center justify-center">
+    <Header />
+    <p className="">
+      <Spinner />
+      Loading
+    </p>
+  </div>;
+  if (!product) return <div className="min-h-screen flex items-center justify-center"><Header /><p>Product not found.</p></div>;
 
   const images: string[] = Array.isArray(product.images) ? product.images : [];
   const currentImage = !imgError && images[currentIndex] ? images[currentIndex] : FALLBACK_IMAGE;
@@ -232,6 +229,7 @@ export default function ProductDetailsPage() {
       <Header />
       <DynamicHeader />
       <div className="min-h-screen max-w-7xl mx-auto px-4 py-6">
+
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Image Gallery */}
           <div className="relative bg-gray-50 rounded-3xl overflow-hidden">
@@ -274,36 +272,11 @@ export default function ProductDetailsPage() {
             <div>
               <h1 className="text-2xl font-medium flex items-center gap-4 text-gray-900">
                 {product.name}
-
-                {/* Animated Heart */}
-                <motion.button
-                  onClick={toggleWishlist}
-                  disabled={isAnimating}
-                  className="relative"
-                  whileTap={{ scale: 0.8 }}
-                >
-                  <motion.div
-                    animate={{ scale: isWishlisted ? [1, 1.3, 1] : 1 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                  >
-                    <Heart
-                      size={28}
-                      className={`transition-all duration-300 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-                      strokeWidth={isWishlisted ? 0 : 2}
-                    />
+                <motion.button onClick={toggleWishlist} disabled={isAnimating} whileTap={{ scale: 0.8 }}>
+                  <motion.div animate={{ scale: isWishlisted ? [1, 1.3, 1] : 1 }}>
+                    <Heart size={28} className={`transition-all ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`} strokeWidth={isWishlisted ? 0 : 2} />
                   </motion.div>
-                  {isAnimating && !isWishlisted && (
-                    <motion.div
-                      className="absolute inset-0"
-                      initial={{ scale: 0.8, opacity: 1 }}
-                      animate={{ scale: 2.5, opacity: 0 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <Heart size={28} className="text-red-500" />
-                    </motion.div>
-                  )}
                 </motion.button>
-
                 <Share2 size={28} className="p-1 bg-gray-100 rounded-full cursor-pointer hover:bg-gray-200 transition" />
               </h1>
 
@@ -325,7 +298,6 @@ export default function ProductDetailsPage() {
               <p className="text-sm text-gray-500 mt-1">MOQ: {product.moq || '20'} bags</p>
             </div>
 
-            {/* Unlock / Contact */}
             {!unlocked ? (
               <button
                 onClick={handleUnlock}
@@ -338,22 +310,18 @@ export default function ProductDetailsPage() {
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <button className="w-full border border-slate-800 text-slate-900 py-4 rounded-2xl font-medium hover:bg-gray-50 transition">
+                  {/* MESSAGE IN APP WITH PRODUCT */}
+                  <button
+                    onClick={openChatWithProduct}
+                    className="w-full rounded-2xl border border-slate-800 text-slate-900 py-4 font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                  >
                     Message in App
                   </button>
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full bg-slate-900 text-white py-4 rounded-2xl font-medium text-center hover:bg-slate-800 transition"
-                  >
+                  <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-4 rounded-2xl font-medium text-center hover:bg-slate-800 transition">
                     Chat on WhatsApp
                   </a>
                 </div>
-                <a
-                  href={`tel:${sellerPhone}`}
-                  className="w-full bg-gray-100 border text-gray-800 py-5 border-gray-200 rounded-2xl font-medium text-center flex items-center justify-center gap-3 hover:bg-gray-200 transition"
-                >
+                <a href={`tel:${sellerPhone}`} className="w-full bg-gray-100 border text-gray-800 py-5 border-gray-200 rounded-2xl font-medium text-center flex items-center justify-center gap-3 hover:bg-gray-200 transition">
                   <Phone className="w-5 h-5" />
                   Call {displayPhone}
                 </a>
@@ -509,10 +477,17 @@ export default function ProductDetailsPage() {
             </AnimatePresence>
           </div>
         </div>
+
       </div>
 
       <CarouselBanner />
-      <StoreUnlockModal isOpen={unlockModalOpen} onClose={() => setUnlockModalOpen(false)} />
+
+      <StoreUnlockModal
+        isOpen={unlockModalOpen}
+        onClose={() => setUnlockModalOpen(false)}
+        storeName={displaySellerName}
+        phoneNumber={displayPhone || ''}
+      />
     </>
   );
 }
