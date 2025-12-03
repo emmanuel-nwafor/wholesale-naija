@@ -201,13 +201,17 @@ export default function ProductDetailsPage() {
     router.push('/messages');
   };
 
-  if (loading) return <div className="min-h-screen flex flex-col items-center justify-center">
-    <Header />
-    <p className="">
-      <Spinner />
-      Loading
-    </p>
-  </div>;
+  if (loading) return (
+    <>
+     <div className="">
+      <Header />
+      <div className="mt-10 text-center">
+        <Spinner />
+        Loading...
+      </div>
+     </div>
+    </>
+  )
   if (!product) return <div className="min-h-screen flex items-center justify-center"><Header /><p>Product not found.</p></div>;
 
   const images: string[] = Array.isArray(product.images) ? product.images : [];
