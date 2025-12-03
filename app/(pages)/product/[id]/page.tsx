@@ -19,12 +19,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/app/components/header/Header';
 import ProductCard from '@/app/components/product-card/ProductCard';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { getCurrentSellerId } from '@/app/utils/auth';
 import DynamicHeader from '@/app/components/header/DynamicHeader';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 import StoreUnlockModal from '@/app/components/modals/StoreUnlockModal';
-import Spinner from '@/app/components/spinner/Spinner';
 
 const FALLBACK_IMAGE = 'https://i.pinimg.com/736x/75/92/1a/75921a9653409e76f63f904530687fe0.jpg';
 
@@ -42,7 +41,6 @@ function maskPhone(phone?: string) {
 
 export default function ProductDetailsPage() {
   const params = useParams();
-  const router = useRouter();
   const id = params?.id as string;
 
   const [product, setProduct] = useState<any | null>(null);
@@ -160,7 +158,7 @@ export default function ProductDetailsPage() {
     run();
   }, [id]);
 
-  // Unlock handler
+  // FIXED: Unlock handler
   const handleUnlock = async () => {
     if (!sellerId || unlocking || unlocked || !buyerId) return;
 
@@ -173,46 +171,40 @@ export default function ProductDetailsPage() {
         setSellerPhone(res.contact.phone);
         setUnlockModalOpen(true);
       } else {
-        throw new Error('Unlock failed');
+        throw new Error('Unlock failed or incomplete response');
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to unlock store.');
+      console.error('Unlock error:', err);
+      alert(err.message || 'Failed to unlock store. Please try again.');
     } finally {
       setUnlocking(false);
     }
   };
 
-  // NEW: Open chat with product context
-  const openChatWithProduct = () => {
-    const chatData = {
-      sellerId: product.seller._id,
-      sellerName: displaySellerName,
-      sellerAvatar: product.seller?.profilePicture?.url || FALLBACK_IMAGE,
-      product: {
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        moq: product.moq || 20,
-        image: product.images?.[0] || FALLBACK_IMAGE,
-      },
-    };
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading product...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
-    sessionStorage.setItem('pendingChatWithProduct', JSON.stringify(chatData));
-    router.push('/messages');
-  };
-
-  if (loading) return (
-    <>
-     <div className="">
-      <Header />
-      <div className="mt-10 text-center">
-        <Spinner />
-        Loading...
-      </div>
-     </div>
-    </>
-  )
-  if (!product) return <div className="min-h-screen flex items-center justify-center"><Header /><p>Product not found.</p></div>;
+  if (!product) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-gray-600">Product not found.</p>
+        </div>
+      </>
+    );
+  }
 
   const images: string[] = Array.isArray(product.images) ? product.images : [];
   const currentImage = !imgError && images[currentIndex] ? images[currentIndex] : FALLBACK_IMAGE;
@@ -276,10 +268,15 @@ export default function ProductDetailsPage() {
             <div>
               <h1 className="text-2xl font-medium flex items-center gap-4 text-gray-900">
                 {product.name}
-                <motion.button onClick={toggleWishlist} disabled={isAnimating} whileTap={{ scale: 0.8 }}>
-                  <motion.div animate={{ scale: isWishlisted ? [1, 1.3, 1] : 1 }}>
-                    <Heart size={28} className={`transition-all ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`} strokeWidth={isWishlisted ? 0 : 2} />
+                <motion.button onClick={toggleWishlist} disabled={isAnimating} className="relative" whileTap={{ scale: 0.8 }}>
+                  <motion.div animate={{ scale: isWishlisted ? [1, 1.3, 1] : 1 }} transition={{ duration: 0.4, ease: "easeOut" }}>
+                    <Heart size={28} className={`transition-all duration-300 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`} strokeWidth={isWishlisted ? 0 : 2} />
                   </motion.div>
+                  {isAnimating && !isWishlisted && (
+                    <motion.div className="absolute inset-0" initial={{ scale: 0.8, opacity: 1 }} animate={{ scale: 2.5, opacity: 0 }} transition={{ duration: 0.6 }}>
+                      <Heart size={28} className="text-red-500" />
+                    </motion.div>
+                  )}
                 </motion.button>
                 <Share2 size={28} className="p-1 bg-gray-100 rounded-full cursor-pointer hover:bg-gray-200 transition" />
               </h1>
@@ -314,11 +311,13 @@ export default function ProductDetailsPage() {
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  {/* MESSAGE IN APP WITH PRODUCT */}
                   <button
-                    onClick={openChatWithProduct}
-                    className="w-full rounded-2xl border border-slate-800 text-slate-900 py-4 font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2"
-                  >
+  onClick={async () => {
+    sessionStorage.setItem('pendingChatSellerId', product.seller._id);
+    window.location.href = '/messages';
+  }}
+  className="w-full rounded-2xl border border-slate-800 text-slate-900 py-4 font-medium hover:bg-gray-50 transition"
+>
                     Message in App
                   </button>
                   <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-4 rounded-2xl font-medium text-center hover:bg-slate-800 transition">
@@ -334,7 +333,7 @@ export default function ProductDetailsPage() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs & Rest of UI — 100% unchanged */}
         <div className="mt-8 overflow-hidden">
           <div className="flex border-b border-gray-200">
             {[
@@ -357,38 +356,20 @@ export default function ProductDetailsPage() {
           <div className="py-6">
             <AnimatePresence mode="wait">
               {activeTab === 'description' && (
-                <motion.div
-                  key="desc"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-4 text-sm text-gray-600"
-                >
+                <motion.div key="desc" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4 text-sm text-gray-600">
                   <p className="whitespace-pre-line">{product.description}</p>
                 </motion.div>
               )}
 
               {activeTab === 'reviews' && (
-                <motion.div
-                  key="reviews"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-6"
-                >
+                <motion.div key="reviews" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                   {sellerReviews.length > 0 ? (
                     sellerReviews.map((review) => (
                       <div key={review._id} className="border-b border-gray-100 pb-4 last:border-0">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                              <Image
-                                src={review.buyerId?.profilePicture?.url || FALLBACK_IMAGE}
-                                alt={review.buyerId?.fullName || 'User'}
-                                width={32}
-                                height={32}
-                                className="object-cover w-full h-full"
-                              />
+                              <Image src={review.buyerId?.profilePicture?.url || FALLBACK_IMAGE} alt={review.buyerId?.fullName || 'User'} width={32} height={32} className="object-cover w-full h-full" />
                             </div>
                             <span className="font-medium text-sm">{review.buyerId?.fullName || 'User'}</span>
                           </div>
@@ -411,22 +392,10 @@ export default function ProductDetailsPage() {
               )}
 
               {activeTab === 'store' && (
-                <motion.div
-                  key="store"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="py-8 space-y-8"
-                >
+                <motion.div key="store" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="py-8 space-y-8">
                   <div className="flex items-start gap-4">
                     <div className="w-20 h-20 bg-gray-200 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                      <Image
-                        src={product?.seller?.profilePicture?.url || FALLBACK_IMAGE}
-                        alt="Store"
-                        width={80}
-                        height={80}
-                        className="object-cover w-full h-full"
-                      />
+                      <Image src={product?.seller?.profilePicture?.url || FALLBACK_IMAGE} alt="Store" width={80} height={80} className="object-cover w-full h-full" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
@@ -481,7 +450,6 @@ export default function ProductDetailsPage() {
             </AnimatePresence>
           </div>
         </div>
-
       </div>
 
       <CarouselBanner />

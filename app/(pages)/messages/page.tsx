@@ -1,4 +1,3 @@
-// app/(pages)/chat/page.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -34,15 +33,6 @@ interface Message {
   sender: string;
 }
 
-// NEW: Shared product from product page
-interface SharedProduct {
-  id: string;
-  name: string;
-  price: number;
-  moq: number;
-  image: string;
-}
-
 export default function BuyersChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedChat, setSelectedChat] = useState<any>(null);
@@ -51,7 +41,6 @@ export default function BuyersChatPage() {
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [sharedProduct, setSharedProduct] = useState<SharedProduct | null>(null); // ← NEW
 
   const currentUserId = getCurrentSellerId();
 
@@ -75,28 +64,66 @@ export default function BuyersChatPage() {
     fetchConversations();
   }, []);
 
-  // NEW: Check for shared product on load
+  // Handle direct open from product page
   useEffect(() => {
-    const pending = sessionStorage.getItem('pendingChatWithProduct');
-    if (pending && conversations.length > 0) {
-      const data = JSON.parse(pending);
-      setSharedProduct(data.product);
+    const targetSellerId = sessionStorage.getItem('pendingChatSellerId');
+    if (!targetSellerId || conversations.length === 0) return;
 
-      // Auto-open the correct conversation
-      const targetConv = conversations.find(c =>
-        c.participants.some((p: any) => p._id === data.sellerId)
-      );
+    sessionStorage.removeItem('pendingChatSellerId');
 
-      if (targetConv) {
-        const chatItem = sidebarChats.find((c: any) => c.id === targetConv._id);
-        if (chatItem) {
-          handleChatClick(chatItem);
-        }
-      }
+    // Find existing chat
+    const existingConv = conversations.find(conv =>
+      conv.participants.some(p => p._id === currentUserId) &&
+      conv.participants.some(p => p._id === targetSellerId)
+    );
 
-      sessionStorage.removeItem('pendingChatWithProduct');
+    if (existingConv) {
+      const other = existingConv.participants.find(p => p._id !== currentUserId);
+      const chatItem = {
+        id: existingConv._id,
+        name: other?.store?.name || other?.fullName || 'Seller',
+        message: 'No messages yet',
+        time: '',
+        online: true,
+        avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
+        conv: existingConv,
+      };
+      handleChatClick(chatItem);
+      return;
     }
-  }, [conversations]);
+
+    // Create new conversation
+    const createAndOpen = async () => {
+      try {
+        const res = await fetchWithToken('/v1/chat/conversations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ participantIds: [targetSellerId] }),
+        });
+
+        const newConv = (res as any).conversation || res;
+        setConversations(prev => [newConv, ...prev]);
+
+        const other = newConv.participants.find((p: any) => p._id !== currentUserId);
+        const chatItem = {
+          id: newConv._id,
+          name: other?.store?.name || other?.fullName || 'Seller',
+          message: 'No messages yet',
+          time: '',
+          online: true,
+          avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
+          conv: newConv,
+        };
+
+        handleChatClick(chatItem);
+      } catch (err) {
+        console.error('Failed to create chat:', err);
+        alert('Could not start chat. Try again.');
+      }
+    };
+
+    createAndOpen();
+  }, [conversations, currentUserId]);
 
   // Fetch messages when chat selected
   useEffect(() => {
@@ -104,7 +131,6 @@ export default function BuyersChatPage() {
       setMessages([]);
       return;
     }
-
     const fetchMessages = async () => {
       try {
         const res = await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}/messages`);
@@ -121,14 +147,7 @@ export default function BuyersChatPage() {
     setShowActions(false);
   };
 
-  const handleBack = () => {
-    setSelectedChat(null);
-    setShowActions(false);
-  };
-
-  const toggleActions = () => setShowActions(prev => !prev);
-  const openDeleteModal = () => { setShowActions(false); setShowDeleteModal(true); };
-  const handleDelete = () => { setSelectedChat(null); setShowDeleteModal(false); };
+  const handleBack = () => setSelectedChat(null);
 
   const getOtherParticipant = (conv: Conversation) => {
     return conv.participants.find(p => p._id !== currentUserId) || conv.participants[0];
@@ -138,7 +157,7 @@ export default function BuyersChatPage() {
     if (!selectedChat?.conv) return null;
     const other = getOtherParticipant(selectedChat.conv);
     return {
-      name: other?.store?.name || other?.fullName || 'Unknown',
+      name: other?.store?.name || other?.fullName || 'Seller',
       avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
     };
   };
@@ -178,28 +197,25 @@ export default function BuyersChatPage() {
   const chatDisplay = getChatDisplay();
 
   const sidebarChats = useMemo(() => {
-    return [...conversations]
+    return conversations
       .sort((a, b) => {
         const aTime = a.lastMessageAt || a.createdAt;
         const bTime = b.lastMessageAt || b.createdAt;
         return new Date(bTime).getTime() - new Date(aTime).getTime();
       })
       .map(conv => {
-        const other = getOtherParticipant(conv);
-        let lastMessageText = 'No messages yet';
-        if (selectedChat?.id === conv._id && messages.length > 0) {
-          lastMessageText = messages[messages.length - 1].body;
-        }
-
-        const time = conv.lastMessageAt
-          ? new Date(conv.lastMessageAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-          : '';
+        const other = conv.participants.find(p => p._id !== currentUserId);
+        const lastMsg = selectedChat?.id === conv._id && messages.length > 0
+          ? messages[messages.length - 1].body
+          : 'No messages yet';
 
         return {
           id: conv._id,
-          name: other?.store?.name || other?.fullName || 'Unknown',
-          message: lastMessageText,
-          time,
+          name: other?.store?.name || other?.fullName || 'Seller',
+          message: lastMsg,
+          time: conv.lastMessageAt
+            ? new Date(conv.lastMessageAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            : '',
           online: true,
           avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
           unread: conv.unreadCounts?.[currentUserId!] || 0,
@@ -226,7 +242,7 @@ export default function BuyersChatPage() {
 
               {selectedChat && chatDisplay && (
                 <div className={`flex-1 flex flex-col bg-white ${isMobileOrTablet ? 'w-full' : 'rounded-3xl shadow-lg'} overflow-hidden`}>
-                  
+
                   {/* Header */}
                   <div className="px-6 py-4 flex items-center gap-4 bg-white border-b border-gray-200">
                     {isMobileOrTablet && (
@@ -250,38 +266,10 @@ export default function BuyersChatPage() {
                         <p className="text-xs text-green-600">Online</p>
                       </div>
                     </div>
-                    <button onClick={toggleActions} className="p-2 hover:bg-gray-100 rounded-lg">
+                    <button onClick={() => setShowActions(prev => !prev)} className="p-2 hover:bg-gray-100 rounded-lg">
                       <MoreHorizontal className="h-5 w-5 text-gray-600" />
                     </button>
                   </div>
-
-                  {/* NEW: Shared Product Card */}
-                  {sharedProduct && (
-                    <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                      <div className="flex items-center gap-4 max-w-2xl mx-auto bg-white rounded-2xl p-4 shadow-md border border-gray-100">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                          <Image
-                            src={sharedProduct.image}
-                            alt={sharedProduct.name}
-                            width={80}
-                            height={80}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-gray-900 truncate text-lg">{sharedProduct.name}</h4>
-                          <p className="text-xl font-bold text-slate-900">₦{sharedProduct.price.toLocaleString()}</p>
-                          <p className="text-sm text-gray-600">MOQ: {sharedProduct.moq} bags</p>
-                        </div>
-                        <button
-                          onClick={() => setSharedProduct(null)}
-                          className="text-gray-400 hover:text-gray-700 text-3xl font-light -mr-2"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Messages */}
                   <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50">
@@ -290,58 +278,29 @@ export default function BuyersChatPage() {
                         <p className="text-lg">No messages yet. Say hi!</p>
                       </div>
                     ) : (
-                      messages.map((msg, index) => {
+                      messages.map((msg, i) => {
                         const isMe = msg.sender === currentUserId;
-                        const prevMsg = messages[index - 1];
-                        const isFirstInGroup = !prevMsg || prevMsg.sender !== msg.sender;
+                        const prev = messages[i - 1];
+                        const isFirst = !prev || prev.sender !== msg.sender;
 
                         return (
-                          <div
-                            key={msg._id}
-                            className={`flex items-end gap-2 mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}
-                          >
-                            {!isMe && isFirstInGroup && (
-                              <Image
-                                src={chatDisplay.avatar}
-                                alt={chatDisplay.name}
-                                width={32}
-                                height={32}
-                                className="w-8 h-8 rounded-full object-cover"
-                              />
+                          <div key={msg._id} className={`flex items-end gap-2 mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                            {!isMe && isFirst && (
+                              <Image src={chatDisplay.avatar} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
                             )}
-                            {!isMe && !isFirstInGroup && <div className="w-8 h-8" />}
+                            {!isMe && !isFirst && <div className="w-8 h-8" />}
 
-                            <div
-                              className={`relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
-                                isMe
-                                  ? 'bg-slate-900 text-white rounded-br-none'
-                                  : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
-                              }`}
-                            >
+                            <div className={`relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
+                              isMe
+                                ? 'bg-slate-900 text-white rounded-br-none'
+                                : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                            }`}>
                               <p className="text-sm leading-relaxed">{msg.body}</p>
-                              <div className="flex items-center justify-end gap-1 mt-1">
-                                <span className="text-xs opacity-70">
-                                  {new Date(msg.createdAt).toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })}
-                                </span>
-                                {isMe && (
-                                  <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.037Z"/>
-                                  </svg>
-                                )}
-                              </div>
-
-                              <div
-                                className={`absolute bottom-0 w-3 h-3 ${
-                                  isMe ? 'right-0 -mr-1 bg-slate-900' : 'left-0 -ml-1 bg-white'
-                                }`}
-                                style={{
-                                  clipPath: isMe
-                                    ? 'polygon(100% 0%, 0% 100%, 100% 100%)'
-                                    : 'polygon(0% 0%, 100% 100%, 0% 100%)',
-                                }}
+                              <span className="text-xs opacity-70 block text-right mt-1">
+                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              <div className={`absolute bottom-0 w-3 h-3 ${isMe ? 'right-0 -mr-1 bg-slate-900' : 'left-0 -ml-1 bg-white'}`}
+                                style={{ clipPath: isMe ? 'polygon(100% 0%, 0% 100%, 100% 100%)' : 'polygon(0% 0%, 100% 100%, 0% 100%)' }}
                               />
                             </div>
                           </div>
@@ -380,13 +339,7 @@ export default function BuyersChatPage() {
               {!isMobileOrTablet && !selectedChat && (
                 <div className="flex-1 flex items-center justify-center bg-gray-100 rounded-3xl">
                   <div className="text-center">
-                    <Image
-                      src="/svgs/emptyState-wholesale-svg.svg"
-                      alt="no messages"
-                      width={180}
-                      height={180}
-                      className="mx-auto mb-6 opacity-80"
-                    />
+                    <Image src="/svgs/emptyState-wholesale-svg.svg" alt="no messages" width={180} height={180} className="mx-auto mb-6 opacity-80" />
                     <p className="text-gray-600 text-lg">Select a chat to start messaging</p>
                   </div>
                 </div>
@@ -396,8 +349,8 @@ export default function BuyersChatPage() {
         </div>
       </div>
 
-      <ActionsModal show={showActions} onClose={() => setShowActions(false)} isMobileOrTablet={isMobileOrTablet} onDeleteClick={openDeleteModal} />
-      <DeleteModal show={showDeleteModal} onClose={() => setShowDeleteModal(false)} onConfirm={handleDelete} />
+      <ActionsModal show={showActions} onClose={() => setShowActions(false)} isMobileOrTablet={isMobileOrTablet} onDeleteClick={() => setShowDeleteModal(true)} />
+      <DeleteModal show={showDeleteModal} onClose={() => setShowDeleteModal(false)} onConfirm={() => setSelectedChat(null)} />
     </>
   );
 }

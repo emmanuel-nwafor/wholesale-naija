@@ -64,11 +64,16 @@ export default function Header() {
   // Wallet balance state (for all users)
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [balanceLoading, setBalanceLoading] = useState<boolean>(true);
+  // const [navigateToWallet, handleNavigateToWallet] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null);
   const filtered = suggestions.filter((s) =>
     s.toLowerCase().includes(query.toLowerCase())
   );
+
+  const navigateToWallet = () => {
+    router.push("/wallet")
+  }
 
   // Load token and user profile on mount
   useEffect(() => {
@@ -184,14 +189,14 @@ export default function Header() {
               </button>
 
               {/* Real Wallet Balance - Shown for ALL logged-in users */}
-              <div className="flex items-center gap-2 bg-gray-700 text-white px-3 py-2 rounded-2xl font-semibold">
-                <Image src="/svgs/coin-1.svg" alt="coin" width={30} height={30} />
+                <button onClick={navigateToWallet} className="flex items-center gap-2 hover:cursor-pointer bg-gray-700 text-white px-2 py-2 rounded-2xl font-semibold">
+                  <Image src="/svgs/coin-1.svg" alt="coin" width={25} height={25} />
                 {balanceLoading ? (
                   <p className="text-xs animate-pulse">...</p>
                 ) : (
                   <p className="text-xs">{walletBalance} Coins</p>
                 )}
-              </div>
+                </button>
 
               <button
                 onClick={() => {
