@@ -7,6 +7,7 @@ import ChatSidebar from '@/app/components/chat/ChatSidebar';
 import ActionsModal from '@/app/components/chat/BuyersActionsModal';
 import DeleteModal from '@/app/components/modals/DeleteModal';
 import Header from '@/app/components/header/Header';
+import DynamicHeader from '@/app/components/header/DynamicHeader';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import { getCurrentSellerId } from '@/app/utils/auth';
 
@@ -39,7 +40,7 @@ export default function BuyersChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
-  const [showActions, setShowActions] = useState(false);
+  const [showActions, setShowActions] = useState(false); // Controls ActionsModal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const currentUserId = getCurrentSellerId();
@@ -64,14 +65,13 @@ export default function BuyersChatPage() {
     fetchConversations();
   }, []);
 
-  // Handle direct open from product page
+  // Handle direct open from product page (no product card)
   useEffect(() => {
     const targetSellerId = sessionStorage.getItem('pendingChatSellerId');
     if (!targetSellerId || conversations.length === 0) return;
 
     sessionStorage.removeItem('pendingChatSellerId');
 
-    // Find existing chat
     const existingConv = conversations.find(conv =>
       conv.participants.some(p => p._id === currentUserId) &&
       conv.participants.some(p => p._id === targetSellerId)
@@ -92,7 +92,6 @@ export default function BuyersChatPage() {
       return;
     }
 
-    // Create new conversation
     const createAndOpen = async () => {
       try {
         const res = await fetchWithToken('/v1/chat/conversations', {
@@ -125,7 +124,7 @@ export default function BuyersChatPage() {
     createAndOpen();
   }, [conversations, currentUserId]);
 
-  // Fetch messages when chat selected
+  // Fetch messages
   useEffect(() => {
     if (!selectedChat) {
       setMessages([]);
@@ -229,6 +228,7 @@ export default function BuyersChatPage() {
       <div className="flex min-h-screen bg-gray-50">
         <div className="flex-1 flex flex-col">
           <Header />
+          <DynamicHeader />
           <main className="flex-1 md:p-10 p-3">
             <div className="flex h-full gap-0 relative max-w-7xl mx-auto">
 
@@ -243,8 +243,8 @@ export default function BuyersChatPage() {
               {selectedChat && chatDisplay && (
                 <div className={`flex-1 flex flex-col bg-white ${isMobileOrTablet ? 'w-full' : 'rounded-3xl shadow-lg'} overflow-hidden`}>
 
-                  {/* Header */}
-                  <div className="px-6 py-4 flex items-center gap-4 bg-white border-b border-gray-200">
+                  {/* Chat Header */}
+                  <div className="px-6 py-4 flex items-center gap-4 bg-white border-b border-gray-200 relative">
                     {isMobileOrTablet && (
                       <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-lg">
                         <ArrowLeft className="w-5 h-5" />
@@ -266,12 +266,17 @@ export default function BuyersChatPage() {
                         <p className="text-xs text-green-600">Online</p>
                       </div>
                     </div>
-                    <button onClick={() => setShowActions(prev => !prev)} className="p-2 hover:bg-gray-100 rounded-lg">
+
+                    {/* Three Dots Button - Now correctly opens ActionsModal */}
+                    <button
+                      onClick={() => setShowActions(true)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition"
+                    >
                       <MoreHorizontal className="h-5 w-5 text-gray-600" />
                     </button>
                   </div>
 
-                  {/* Messages */}
+                  {/* Messages Area */}
                   <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50">
                     {messages.length === 0 ? (
                       <div className="text-center text-gray-500 mt-20">
@@ -309,7 +314,7 @@ export default function BuyersChatPage() {
                     )}
                   </div>
 
-                  {/* Input */}
+                  {/* Message Input */}
                   <div className="border-t border-gray-200 p-4 bg-white">
                     <div className="flex items-center gap-3">
                       <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
@@ -349,8 +354,26 @@ export default function BuyersChatPage() {
         </div>
       </div>
 
-      <ActionsModal show={showActions} onClose={() => setShowActions(false)} isMobileOrTablet={isMobileOrTablet} onDeleteClick={() => setShowDeleteModal(true)} />
-      <DeleteModal show={showDeleteModal} onClose={() => setShowDeleteModal(false)} onConfirm={() => setSelectedChat(null)} />
+      {/* Actions Modal - Triggered by three dots */}
+      <ActionsModal
+        show={showActions}
+        onClose={() => setShowActions(false)}
+        isMobileOrTablet={isMobileOrTablet}
+        onDeleteClick={() => {
+          setShowActions(false);
+          setShowDeleteModal(true);
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          setSelectedChat(null);
+          setShowDeleteModal(false);
+        }}
+      />
     </>
   );
 }
