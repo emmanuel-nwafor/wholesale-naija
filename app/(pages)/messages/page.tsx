@@ -15,7 +15,7 @@ interface Participant {
   _id: string;
   fullName: string;
   profilePicture?: { url: string };
-  store?: { name: string };
+  store?: { name: string; _id: string };
 }
 
 interface Conversation {
@@ -34,14 +34,18 @@ interface Message {
   sender: string;
 }
 
+type ModalMode = 'delete' | 'block' | 'unblock';
+
 export default function BuyersChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedChat, setSelectedChat] = useState<any>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
-  const [showActions, setShowActions] = useState(false); // Controls ActionsModal
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmMode, setConfirmMode] = useState<ModalMode>('delete');
+  const [loading, setLoading] = useState(false);
 
   const currentUserId = getCurrentSellerId();
 
@@ -65,7 +69,7 @@ export default function BuyersChatPage() {
     fetchConversations();
   }, []);
 
-  // Handle direct open from product page (no product card)
+  // Handle direct open from product page
   useEffect(() => {
     const targetSellerId = sessionStorage.getItem('pendingChatSellerId');
     if (!targetSellerId || conversations.length === 0) return;
@@ -99,7 +103,6 @@ export default function BuyersChatPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ participantIds: [targetSellerId] }),
         });
-
         const newConv = (res as any).conversation || res;
         setConversations(prev => [newConv, ...prev]);
 
@@ -113,14 +116,12 @@ export default function BuyersChatPage() {
           avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
           conv: newConv,
         };
-
         handleChatClick(chatItem);
       } catch (err) {
         console.error('Failed to create chat:', err);
         alert('Could not start chat. Try again.');
       }
     };
-
     createAndOpen();
   }, [conversations, currentUserId]);
 
@@ -158,22 +159,49 @@ export default function BuyersChatPage() {
     return {
       name: other?.store?.name || other?.fullName || 'Seller',
       avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
+      sellerId: other?._id,
+      storeId: other?.store?._id,
     };
+  };
+
+  const chatDisplay = getChatDisplay();
+
+  // Handle delete/block/unblock actions
+  const handleConfirmAction = async () => {
+    if (!selectedChat || !chatDisplay?.sellerId) return;
+
+    setLoading(true);
+
+    try {
+      if (confirmMode === 'delete') {
+        // Delete conversation (you may have a DELETE endpoint)
+        await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}`, { method: 'DELETE' });
+        setConversations(prev => prev.filter(c => c._id !== selectedChat.id));
+        setSelectedChat(null);
+      } else {
+        const method = confirmMode === 'block' ? 'POST' : 'DELETE';
+        await fetchWithToken(`/v1/users/me/block/${chatDisplay.sellerId}`, { method });
+        alert(confirmMode === 'block' ? 'User blocked' : 'User unblocked');
+      }
+    } catch (err) {
+      alert(`Failed to ${confirmMode === 'block' ? 'block' : confirmMode === 'unblock' ? 'unblock' : 'delete'}`);
+    } finally {
+      setLoading(false);
+      setShowConfirmModal(false);
+      setShowActions(false);
+    }
   };
 
   const handleSend = async () => {
     if (!message.trim() || !selectedChat) return;
-
     const text = message.trim();
     setMessage('');
-
     try {
       await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ body: text }),
       });
-
       const newMsg: Message = {
         _id: Date.now().toString(),
         body: text,
@@ -181,7 +209,6 @@ export default function BuyersChatPage() {
         sender: currentUserId!,
       };
       setMessages(prev => [...prev, newMsg]);
-
       setConversations(prev => prev.map(c =>
         c._id === selectedChat.id
           ? { ...c, lastMessageAt: new Date().toISOString() }
@@ -192,8 +219,6 @@ export default function BuyersChatPage() {
       setMessage(text);
     }
   };
-
-  const chatDisplay = getChatDisplay();
 
   const sidebarChats = useMemo(() => {
     return conversations
@@ -207,7 +232,6 @@ export default function BuyersChatPage() {
         const lastMsg = selectedChat?.id === conv._id && messages.length > 0
           ? messages[messages.length - 1].body
           : 'No messages yet';
-
         return {
           id: conv._id,
           name: other?.store?.name || other?.fullName || 'Seller',
@@ -231,7 +255,6 @@ export default function BuyersChatPage() {
           <DynamicHeader />
           <main className="flex-1 md:p-10 p-3">
             <div className="flex h-full gap-0 relative max-w-7xl mx-auto">
-
               <ChatSidebar
                 chats={sidebarChats}
                 selectedChatId={selectedChat?.id || null}
@@ -241,10 +264,9 @@ export default function BuyersChatPage() {
               />
 
               {selectedChat && chatDisplay && (
-                <div className={`flex-1 flex flex-col bg-white ${isMobileOrTablet ? 'w-full' : 'rounded-3xl shadow-lg'} overflow-hidden`}>
-
+                <div className={`flex-1 flex flex-col bg-white ${isMobileOrTablet ? 'w-full' : 'rounded-r-3xl shadow-lg'} overflow-hidden`}>
                   {/* Chat Header */}
-                  <div className="px-6 py-4 flex items-center gap-4 bg-white border-b border-gray-200 relative">
+                  <div className="px-6 py-4 flex items-center gap-4 bg-white border-b border-gray-200">
                     {isMobileOrTablet && (
                       <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-lg">
                         <ArrowLeft className="w-5 h-5" />
@@ -266,8 +288,6 @@ export default function BuyersChatPage() {
                         <p className="text-xs text-green-600">Online</p>
                       </div>
                     </div>
-
-                    {/* Three Dots Button - Now correctly opens ActionsModal */}
                     <button
                       onClick={() => setShowActions(true)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -276,7 +296,7 @@ export default function BuyersChatPage() {
                     </button>
                   </div>
 
-                  {/* Messages Area */}
+                  {/* Messages */}
                   <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50">
                     {messages.length === 0 ? (
                       <div className="text-center text-gray-500 mt-20">
@@ -314,7 +334,7 @@ export default function BuyersChatPage() {
                     )}
                   </div>
 
-                  {/* Message Input */}
+                  {/* Input */}
                   <div className="border-t border-gray-200 p-4 bg-white">
                     <div className="flex items-center gap-3">
                       <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
@@ -354,25 +374,32 @@ export default function BuyersChatPage() {
         </div>
       </div>
 
-      {/* Actions Modal - Triggered by three dots */}
-      <ActionsModal
-        show={showActions}
-        onClose={() => setShowActions(false)}
-        isMobileOrTablet={isMobileOrTablet}
-        onDeleteClick={() => {
-          setShowActions(false);
-          setShowDeleteModal(true);
-        }}
-      />
+      {/* Actions Modal */}
+      {selectedChat && chatDisplay && (
+        <ActionsModal
+          show={showActions}
+          onClose={() => setShowActions(false)}
+          isMobile={isMobileOrTablet && window.innerWidth < 768}
+          onDeleteClick={() => {
+            setConfirmMode('delete');
+            setShowActions(false);
+            setShowConfirmModal(true);
+          }}
+          sellerId={chatDisplay.sellerId}
+          storeId={chatDisplay.storeId}
+          sellerName={chatDisplay.name}
+          isBlocked={false} // You can enhance this later with real blocked status
+        />
+      )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Reusable Confirmation Modal */}
       <DeleteModal
-        show={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={() => {
-          setSelectedChat(null);
-          setShowDeleteModal(false);
-        }}
+        show={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleConfirmAction}
+        mode={confirmMode}
+        itemName={chatDisplay?.name}
+        loading={loading}
       />
     </>
   );
