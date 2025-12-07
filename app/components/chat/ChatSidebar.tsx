@@ -6,6 +6,25 @@ import { Search, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
+// FIX: Copy/paste the necessary interfaces from the consuming page (page.tsx)
+// This ensures that the type definitions match exactly across the file boundary.
+
+interface Participant {
+  _id: string;
+  fullName?: string;
+  profilePicture?: { url: string };
+  store?: { name: string; _id: string };
+}
+
+interface Conversation {
+  _id: string;
+  participants: Participant[];
+  lastMessageAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  unreadCounts?: Record<string, number>;
+}
+
 interface Chat {
   id: string;
   name: string;
@@ -14,7 +33,7 @@ interface Chat {
   avatar: string;
   online: boolean;
   unread: number;
-  conv: unknown; // FIX: Changed 'any' to 'unknown' (Line 17)
+  conv: Conversation; // FIX: Ensure this type matches the one in page.tsx exactly
 }
 
 interface ChatSidebarProps {
@@ -38,8 +57,8 @@ export default function ChatSidebar({
         isMobileOrTablet && selectedChat
           ? 'hidden'
           : isMobileOrTablet
-            ? 'w-full'
-            : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-xs'
+          ? 'w-full'
+          : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-xs'
       }`}
     >
       <div className="p-4 mb-5 border-b border-gray-200">

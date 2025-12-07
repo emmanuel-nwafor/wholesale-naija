@@ -107,6 +107,7 @@ export default function SellerProfilePage() {
       }));
     } catch (error) {
       alert('Upload failed');
+      console.log(error)
     } finally {
       setUploading(false);
     }

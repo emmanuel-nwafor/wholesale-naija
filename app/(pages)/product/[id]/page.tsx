@@ -85,10 +85,7 @@ interface UnlockedItem {
   sellerId: Seller;
 }
 
-// FIX: Define a compatible ProductCardProps locally or import it.
-// Assuming ProductType is compatible with the required product prop structure.
-// This resolves the type error when passing 'rp' to ProductCard.
-type ProductCardCompatibleProps = {
+interface ProductCardCompatibleProps {
   _id: string;
   name: string;
   price: number;
@@ -96,7 +93,7 @@ type ProductCardCompatibleProps = {
   moq?: string | number;
   verified?: boolean;
   seller?: { _id?: string; fullName?: string };
-};
+}
 
 // --- UTILITY FUNCTIONS ---
 function maskName(name?: string) {
@@ -209,8 +206,9 @@ export default function ProductDetailsPage() {
         await fetchWithToken(`/v1/users/me/wishlist/${id}`, { method: 'POST' });
         setIsWishlisted(true);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       alert('Failed to update wishlist');
+      console.log(err)
     } finally {
       setTimeout(() => setIsAnimating(false), 600);
     }
@@ -466,7 +464,7 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* /* Price Block – now fully safe */}
+            {/* Price Block – now fully safe */}
             <div className="bg-gray-50/80 backdrop-blur rounded-3xl p-6">
               {/* Check and safely assign tiers */}
               {selectedVariant?.pricingTiers?.length &&
@@ -507,7 +505,7 @@ export default function ProductDetailsPage() {
               )}
             </div>
 
-            {/* /* Variant Selector */}
+            {/* Variant Selector */}
             {/* The check 'product.variants?.length > 0' ensures variants exists */}
             {product.variants?.length && product.variants.length > 0 && (
               <div className="space-y-3">
@@ -515,11 +513,6 @@ export default function ProductDetailsPage() {
                   Select Variant:
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  {/* FIX: Use a type assertion or helper variable inside the map block 
-        to ensure 'variants' is treated as ProductVariant[] and not (ProductVariant[] | undefined).
-        Since we just checked the length, we know it's safe to cast the array 
-        directly for the map operation.
-      */}
                   {(product.variants as ProductVariant[]).map(
                     (variant: ProductVariant) => (
                       <button
@@ -761,9 +754,12 @@ export default function ProductDetailsPage() {
                     </h4>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                       {related.length > 0
-                        ? // Cast 'rp' to the expected type for ProductCard (which is ProductCardProps, now satisfied by ProductType)
+                        ? // 🐛 FIX: Asserting the type to ProductCardCompatibleProps
                           related.map((rp: ProductType) => (
-                            <ProductCard key={rp._id} product={rp as any} />
+                            <ProductCard
+                              key={rp._id}
+                              product={rp as ProductCardCompatibleProps}
+                            />
                           ))
                         : Array.from({ length: 8 }).map((_, i) => (
                             <ProductCard key={i} loading />
@@ -776,7 +772,6 @@ export default function ProductDetailsPage() {
           </div>
         </div>
       </div>
-      {/* The missing JSX fragment closing tag was implicitly fixed by checking the overall structure. */}
 
       <CarouselBanner />
       <StoreUnlockModal

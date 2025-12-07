@@ -7,6 +7,15 @@ import { X, Phone, MapPin, Clock, Store as StoreIcon } from 'lucide-react';
 import ProductCard from '@/app/components/product-card/ProductCard';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
+// Define a minimal type for product variants if the structure is unknown or complex
+// We'll use an array of objects for better type safety than 'any[]'
+interface ProductVariant {
+  // Define variant properties if known, e.g.,
+  // name: string;
+  // value: string;
+  [key: string]: any; // FALLBACK: Use index signature if inner structure is truly variable
+}
+
 // Define the shape of a product item used in state
 interface ProductItem {
   _id: string;
@@ -18,7 +27,8 @@ interface ProductItem {
   verified: boolean;
   coins: number | null;
   seller: { _id: string; fullName: string };
-  variants: any[];
+  // FIX 6: Replaced 'any[]' with 'ProductVariant[]'
+  variants: ProductVariant[];
 }
 
 // Define the shape of the data returned from the API for a single product
@@ -27,11 +37,14 @@ interface ApiProduct {
   name: string;
   // Api price comes as a string (assuming)
   price: string;
-  images: string[] | any;
+  // FIX 7: Replaced 'any' with 'string[]' (or unknown if the API might return other types)
+  // The mapping function handles non-array cases, so string[] is the intended final type.
+  images: string[] | unknown;
   moq?: string;
   verified?: boolean;
   coins?: number | null;
-  variants?: any[];
+  // FIX 8: Replaced 'any[]' with 'ProductVariant[]'
+  variants?: ProductVariant[];
 }
 
 interface StoreDetailsModalProps {
@@ -98,12 +111,14 @@ export default function StoreDetailsModal({
             name: p.name,
             // Convert string price to number (use parseFloat for safety)
             price: parseFloat(p.price) || 0,
-            images: Array.isArray(p.images) ? p.images : [],
+            // Assert p.images as string[] since we check and default to []
+            images: Array.isArray(p.images) ? (p.images as string[]) : [],
             moq: p.moq || '1 pc',
             verified: p.verified ?? false,
             coins: p.coins || null,
             seller: { _id: sellerId, fullName: storeName },
-            variants: p.variants || [],
+            // Assert p.variants as ProductVariant[] since we check and default to []
+            variants: (p.variants as ProductVariant[]) || [],
           })
         );
 

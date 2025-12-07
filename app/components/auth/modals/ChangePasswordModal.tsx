@@ -80,10 +80,15 @@ export default function ChangePasswordModal({
     }
   };
 
-  const goBack = () => {
-    setError('');
-    step === 1 ? onClose() : setStep(1);
-  };
+const goBack = () => {
+  setError('');
+  
+  if (step === 1) {
+    onClose();
+  } else {
+    setStep(1);
+  }
+};
 
   return (
     <>

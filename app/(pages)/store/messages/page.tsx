@@ -167,8 +167,8 @@ export default function StoresChatPage() {
         )
       );
     } catch (_err) {
-      // FIX 2: Renamed 'err' to '_err' to avoid unused variable warning
       alert('Failed to send message');
+      console.log(_err)
       setMessage(text);
     }
   };

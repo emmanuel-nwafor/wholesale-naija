@@ -105,32 +105,31 @@ export default function BuyersProfilePage() {
     }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await fetchWithToken('/auth/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          phone: form.phone,
-          profilePicture: form.profilePicture.replace(/\?.*$/, ''),
-          dateOfBirth: form.dateOfBirth,
-        }),
-      });
-      setIsEditing(false);
-      setShowSuccess(true);
-      // Ensure the component loads the newly saved data
-      loadProfile();
-    } catch (err: any) {
-      const errorMsg =
-        (err as { message?: string })?.message || 'Failed to save profile';
-      alert(errorMsg);
-    } finally {
-      setSaving(false);
-    }
-  };
+const handleSave = async () => {
+ setSaving(true);
+ try {
+ await fetchWithToken('/auth/profile', {
+ method: 'PUT',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ firstName: form.firstName,
+ lastName: form.lastName,
+ phone: form.phone,
+ profilePicture: form.profilePicture.replace(/\?.*$/, ''),
+ dateOfBirth: form.dateOfBirth,
+ }),
+ });
+ setIsEditing(false);
+ setShowSuccess(true);
+ loadProfile();
+ } catch (err) { 
+ const errorMsg =
+ (err as { message?: string })?.message || 'Failed to save profile';
+ alert(errorMsg);
+ } finally {
+ setSaving(false);
+ }
+ };
 
   return (
     <>

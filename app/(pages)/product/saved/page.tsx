@@ -45,6 +45,19 @@ interface UnlockedStore {
   sellerId: Seller;
 }
 
+// 🐛 FIX: Interface to match the structure of the data coming directly from the API 
+// before it is mapped to WishlistProduct, replacing 'any[]'.
+interface RawApiProduct {
+  _id: string;
+  name: string;
+  price: number;
+  images?: string[];
+  moq?: string;
+  verified?: boolean;
+  vendor?: { _id: string; fullName: string };
+  seller?: { _id: string; fullName: string };
+}
+
 const DEFAULT_AVATAR = '/svgs/logo.svg';
 
 export default function SavedProducts() {
@@ -64,7 +77,8 @@ export default function SavedProducts() {
     const loadWishlist = async () => {
       setLoadingProducts(true);
       try {
-        const data = await fetchWithToken<{ wishlist: { products: any[] } }>(
+        // Updated type annotation: using RawApiProduct[] instead of any[]
+        const data = await fetchWithToken<{ wishlist: { products: RawApiProduct[] } }>(
           '/v1/users/me/wishlist'
         );
         const formatted: WishlistProduct[] = data.wishlist.products.map(

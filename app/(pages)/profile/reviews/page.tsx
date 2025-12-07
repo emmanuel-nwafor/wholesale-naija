@@ -386,7 +386,6 @@ export default function ProfileReviewsPage() {
           onClose={closeReviewModal}
           sellerName={selectedSeller.store.name}
           sellerVerified={selectedSeller.isVerifiedSeller}
-          storeBannerUrl={selectedSeller.store.bannerUrl}
           onSuccess={() => {
             alert('Review submitted!');
             closeReviewModal();

@@ -6,6 +6,20 @@ import { Search, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
+interface Participant {
+  _id: string;
+  fullName: string;
+  profilePicture?: { url: string };
+}
+interface Conversation {
+  _id: string;
+  participants: Participant[];
+  lastMessageAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  unreadCounts?: Record<string, number>;
+}
+// FIX: The 'Chat' interface now exactly matches the one in page.tsx
 interface Chat {
   id: string;
   name: string;
@@ -14,8 +28,9 @@ interface Chat {
   avatar: string;
   online: boolean;
   unread: number;
-  conv: unknown; // FIX: Changed 'any' to 'unknown' (Line 17)
+  conv: Conversation; // <-- FIXED: Changed 'unknown' back to 'Conversation'
 }
+// --- END FIX ---
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -33,13 +48,14 @@ export default function SellerChatSidebar({
   selectedChat,
 }: ChatSidebarProps) {
   return (
+    // ... (rest of the component code remains the same)
     <div
       className={`bg-white flex flex-col overflow-hidden ${
         isMobileOrTablet && selectedChat
           ? 'hidden'
           : isMobileOrTablet
-            ? 'w-full'
-            : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-xs'
+          ? 'w-full'
+          : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-xs'
       }`}
     >
       <div className="p-4 mb-5 border-b border-gray-200">
@@ -98,14 +114,11 @@ export default function SellerChatSidebar({
                     {chat.message}
                   </p>
 
-                  {/* Unread badge */}
-                  {/* 
-                      but leaving it commented here for consistency with the provided snippet. */}
-                  {/* {chat.unread > 0 && (
+                  {chat.unread > 0 && (
                     <div className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full mt-1">
                       {chat.unread}
                     </div>
-                  )} */}
+                  )}
                 </div>
               </div>
             </motion.div>

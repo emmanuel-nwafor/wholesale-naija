@@ -31,7 +31,6 @@ export default function LoginWithEmailModal({
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [userRole, setUserRole] = useState('');
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
   if (!isOpen) return null;
@@ -91,21 +90,6 @@ export default function LoginWithEmailModal({
       setLoading(false);
     }
   };
-
-  // FIX: Removed the unused handleRedirect function (L95)
-  // The logic for redirecting is now assumed to be handled within SuccessModal or upon its closure.
-  // The original handleRedirect was:
-  /*
-  const handleRedirect = () => {
-    setShowSuccess(false);
-    onClose();
-    if (userRole === 'seller') {
-      router.push('/store/dashboard');
-    } else {
-      router.push('/profile');
-    }
-  };
-  */
 
   return (
     <>
