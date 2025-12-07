@@ -1,18 +1,41 @@
-// app/profile/country-region/page.tsx
 'use client';
+
 import React, { useState, useEffect } from 'react';
+
 import { Menu, ChevronRight, Check } from 'lucide-react';
+
 import Header from '@/app/components/header/Header';
+
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
+
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
+
 import {
   Modal,
   StateSelection,
   LGASelection,
   AreaSelection,
 } from '@/app/components/modals/LocationsModal';
+
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
+
 import DynamicHeader from '@/app/components/header/DynamicHeader';
+
+// --- Interface Definition for Type Safety ---
+interface UserAddress {
+  state?: string;
+  city?: string;
+  street?: string;
+}
+
+interface UserProfile {
+  user: {
+    address?: UserAddress;
+    // ... other user properties
+  };
+}
+// -------------------------------------------
+
 
 export default function ProfileCountryRegion() {
   const [isMobile, setIsMobile] = useState(false);
@@ -40,12 +63,13 @@ export default function ProfileCountryRegion() {
   useEffect(() => {
     const loadLocation = async () => {
       try {
-        const data = await fetchWithToken<any>('/auth/profile');
+        // FIX: Replace 'any' with the specific interface
+        const data = await fetchWithToken<UserProfile>('/auth/profile');
         const addr = data.user.address || {};
         setSelectedState(addr.state || '');
         setSelectedLGA(addr.city || '');
         setSelectedArea(addr.street || '');
-      } catch (err) {
+      } catch { // FIX: Remove 'err' to satisfy @typescript-eslint/no-unused-vars
         console.error('Failed to load location');
       } finally {
         setLoading(false);
@@ -95,7 +119,7 @@ export default function ProfileCountryRegion() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
+    } catch { // FIX: Remove 'err' to satisfy @typescript-eslint/no-unused-vars
       alert('Failed to save location. Please try again.');
     } finally {
       setSaving(false);

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Menu, CheckCircle } from 'lucide-react';
+import { Menu } from 'lucide-react'; // FIX: Removed unused import 'CheckCircle' (L4)
 import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
 import DashboardHeader from '@/app/components/header/DashboardHeader';
 import ProfileSidebar from '@/app/components/sidebar/SellersProfileSidebar';
@@ -43,6 +43,7 @@ export default function RequestVerificationPage() {
 
     setLoading(true);
     try {
+      // NOTE: No specific response type is expected here, so fetchWithToken<void> or similar generic can be used.
       await fetchWithToken('/v1/seller/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -57,8 +58,11 @@ export default function RequestVerificationPage() {
         businessName: '',
         businessRegNumber: '',
       });
-    } catch (err: any) {
-      alert(err.message || 'Verification request failed. Please try again.');
+    } catch (error: unknown) { // FIX: Replaced 'err: any' with 'error: unknown' (L60)
+      const message = error instanceof Error
+        ? error.message
+        : 'Verification request failed. Please try again.';
+      alert(message);
     } finally {
       setLoading(false);
     }
@@ -99,7 +103,7 @@ export default function RequestVerificationPage() {
 
                   <p className="text-sm text-gray-600 mb-8 max-w-2xl">
                     Get verified to build trust with buyers. Submit your
-                    business details for review. Once approved, you'll get a
+                    business details for review. Once approved, you&apos;ll get a {/* FIX: Escaped apostrophe (L102) */}
                     verified badge on your store.
                   </p>
 
@@ -207,7 +211,6 @@ export default function RequestVerificationPage() {
         show={showSuccess}
         onClose={() => setShowSuccess(false)}
         title="Verification Request Submitted!"
-        message="We have received your verification request. You will be notified once it's reviewed (usually within 24–48 hours)."
       />
     </>
   );

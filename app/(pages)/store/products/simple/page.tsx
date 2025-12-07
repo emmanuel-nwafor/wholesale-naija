@@ -5,6 +5,7 @@ import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
 import DashboardHeader from '@/app/components/header/DashboardHeader';
 import ReviewStatusModal from '@/app/components/modals/ReviewStatusModal';
+import Image from 'next/image'; 
 
 interface Category {
   _id: string;
@@ -25,7 +26,7 @@ export default function AddProductSimplePage() {
   const [selectedCat, setSelectedCat] = useState<Category | null>(null);
   const [selectedSub, setSelectedSub] = useState<Subcategory | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategories, setSubcategories, ] = useState<Subcategory[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -144,9 +145,10 @@ export default function AddProductSimplePage() {
       setSelectedCat(null);
       setSelectedSub(null);
       setSelectedBrand(null);
-    } catch (err: any) {
+    } catch (err: unknown) { 
+      const message = (err as Error).message || 'Failed to add product';
       console.log('Submit error:', err);
-      alert(err.message || 'Failed to add product');
+      alert(message);
     }
   };
 
@@ -186,10 +188,12 @@ export default function AddProductSimplePage() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
                         {previewUrls.map((url, i) => (
                           <div key={i} className="relative group">
-                            <img
+                            <Image // FIX 2: Replaced <img> with <Image>
                               src={url}
                               alt="preview"
-                              className="w-full h-32 object-cover rounded-lg"
+                              layout="fill"
+                              objectFit="cover"
+                              className="rounded-lg"
                             />
                             <button
                               type="button"

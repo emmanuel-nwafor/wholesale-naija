@@ -127,7 +127,7 @@ export default function ReviewStatusModal({
         <div className="flex gap-3 p-6 pt-0">
           <button
             onClick={onClose}
-            className={`flex-1 py-3 rounded-xl font-medium transition-all ${config.buttonVariant}`}
+            className={`flex-1 hover:cursor-pointer py-3 rounded-xl font-medium transition-all ${config.buttonVariant}`}
           >
             {config.buttonText}
           </button>

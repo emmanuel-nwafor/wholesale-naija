@@ -1,103 +1,135 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Header from '@/app/components/header/Header';
+import DynamicHeader from '@/app/components/header/DynamicHeader';
 import ProductCard from '@/app/components/product-card/ProductCard';
 import StoreDetailsModal from '@/app/components/modals/StoreDetailsModal';
-import { Star, MapPin, Verified } from 'lucide-react';
+import { MapPin, Verified } from 'lucide-react';
+import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import { getCurrentSellerId } from '@/app/utils/auth';
+
+type Tab = 'products' | 'stores';
+
+interface WishlistProduct {
+  _id: string;
+  name: string;
+  price: number;
+  images: string[];
+  moq?: string;
+  verified?: boolean;
+  seller: {
+    _id: string;
+    fullName: string;
+  };
+}
+
+interface Store {
+  name: string;
+  description?: string;
+  location?: string;
+  bannerUrl?: string;
+  contactPhone?: string;
+  whatsapp?: string;
+}
+
+interface Seller {
+  _id: string;
+  fullName: string;
+  profilePicture?: { url: string };
+  store: Store;
+}
+
+interface UnlockedStore {
+  _id: string;
+  sellerId: Seller;
+}
+
+const DEFAULT_AVATAR = '/svgs/logo.svg';
 
 export default function SavedProducts() {
-  const [activeTab, setActiveTab] = useState<'products' | 'stores'>('products');
-  const [selectedStore, setSelectedStore] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('products');
+  const [selectedStore, setSelectedStore] = useState<Seller | null>(null);
+  const [products, setProducts] = useState<WishlistProduct[]>([]);
+  const [unlockedStores, setUnlockedStores] = useState<UnlockedStore[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingStores, setLoadingStores] = useState(true);
 
-  const unlockedStores = [
-    {
-      id: 1,
-      name: 'ABSOLUTE Stores',
-      location: 'Lagos, Nigeria',
-      rating: 4.5,
-      reviews: '3k+',
-      phone: '+234 812 345 6789',
-      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
-      description:
-        'Supplier of phones, phones accessories & part with 5+ years wholesale experience Supplier of phones, phones accessories & part with 5+ years wholesale experience......',
-    },
-    {
-      id: 2,
-      name: 'ABSOLUTE Stores',
-      location: 'Lagos, Nigeria',
-      rating: 4.9,
-      reviews: '5.3k+',
-      phone: '+234 812 345 6789',
-      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
-      description:
-        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
-    },
-    {
-      id: 3,
-      name: 'ABSOLUTE Stores',
-      location: 'Lagos, Nigeria',
-      rating: 4.8,
-      reviews: '5k+',
-      phone: '+234 812 345 6789',
-      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
-      description:
-        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
-    },
-    {
-      id: 4,
-      name: 'ABSOLUTE Stores',
-      location: 'Lagos, Nigeria',
-      rating: 4.9,
-      reviews: '1k+',
-      phone: '+234 812 345 6789',
-      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
-      description:
-        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
-    },
-    {
-      id: 5,
-      name: 'ABSOLUTE Stores',
-      location: 'Lagos, Nigeria',
-      rating: 4.7,
-      reviews: '9.5k+',
-      phone: '+234 812 345 6789',
-      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
-      description:
-        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
-    },
-    {
-      id: 6,
-      name: 'ABSOLUTE Stores',
-      location: 'Lagos, Nigeria',
-      rating: 4.6,
-      reviews: '3k+',
-      phone: '+234 812 345 6789',
-      address: '123, Eko Street, Computer Village Ikeja, Lagos State',
-      description:
-        'Supplier of phones, phones accessories & part with 5+ years wholesale experience...',
-    },
-  ];
+  const userId = getCurrentSellerId();
+
+  // Load Wishlist
+  useEffect(() => {
+    if (!userId || activeTab !== 'products') return;
+
+    const loadWishlist = async () => {
+      setLoadingProducts(true);
+      try {
+        const data = await fetchWithToken<{ wishlist: { products: any[] } }>('/v1/users/me/wishlist');
+        const formatted: WishlistProduct[] = data.wishlist.products.map((p) => ({
+          _id: p._id,
+          name: p.name,
+          price: p.price,
+          images: p.images || [],
+          moq: p.moq,
+          verified: p.verified || false,
+          seller: {
+            _id: p.vendor?._id || p.seller?._id || 'unknown',
+            fullName: p.vendor?.fullName || p.seller?.fullName || 'Unknown Seller',
+          },
+        }));
+        setProducts(formatted);
+      } catch (err) {
+        console.error('Failed to load wishlist:', err);
+        setProducts([]);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    loadWishlist();
+  }, [activeTab, userId]);
+
+  // Load Unlocked Stores
+  useEffect(() => {
+    if (!userId || activeTab !== 'stores') return;
+
+    const loadUnlockedStores = async () => {
+      setLoadingStores(true);
+      try {
+        const data = await fetchWithToken<{ unlocked: UnlockedStore[] }>(`/v1/users/${userId}/unlocked`);
+        setUnlockedStores(data.unlocked || []);
+      } catch (err) {
+        console.error('Failed to load unlocked stores:', err);
+        setUnlockedStores([]);
+      } finally {
+        setLoadingStores(false);
+      }
+    };
+
+    loadUnlockedStores();
+  }, [activeTab, userId]);
 
   return (
     <>
       <Header />
-      <div className="min-h-screen">
+      <DynamicHeader />
+
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Tabs */}
           <div className="mb-8">
             <div className="flex gap-8 text-sm font-medium border-b border-gray-200">
               <button
                 onClick={() => setActiveTab('products')}
-                className={`pb-4 hover:cursor-pointer transition ${activeTab === 'products' ? 'text-black border-b-2 border-black' : 'text-gray-600 hover:text-black'}`}
+                className={`pb-4 hover:cursor-pointer transition ${activeTab === 'products' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`}
               >
-                Saved Products
+                Saved Products ({products.length})
               </button>
               <button
                 onClick={() => setActiveTab('stores')}
-                className={`pb-4 hover:cursor-pointer transition ${activeTab === 'stores' ? 'text-black border-b-2 border-black' : 'text-gray-600 hover:text-black'}`}
+                className={`pb-4 hover:cursor-pointer transition ${activeTab === 'stores' ? 'text-black border-b-2 border-black' : 'text-gray-600'}`}
               >
-                Unlocked Stores
+                Unlocked Stores ({unlockedStores.length})
               </button>
             </div>
           </div>
@@ -106,39 +138,28 @@ export default function SavedProducts() {
           {activeTab === 'products' && (
             <>
               <div className="mb-8">
-                <h2 className="text-center text-lg font-medium text-gray-900 bg-gray-50 py-4 rounded-xl">
-                  All Products
+                <h2 className="text-center text-lg font-medium text-gray-900 bg-gray-100 py-4 rounded-xl">
+                  {loadingProducts ? 'Loading saved products...' : 'All Saved Products'}
                 </h2>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                <div className="relative">
-                  <ProductCard />
+              {loadingProducts ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+                  {[...Array(10)].map((_, i) => (
+                    <ProductCard key={i} loading />
+                  ))}
                 </div>
-
-                {[...Array(11)].map((_, i) => (
-                  <ProductCard key={`saved-product-${i}`} />
-                ))}
-              </div>
-
-              <div className="flex justify-center mt-12">
-                <button className="flex items-center gap-2 px-8 py-4 bg-slate-800 text-white font-medium rounded-full hover:bg-slate-900 transition">
-                  See more
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-              </div>
+              ) : products.length === 0 ? (
+                <div className="text-center py-20 text-gray-500 text-lg">
+                  No saved products yet
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+                  {products.map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              )}
             </>
           )}
 
@@ -146,74 +167,88 @@ export default function SavedProducts() {
           {activeTab === 'stores' && (
             <>
               <div className="mb-8">
-                <h2 className="text-center text-lg font-medium text-gray-900 bg-gray-50 py-4 rounded-xl">
-                  Unlocked Stores
+                <h2 className="text-center text-lg font-medium text-gray-900 bg-gray-100 py-4 rounded-xl">
+                  {loadingStores ? 'Loading stores...' : 'Unlocked Stores'}
                 </h2>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-                {unlockedStores.map((store) => (
-                  <div
-                    key={store.id}
-                    className="bg-white max-w-4xl rounded-3xl border border-gray-200 p-6 text-center transition"
-                  >
-                    <div className="w-20 h-20 bg-gray-200 rounded-full mb-4" />
-                    <h3 className="font-semibold text-gray-900 flex items-center gap-1">
-                      {store.name}
-                      <Verified className="w-4 h-4 fill-green-500 text-white" />
-                    </h3>
-                    <div className="flex gap-5">
-                      <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {store.location}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1 text-sm">
-                        <span className="font-medium text-gray-900">
-                          {store.rating}
-                        </span>
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-gray-500">({store.reviews})</span>
+              {loadingStores ? (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-white rounded-3xl border border-gray-200 p-6">
+                        <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4" />
+                        <div className="h-5 bg-gray-200 rounded mx-auto w-32 mb-2" />
+                        <div className="h-4 bg-gray-200 rounded mx-auto w-24" />
                       </div>
                     </div>
-                    <button
-                      onClick={() => setSelectedStore(store)}
-                      className="mt-4 w-full py-2.5 border hover:cursor-pointer border-gray-100 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200 transition"
-                    >
-                      View Profile
-                    </button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : unlockedStores.length === 0 ? (
+                <div className="text-center py-20 text-gray-500 text-lg">
+                  No unlocked stores yet
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+                  {unlockedStores.map((item) => {
+                    const seller = item.sellerId;
+                    const store = seller.store;
+                    const profilePic = seller.profilePicture?.url;
 
-              <div className="flex justify-center mt-12">
-                <button className="flex items-center gap-2 px-8 py-4 bg-slate-800 text-white font-medium rounded-full hover:bg-slate-900 transition">
-                  See more
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-              </div>
+                    return (
+                      <div
+                        key={item._id}
+                        onClick={() => setSelectedStore(seller)}
+                        className="bg-white rounded-3xl border border-gray-200 p-6 cursor-pointer hover:shadow-lg transition"
+                      >
+                        <div className="relative mb-4">
+                          <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white shadow-md">
+                            <Image
+                              src={profilePic || DEFAULT_AVATAR}
+                              alt={store.name || seller.fullName}
+                              className="w-full h-full object-cover"
+                              height={35}
+                              width={35}
+                              unoptimized
+                              onError={(e) => (e.currentTarget.src = DEFAULT_AVATAR)}
+                            />
+                          </div>
+                        </div>
+
+                        <h3 className="font-semibold text-gray-900 flex gap-1">
+                          {store.name}
+                          <Verified className="w-4 h-4 fill-green-500 text-white" />
+                        </h3>
+
+                        <div className="flex gap-4 my-2 text-xs text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            <span>{store.location || 'Nigeria'}</span>
+                          </div>
+                        </div>
+
+                        <button className="mt-3 w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition">
+                          View Profile
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </>
           )}
         </div>
       </div>
 
-      {/* Store Details Modal */}
       <StoreDetailsModal
         isOpen={!!selectedStore}
         onClose={() => setSelectedStore(null)}
-        store={selectedStore}
+        sellerId={selectedStore?._id || ''}
+        sellerName={selectedStore?.fullName || 'Unknown Seller'}
+        profilePicture={selectedStore?.profilePicture?.url || DEFAULT_AVATAR}
+        store={selectedStore?.store || { name: '', description: '', location: '' }}
       />
+
     </>
   );
 }

@@ -94,8 +94,11 @@ export default function CompleteProfileModal({
 
       onClose();
       setShowWelcomeModal(true);
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (error: unknown) { // FIX: Changed 'err: any' to 'error: unknown' (L97)
+      const message = error instanceof Error
+        ? error.message
+        : 'Something went wrong';
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -20,27 +20,29 @@ interface NewProduct {
 
 export default function NewProducts() {
   const [products, setProducts] = useState<NewProduct[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const loadProducts = async () => {
       try {
+        setLoading(true);
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/new`,
-          {
-            method: 'GET',
-          }
+          { method: 'GET' }
         );
-
         const data = await res.json();
-
         if (data?.products) setProducts(data.products);
       } catch (err) {
         console.error('Failed to fetch new products:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadProducts();
   }, []);
+
+  const placeholderCount = 8;
 
   return (
     <section className="py-8">
@@ -57,11 +59,15 @@ export default function NewProducts() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.length > 0
-            ? products.map((product) => (
-                <ProductCard key={product._id} product={product} />
+          {loading
+            ? Array.from({ length: placeholderCount }).map((_, i) => (
+                <ProductCard key={i} loading={true} />
               ))
-            : Array.from({ length: 8 }).map((_, i) => <ProductCard key={i} />)}
+            : products.length === 0
+            ? <p className="text-gray-600 py-10 col-span-full text-center">No new products available.</p>
+            : products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
         </div>
       </div>
     </section>

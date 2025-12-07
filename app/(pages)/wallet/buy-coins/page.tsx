@@ -51,9 +51,12 @@ export default function BuyCoins() {
       } else {
         throw new Error(response?.init?.message || 'Payment failed to initialize');
       }
-    } catch (err: any) {
-      console.error('Payment initiation failed:', err);
-      setError(err.message || 'Unable to connect. Please try again.');
+    } catch (error: unknown) {
+      console.error('Payment initiation failed:', error);
+      const message = error instanceof Error
+        ? error.message
+        : 'Unable to connect. Please try again.';
+      setError(message);
     } finally {
       setLoading(false);
     }

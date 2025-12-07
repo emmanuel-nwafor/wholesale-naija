@@ -32,7 +32,8 @@ export default function SignupWithEmailModal({
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
+  // FIX: Removed unused state variable 'showSuccess' (L35)
+  // const [showSuccess, setShowSuccess] = useState(false);
 
   if (!isOpen) return null;
 
@@ -54,11 +55,14 @@ export default function SignupWithEmailModal({
         throw new Error(data.message || 'Failed to send OTP');
       }
 
-      // Success, show confirmation modal and call parent callback
-      setShowSuccess(true);
+      // Success, call parent callback
+      // setShowSuccess(true); // Removed as it was unused
       if (onContinue) onContinue(email);
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (error: unknown) { // FIX: Changed 'err: any' to 'error: unknown' (L60)
+      const message = error instanceof Error
+        ? error.message
+        : 'Something went wrong';
+      setError(message);
     } finally {
       setLoading(false);
     }

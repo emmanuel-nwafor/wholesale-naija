@@ -6,6 +6,7 @@ import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
 import DashboardHeader from '@/app/components/header/DashboardHeader';
 import { getCurrentSellerId } from '@/app/utils/auth';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
+import Image from 'next/image';
 
 interface Review {
   _id: string;
@@ -39,10 +40,12 @@ const ReviewItem = ({ review }: { review: Review }) => (
                 key={i}
                 className="w-12 h-12 bg-gray-200 rounded-md border border-gray-300 overflow-hidden"
               >
-                <img
+                <Image
                   src={img}
                   alt="Review"
                   className="w-full h-full object-cover"
+                  height={100}
+                  width={100}
                 />
               </div>
             ))}

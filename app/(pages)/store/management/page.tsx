@@ -8,7 +8,29 @@ import DashboardHeader from '@/app/components/header/DashboardHeader';
 import ReviewStatusModal from '@/app/components/modals/ReviewStatusModal';
 import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
-import { getCurrentSellerId } from '@/app/utils/auth';
+
+interface StoreData {
+  name: string;
+  location: string;
+  address: string | { street: string };
+  description: string;
+  contactPhone: string;
+  whatsapp: string;
+  openingDays: string;
+  bannerUrl: string | null;
+}
+
+interface UserProfileResponse {
+  user: {
+    store: StoreData;
+    // Add other user properties if needed
+  };
+}
+
+interface UploadResponse {
+  uploaded: Array<{ url: string }>;
+}
+// --- END NEW INTERFACES ---
 
 export default function StoreManagement() {
   const [isEditing, setIsEditing] = useState(false);
@@ -35,7 +57,8 @@ export default function StoreManagement() {
   const loadStore = async () => {
     try {
       setLoading(true);
-      const res = await fetchWithToken<{ user: any }>('/auth/profile');
+      // FIX 1: Replaced any with the specific UserProfileResponse interface
+      const res = await fetchWithToken<UserProfileResponse>('/auth/profile');
       const s = res.user.store;
 
       if (!s) {
@@ -44,7 +67,8 @@ export default function StoreManagement() {
       }
 
       const street =
-        typeof s.address === 'object' && s.address?.street
+        // FIX 2: Check if address exists and is an object with a street property
+        typeof s.address === 'object' && s.address && 'street' in s.address
           ? s.address.street
           : typeof s.address === 'string'
             ? s.address
@@ -62,7 +86,8 @@ export default function StoreManagement() {
       });
 
       setBannerUrl(s.bannerUrl || null);
-    } catch (err: any) {
+    } catch (err) {
+      // Catching generic error here, no need for ": any"
       console.error('Failed to load store:', err);
     } finally {
       setLoading(false);
@@ -88,9 +113,8 @@ export default function StoreManagement() {
     const formData = new FormData();
     formData.append('file', bannerFile);
 
-    const uploadRes = await fetchWithToken<{
-      uploaded: Array<{ url: string }>;
-    }>('/uploads/single', {
+    // FIX 3: Replaced the ad-hoc type with the specific UploadResponse interface
+    const uploadRes = await fetchWithToken<UploadResponse>('/uploads/single', {
       method: 'POST',
       body: formData,
     });
@@ -113,7 +137,7 @@ export default function StoreManagement() {
           name: store.name || '',
           description: store.description || '',
           bannerUrl: uploadedBannerUrl || '',
-          contactEmail: store.phone || '',
+          contactEmail: store.phone || '', // Assuming contactEmail uses phone value
           contactPhone: store.phone || '',
           whatsapp: store.whatsapp || '',
           location: store.location || '',

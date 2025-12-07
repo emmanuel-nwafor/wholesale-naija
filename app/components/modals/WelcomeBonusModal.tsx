@@ -57,8 +57,8 @@ export default function WelcomeBonusModal({
         </h2>
 
         <p className="text-sm text-gray-600 leading-relaxed mb-10">
-          You've been credited with{' '}
-          <span className="font-bold text-gray-900">100 FREE coins</span> to
+          You&apos;ve been credited with{' '}
+          <span className="font-bold text-gray-900">50 FREE coins</span> to
           start start connecting with sellers.
         </p>
 

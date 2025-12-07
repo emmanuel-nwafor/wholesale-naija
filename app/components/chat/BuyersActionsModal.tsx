@@ -1,7 +1,7 @@
 // components/chat/BuyersActionsModal.tsx
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Eye, Ban, UserCheck, Trash2, AlertTriangle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
@@ -15,7 +15,7 @@ interface ActionsModalProps {
   sellerId: string;
   storeId?: string;
   sellerName: string;
-  isBlocked?: boolean; // New: tells if user is already blocked
+  isBlocked?: boolean;
 }
 
 export default function BuyersActionsModal({

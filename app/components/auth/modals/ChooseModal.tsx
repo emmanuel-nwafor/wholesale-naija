@@ -2,7 +2,6 @@
 import { ShoppingCartIcon, Store, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import Image from 'next/image';
 
 const modalVariants = {
   hidden: { opacity: 0 },

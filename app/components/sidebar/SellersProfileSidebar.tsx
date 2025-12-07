@@ -11,11 +11,19 @@ import {
   User,
   X,
   Store,
+  LucideIcon, 
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import DeleteModal from '@/app/components/modals/DeleteModal';
 import DeleteAccountPasswordModal from '@/app/components/auth/modals/DeleteAccountPasswordModal';
+
+interface SidebarItem {
+  icon: LucideIcon;
+  label: string;
+  href?: string; 
+  danger?: boolean;
+}
 
 interface ProfileSidebarProps {
   isMobile: boolean;
@@ -35,7 +43,7 @@ export default function SellersProfileSidebar({
   const [showFinalDeleteModal, setShowFinalDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const items = [
+  const items: SidebarItem[] = [
     { icon: User, label: 'Profile Info', href: '/store/profile' },
     {
       icon: Globe,
@@ -59,11 +67,10 @@ export default function SellersProfileSidebar({
 
   const isActive = (href: string) => pathname === href;
 
-  const handleClick = (item: any) => {
+  const handleClick = (item: SidebarItem) => {
     if (item.label === 'Delete Account') {
       setShowPasswordModal(true);
     } else if (item.label === 'Log Out') {
-      // LOG OUT FUNCTIONALITY
       localStorage.clear();
       sessionStorage.clear();
       document.cookie.split(';').forEach((c) => {

@@ -27,6 +27,7 @@ export default function FeaturedGrid() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
+        setLoading(true);
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/featured`
         );
@@ -45,6 +46,9 @@ export default function FeaturedGrid() {
     loadProducts();
   }, []);
 
+  // Number of placeholders to show while loading
+  const placeholderCount = 8;
+
   return (
     <section className="py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -59,31 +63,17 @@ export default function FeaturedGrid() {
           </Link>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-40 bg-gray-200 animate-pulse rounded-xl"
-              ></div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && products.length === 0 && (
-          <p className="text-gray-600 py-10">No featured products available.</p>
-        )}
-
-        {/* Product Grid */}
-        {!loading && products.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {products.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {loading
+            ? Array.from({ length: placeholderCount }).map((_, i) => (
+                <ProductCard key={i} loading={true} />
+              ))
+            : products.length === 0
+            ? <p className="text-gray-600 py-10 col-span-full text-center">No featured products available.</p>
+            : products.map((product) => (
+                <ProductCard key={product._id} product={product} type="featured" />
+              ))}
+        </div>
       </div>
     </section>
   );

@@ -73,7 +73,7 @@ export default function DashboardHeader() {
 
   return (
     <>
-      <header className="md:ml-64 bg-white shadow-sm sticky top-0 z-20 border-b border-gray-200">
+      <header className="md:ml-64 bg-white sticky top-0 z-20 border-gray-200">
         <div className="flex items-center justify-between px-4 py-3 md:px-6">
           {/* Left: Logo (mobile) + Title (desktop) */}
           <div className="flex items-center gap-3">

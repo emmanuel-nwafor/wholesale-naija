@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image'; // ADDED: Image import
 import { X, Star, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import OkaySuccessModal from './OkaySuccessModal';
@@ -11,8 +12,8 @@ interface LeaveReviewModalProps {
   onClose: () => void;
   sellerName?: string;
   sellerVerified?: boolean;
-  storeBannerUrl?: string;
-  storeProfileImageUrl?: string; // New prop
+  // storeBannerUrl?: string; // REMOVED: Unused property from interface
+  storeProfileImageUrl?: string; 
   onSuccess?: () => void;
 }
 
@@ -21,8 +22,7 @@ export default function LeaveReviewModal({
   onClose,
   sellerName = 'This Store',
   sellerVerified = false,
-  storeBannerUrl = '',
-  storeProfileImageUrl = '', // New prop
+  storeProfileImageUrl = '', 
 }: LeaveReviewModalProps) {
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
@@ -105,12 +105,16 @@ export default function LeaveReviewModal({
               </div>
             </div>
             <div className="flex items-end gap-4">
-              <div className="w-20 h-20 bg-white rounded-full p-1 shadow-lg">
+              {/* FIX: Added 'relative' class to container for Image fill mode */}
+              <div className="w-20 h-20 bg-white rounded-full p-1 shadow-lg relative"> 
                 {storeProfileImageUrl ? (
-                  <img
+                  // FIX: Replaced <img> with <Image />
+                  <Image
                     src={storeProfileImageUrl}
                     alt={sellerName}
-                    className="w-full h-full rounded-full object-cover border-4 border-white"
+                    fill // Use fill to cover the parent div
+                    sizes="(max-width: 768px) 80px, 80px"
+                    className="rounded-full object-cover border-4 border-white"
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center">

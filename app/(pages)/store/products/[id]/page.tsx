@@ -42,7 +42,7 @@ export default function ProductDetailsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // ← New state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -82,11 +82,16 @@ export default function ProductDetailsPage() {
       setShowDeleteModal(false);
       setShowSuccessModal(true);
 
-      // Redirect after a short delay
-      setTimeout(() => {}, 2000);
-    } catch (err: any) {
+      // Redirect after a short delay is now handled inside OkaySuccessModal onClose
+      // setTimeout(() => {}, 2000);
+    } catch (err: unknown) { // FIX: Changed 'any' to 'unknown' (L87)
       console.error('Delete failed:', err);
-      alert(err.message || 'Failed to delete product. Please try again.');
+      // Safely access error message
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Failed to delete product. Please try again.';
+      alert(message);
     } finally {
       setDeleting(false);
     }
@@ -188,7 +193,7 @@ export default function ProductDetailsPage() {
                         <div className="flex items-center gap-3 mt-4">
                           <span className="text-sm text-gray-600">Status</span>
                           <span className="px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                            Active
+                            {product.status || 'Active'}
                           </span>
                         </div>
                       </div>

@@ -6,14 +6,21 @@ import { Star, Verified } from 'lucide-react';
 import Link from 'next/link';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
+interface Review {
+    _id: string;
+    rating: number;
+    comment: string;
+}
+
 interface ProductCardProps {
   loading?: boolean;
+  type?: 'featured' | 'popular';
   product?: {
     _id: string;
     name: string;
     price: number;
-    images: string[];
-    moq?: string;
+    images?: string[]; 
+    moq?: string | number; 
     verified?: boolean;
     seller?: {
       _id?: string;
@@ -33,12 +40,37 @@ function maskName(name?: string) {
 export default function ProductCard({
   product,
   loading = false,
+  type,
 }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviewsCount, setReviewsCount] = useState<number>(0);
 
-  // Show shimmer when loading
+  const p = product;
+  const sellerId = p?.seller?._id;
+
+  useEffect(() => {
+    if (loading || !sellerId) return; 
+
+    const fetchReviews = async () => {
+      try {
+        const res = await fetchWithToken<{
+          reviews?: Review[];
+          avgRating?: number | null;
+        }>(`/v1/sellers/${sellerId}/reviews`);
+        
+        setAvgRating(res?.avgRating ?? null);
+        setReviewsCount(res?.reviews?.length ?? 0);
+      } catch (err) {
+        console.error('Failed to fetch seller reviews:', err);
+        setAvgRating(null);
+        setReviewsCount(0);
+      }
+    };
+
+    fetchReviews();
+  }, [loading, sellerId]);
+
   if (loading) {
     return (
       <div className="animate-pulse">
@@ -56,70 +88,63 @@ export default function ProductCard({
   }
 
   if (!product) return null;
-  const p = product;
-  const isVerifiedSeller = p.verified === true;
 
-  // Determine correct image
+  const isVerifiedSeller = p!.verified === true;
+
   const mainImage =
-    imgError || !p.images?.[0] || p.images[0].trim() === ''
-      ? 'https://i.pinimg.com/736x/75/92/1a/75921a9653409e76f63f904530687fe0.jpg'
-      : p.images[0];
+    imgError || !p!.images?.[0] || p!.images[0].trim() === ''
+      ? '/svgs/grid-2.svg'
+      : p!.images[0];
 
-  // Fetch seller reviews & average rating
-  useEffect(() => {
-    if (!p.seller?._id) return;
-
-    const fetchReviews = async () => {
-      try {
-        const res = await fetchWithToken<{
-          reviews?: any[];
-          avgRating?: number | null;
-        }>(`/v1/sellers/${p.seller?._id}/reviews`);
-        setAvgRating(res?.avgRating ?? null);
-        setReviewsCount(res?.reviews?.length ?? 0);
-      } catch (err) {
-        console.error('Failed to fetch seller reviews:', err);
-        setAvgRating(null);
-        setReviewsCount(0);
-      }
-    };
-
-    fetchReviews();
-  }, [p.seller?._id]);
+  // Badge text
+  const badgeText =
+    type === 'featured'
+      ? 'Featured'
+      : type === 'popular'
+      ? 'Popular'
+      : undefined;
 
   return (
-    <Link href={`/product/${p._id}`}>
-      <div className="overflow-hidden hover:cursor-pointer z-10">
-        {/* Image */}
+    <Link href={`/product/${p!._id}`}>
+      <div className="overflow-hidden hover:cursor-pointer z-10 relative">
+        {/* Badge */}
+        {badgeText && (
+          <div className="absolute top-2 left-2 z-20 bg-slate-900 text-white px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1">
+            <Star className="w-4 h-4 fill-yellow-400" /> {badgeText}
+          </div>
+        )}
+
         <div className="aspect-square bg-gray-100 rounded-xl flex items-center justify-center">
           <Image
             src={mainImage}
-            alt={p.name}
+            alt={p!.name}
+            sizes="(max-width: 640px) 50vw, 300px" 
             width={300}
             height={300}
             className="w-full h-full object-cover rounded-xl"
             onError={() => setImgError(true)}
+            priority={type === 'featured'}
           />
         </div>
 
         {/* Info */}
         <div className="mt-4 space-y-2">
           <h3 className="text-base font-medium text-gray-900 line-clamp-2">
-            {p.name}
+            {p!.name}
           </h3>
 
           <div className="flex items-center gap-2">
             <span className="text-xl font-bold text-gray-900">
-              ₦{p.price.toLocaleString()}
+              ₦{p!.price.toLocaleString()}
             </span>
           </div>
 
           <div className="flex-col items-center justify-between">
-            <p className="text-xs text-gray-500">MOQ: {p.moq || 'N/A'}</p>
+            <p className="text-xs text-gray-500">MOQ: {p!.moq ?? 'N/A'}</p> 
 
             <div className="flex items-center justify-between mt-3">
               <span className="flex text-xs text-gray-400 items-center gap-1">
-                {maskName(p.seller?.fullName)}
+                {maskName(p!.seller?.fullName)}
                 {isVerifiedSeller && (
                   <Verified className="w-4 h-4 text-green-500" />
                 )}
@@ -128,8 +153,8 @@ export default function ProductCard({
               <div className="flex items-center gap-1">
                 {reviewsCount === 0 ? (
                   <span className="text-xs text-gray-400 flex items-center gap-1">
-                    <span className="text-xs text-gray-400">0</span>
-                    <span className="text-xs text-gray-400">(0)</span>
+                    <span>0</span>
+                    <span>(0)</span>
                     <Star className="w-3 h-3 fill-current text-yellow-500" />
                   </span>
                 ) : (

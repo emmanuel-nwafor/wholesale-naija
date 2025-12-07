@@ -23,10 +23,12 @@ interface PopularProduct {
 
 export default function PopularProducts() {
   const [products, setProducts] = useState<PopularProduct[]>([]);
+  const [loading, setLoading] = useState(true); // <-- Loading state
 
   useEffect(() => {
     const loadProducts = async () => {
       try {
+        setLoading(true); // start loading
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/v1/products/popular`,
           {
@@ -39,11 +41,16 @@ export default function PopularProducts() {
         if (data?.products) setProducts(data.products);
       } catch (err) {
         console.error('Failed to fetch popular products:', err);
+      } finally {
+        setLoading(false); // stop loading
       }
     };
 
     loadProducts();
   }, []);
+
+  // Number of placeholders to show while loading
+  const placeholderCount = 8;
 
   return (
     <section className="py-8">
@@ -60,9 +67,13 @@ export default function PopularProducts() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
+          {loading
+            ? Array.from({ length: placeholderCount }).map((_, i) => (
+                <ProductCard key={i} loading={true} />
+              ))
+            : products.map((product) => (
+                <ProductCard key={product._id} product={product} type="popular" />
+              ))}
         </div>
       </div>
     </section>

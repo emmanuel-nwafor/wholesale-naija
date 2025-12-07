@@ -13,6 +13,20 @@ import {
   AreaSelection,
 } from '@/app/components/modals/LocationsModal';
 
+// FIX: Define a proper interface for the expected data structure to replace 'any'
+interface UserAddress {
+  state?: string;
+  city?: string;
+  street?: string;
+}
+
+interface UserProfileData {
+  user: {
+    address?: UserAddress;
+    // Add other profile fields if necessary
+  };
+}
+
 export default function SellerProfileCountryRegion() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,13 +53,15 @@ export default function SellerProfileCountryRegion() {
   useEffect(() => {
     const loadAddress = async () => {
       try {
-        const data = await fetchWithToken<any>('/auth/profile');
+        // FIX: Replaced 'any' with the defined interface (L42)
+        const data = await fetchWithToken<UserProfileData>('/auth/profile');
         const addr = data.user.address || {};
         setSelectedState(addr.state || '');
         setSelectedLGA(addr.city || '');
         setSelectedArea(addr.street || '');
-      } catch (err) {
-        console.error('Failed to load address');
+      } catch (error) {
+        // FIX: Changed 'err' to 'error' and removed variable access to satisfy unused variable linting (L47)
+        console.error('Failed to load address', error); 
       } finally {
         setLoading(false);
       }
@@ -94,7 +110,9 @@ export default function SellerProfileCountryRegion() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
+    } catch (error) {
+      // FIX: Changed 'err' to 'error' and removed variable access to satisfy unused variable linting (L97)
+      console.error('Failed to save location.', error);
       alert('Failed to save location. Try again.');
     } finally {
       setSaving(false);
@@ -150,7 +168,9 @@ export default function SellerProfileCountryRegion() {
                           className="w-full px-5 py-4 bg-gray-50 hover:bg-gray-100 rounded-xl flex items-center justify-between transition"
                         >
                           <span
-                            className={`text-left ${!selectedState ? 'text-gray-500' : 'text-gray-900'}`}
+                            className={`text-left ${
+                              !selectedState ? 'text-gray-500' : 'text-gray-900'
+                            }`}
                           >
                             {displayValue}
                           </span>
@@ -205,8 +225,8 @@ export default function SellerProfileCountryRegion() {
           modalStep === 'state'
             ? 'Select State'
             : modalStep === 'lga'
-              ? `LGA in ${selectedState}`
-              : `Area in ${selectedLGA}`
+            ? `LGA in ${selectedState}`
+            : `Area in ${selectedLGA}`
         }
         isMobile={isMobile}
         currentStep={modalStep}

@@ -8,15 +8,40 @@ import DashboardHeader from '@/app/components/header/DashboardHeader';
 import ProfileSidebar from '@/app/components/sidebar/SellersProfileSidebar';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
+import Image from 'next/image'; 
+
+interface UserProfile {
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
+  profilePicture?: {
+    url: string;
+    // Add other fields if necessary
+  };
+}
+
+interface ProfileResponse {
+  user: UserProfile;
+}
+
+interface UploadResponse {
+  uploaded: Array<{
+    url: string;
+  }>;
+}
 
 export default function SellerProfilePage() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Added state back in for control, but now it's used in loadProfile
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,8 +67,8 @@ export default function SellerProfilePage() {
 
   const loadProfile = async () => {
     try {
-      setLoading(true);
-      const data = await fetchWithToken<any>('/auth/profile');
+      setIsLoadingProfile(true);
+      const data = await fetchWithToken<ProfileResponse>('/auth/profile'); 
       const u = data.user;
 
       setForm({
@@ -54,10 +79,10 @@ export default function SellerProfilePage() {
         email: u.email || '',
         profilePicture: u.profilePicture?.url || '',
       });
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     } finally {
-      setLoading(false);
+      setIsLoadingProfile(false); 
     }
   };
 
@@ -67,7 +92,8 @@ export default function SellerProfilePage() {
     fd.append('file', file);
 
     try {
-      const res = await fetchWithToken<any>('/uploads/single', {
+      // FIX: Used UploadResponse interface (L70)
+      const res = await fetchWithToken<UploadResponse>('/uploads/single', {
         method: 'POST',
         body: fd,
       });
@@ -79,7 +105,7 @@ export default function SellerProfilePage() {
         ...prev,
         profilePicture: newUrl + '?t=' + Date.now(),
       }));
-    } catch (err) {
+    } catch (error) {
       alert('Upload failed');
     } finally {
       setUploading(false);
@@ -89,7 +115,8 @@ export default function SellerProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const response = await fetchWithToken<any>('/auth/profile', {
+      // FIX: Used ProfileResponse interface (L92)
+      const response = await fetchWithToken<ProfileResponse>('/auth/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -97,7 +124,8 @@ export default function SellerProfilePage() {
           firstName: form.firstName,
           lastName: form.lastName,
           phone: form.phone,
-          profilePicture: form.profilePicture.replace(/\?.*$/, ''),
+          // Remove cache buster before saving URL
+          profilePicture: form.profilePicture.replace(/\?.*$/, ''), 
         }),
       });
 
@@ -114,8 +142,12 @@ export default function SellerProfilePage() {
 
       setIsEditing(false);
       setShowSuccess(true);
-    } catch (err: any) {
-      alert(err.message || 'Failed to save profile');
+    } catch (error: unknown) {
+      // FIX: Changed 'err: any' to 'error: unknown' (L117)
+      const message = error instanceof Error 
+        ? error.message 
+        : 'Failed to save profile';
+      alert(message);
     } finally {
       setSaving(false);
     }
@@ -172,11 +204,16 @@ export default function SellerProfilePage() {
                 <div className="flex items-center mb-8">
                   <div className="relative">
                     <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-2xl font-bold text-gray-600">
-                      {form.profilePicture ? (
-                        <img
+                      {isLoadingProfile ? (
+                        <div className="w-6 h-6 border-2 border-t-gray-600 rounded-full animate-spin" />
+                      ) : form.profilePicture ? (
+                        // FIX: Replaced <img> with Next.js <Image /> (L176)
+                        <Image
                           src={form.profilePicture}
                           alt="Profile"
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100px, 100px" // Adjusted for the 24x24 container
                         />
                       ) : (
                         <span>{initials}</span>
@@ -234,7 +271,11 @@ export default function SellerProfilePage() {
                           setForm({ ...form, firstName: e.target.value })
                         }
                         disabled={!isEditing}
-                        className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
+                        className={`w-full px-4 py-3 rounded-xl ${
+                          isEditing
+                            ? 'bg-white border border-gray-300'
+                            : 'bg-gray-50'
+                        }`}
                       />
                     </div>
                     <div>
@@ -248,7 +289,11 @@ export default function SellerProfilePage() {
                           setForm({ ...form, lastName: e.target.value })
                         }
                         disabled={!isEditing}
-                        className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
+                        className={`w-full px-4 py-3 rounded-xl ${
+                          isEditing
+                            ? 'bg-white border border-gray-300'
+                            : 'bg-gray-50'
+                        }`}
                       />
                     </div>
                   </div>
@@ -264,7 +309,11 @@ export default function SellerProfilePage() {
                         setForm({ ...form, fullName: e.target.value })
                       }
                       disabled={!isEditing}
-                      className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
+                      className={`w-full px-4 py-3 rounded-xl ${
+                        isEditing
+                          ? 'bg-white border border-gray-300'
+                          : 'bg-gray-50'
+                      }`}
                     />
                   </div>
 
@@ -279,7 +328,11 @@ export default function SellerProfilePage() {
                         setForm({ ...form, phone: e.target.value })
                       }
                       disabled={!isEditing}
-                      className={`w-full px-4 py-3 rounded-xl ${isEditing ? 'bg-white border border-gray-300' : 'bg-gray-50'}`}
+                      className={`w-full px-4 py-3 rounded-xl ${
+                        isEditing
+                          ? 'bg-white border border-gray-300'
+                          : 'bg-gray-50'
+                      }`}
                     />
                   </div>
 

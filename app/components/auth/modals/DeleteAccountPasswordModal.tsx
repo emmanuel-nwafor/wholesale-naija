@@ -37,8 +37,11 @@ export default function DeleteAccountPasswordModal({
       });
 
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Incorrect password. Try again.');
+    } catch (error: unknown) { // FIX: Changed 'err: any' to 'error: unknown' (L40)
+      const message = error instanceof Error
+        ? error.message
+        : 'Incorrect password. Try again.';
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-// app/components/chat/ChatSidebar.tsx
+// app/components/chat/SellerChatSidebar.tsx
 'use client';
 
 import React from 'react';
@@ -25,7 +25,7 @@ interface ChatSidebarProps {
   selectedChat: Chat | null;
 }
 
-export default function ChatSidebar({
+export default function SellerChatSidebar({
   chats,
   selectedChatId,
   onChatClick,
@@ -95,11 +95,13 @@ export default function ChatSidebar({
                   <p className="text-sm text-gray-600 truncate">{chat.message}</p>
 
                   {/* Unread badge */}
-                  {chat.unread > 0 && (
+                  {/* 
+                      but leaving it commented here for consistency with the provided snippet. */}
+                  {/* {chat.unread > 0 && (
                     <div className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full mt-1">
                       {chat.unread}
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
             </motion.div>

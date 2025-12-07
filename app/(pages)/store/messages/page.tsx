@@ -1,23 +1,18 @@
-// app/(pages)/chat/page.tsx  ← This is the SELLER chat page
+// app/(pages)/store/messages/page.tsx
 'use client';
-
 import React, { useState, useEffect, useMemo } from 'react';
 import DashboardHeader from '@/app/components/header/DashboardHeader';
-import StoreSidebar from '@/app/components/sidebar/StoreSidebar';
-import { Paperclip, Send, ArrowLeft, MoreHorizontal } from 'lucide-react';
-import Image from 'next/image';
-import ChatSidebar from '@/app/components/chat/ChatSidebar';
+import SellerChatStoreSidebar from '@/app/components/sidebar/SellerChatStoreSidebar';
+import SellerChatSidebar from '@/app/components/chat/SellerChatSidebar';
 import ActionsModal from '@/app/components/chat/StoresActionsModal';
 import DeleteModal from '@/app/components/modals/DeleteModal';
+import { Send, ArrowLeft, MoreHorizontal } from 'lucide-react'; // FIX 1: Removed unused 'Paperclip' import
+import Image from 'next/image';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import { getCurrentSellerId } from '@/app/utils/auth';
 
-interface Participant {
-  _id: string;
-  fullName: string;
-  profilePicture?: { url: string };
-}
-
+// Types unchanged...
+interface Participant { _id: string; fullName: string; profilePicture?: { url: string }; }
 interface Conversation {
   _id: string;
   participants: Participant[];
@@ -26,28 +21,25 @@ interface Conversation {
   updatedAt: string;
   unreadCounts?: Record<string, number>;
 }
-
-interface Message {
-  _id: string;
-  body: string;
-  createdAt: string;
-  sender: string;
-}
-
-interface SharedProduct {
+interface Message { _id: string; body: string; createdAt: string; sender: string; }
+interface SharedProduct { id: string; name: string; price: number; moq: number; image: string; }
+interface Chat {
   id: string;
   name: string;
-  price: number;
-  moq: number;
-  image: string;
+  message: string;
+  time: string;
+  avatar: string;
+  unread: number;
+  online: boolean;
+  conv: Conversation;
 }
 
 export default function StoresChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [sharedProduct, setSharedProduct] = useState<SharedProduct | null>(null);
@@ -55,100 +47,77 @@ export default function StoresChatPage() {
   const currentSellerId = getCurrentSellerId();
 
   useEffect(() => {
-    const checkScreenSize = () => setIsMobileOrTablet(window.innerWidth < 1024);
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Fetch conversations
   useEffect(() => {
-    const fetchConversations = async () => {
+    const load = async () => {
       try {
-        const res = await fetchWithToken('/v1/chat/conversations');
-        setConversations((res as any)?.conversations || []);
+        const res: { conversations: Conversation[] } = await fetchWithToken('/v1/chat/conversations');
+        setConversations(res.conversations || []);
       } catch (err) {
-        console.error('Failed to load chats:', err);
+        console.error('Failed to load conversations:', err);
       }
     };
-    fetchConversations();
+    load();
   }, []);
 
-  // Check for shared product from buyer
+  // Pending product share
   useEffect(() => {
     const pending = sessionStorage.getItem('pendingChatWithProduct');
-    if (pending && conversations.length > 0) {
-      const data = JSON.parse(pending);
-      setSharedProduct(data.product);
+    if (!pending || conversations.length === 0) return;
 
-      const targetConv = conversations.find(c =>
-        c.participants.some((p: any) => p._id === data.buyerId || p._id === data.sellerId)
-      );
-
-      if (targetConv) {
-        const chatItem = sidebarChats.find((c: any) => c.id === targetConv._id);
-        if (chatItem) handleChatClick(chatItem);
-      }
-
-      sessionStorage.removeItem('pendingChatWithProduct');
+    const data = JSON.parse(pending);
+    setSharedProduct(data.product);
+    const targetConv = conversations.find(c => c.participants.some(p => p._id === data.buyerId));
+    if (targetConv) {
+      const buyer = targetConv.participants.find(p => p._id !== currentSellerId);
+      setSelectedChat({
+        id: targetConv._id,
+        name: buyer?.fullName || 'Buyer',
+        message: 'No messages yet',
+        time: '',
+        avatar: buyer?.profilePicture?.url || '/svgs/default-avatar.svg',
+        unread: 0,
+        online: true,
+        conv: targetConv,
+      });
     }
-  }, [conversations]);
+    sessionStorage.removeItem('pendingChatWithProduct');
+  }, [conversations, currentSellerId]);
 
-  // Fetch messages
+  // Load messages
   useEffect(() => {
     if (!selectedChat) {
       setMessages([]);
       return;
     }
-
-    const fetchMessages = async () => {
+    const load = async () => {
       try {
-        const res = await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}/messages`);
-        setMessages((res as any)?.messages || []);
+        const res: { messages: Message[] } = await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}/messages`);
+        setMessages(res.messages || []);
       } catch (err) {
-        console.error('Failed to load messages:', err);
+        console.error(err);
       }
     };
-    fetchMessages();
+    load();
   }, [selectedChat]);
 
-  const handleChatClick = (chat: any) => {
-    setSelectedChat(chat);
-    setShowActions(false);
-  };
-
-  const handleBack = () => {
-    setSelectedChat(null);
-    setShowActions(false);
-  };
-
-  const toggleActions = () => setShowActions(prev => !prev);
-  const openDeleteModal = () => { setShowActions(false); setShowDeleteModal(true); };
-  const handleDelete = () => { setSelectedChat(null); setShowDeleteModal(false); };
-
-  const getBuyer = (conv: Conversation) => {
-    return conv.participants.find(p => p._id !== currentSellerId) || conv.participants[0];
-  };
-
-  const getChatDisplay = () => {
-    if (!selectedChat?.conv) return null;
-    const buyer = getBuyer(selectedChat.conv);
-    return {
-      name: buyer?.fullName || 'Buyer',
-      avatar: buyer?.profilePicture?.url || '/svgs/default-avatar.svg',
-    };
-  };
+  const buyer = useMemo(() => {
+    return selectedChat?.conv.participants.find(p => p._id !== currentSellerId) || null;
+  }, [selectedChat, currentSellerId]);
 
   const handleSend = async () => {
     if (!message.trim() || !selectedChat) return;
-
     const text = message.trim();
     setMessage('');
 
     try {
       await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ body: text }),
       });
 
@@ -159,128 +128,131 @@ export default function StoresChatPage() {
         sender: currentSellerId!,
       };
       setMessages(prev => [...prev, newMsg]);
-
-      setConversations(prev => prev.map(c =>
-        c._id === selectedChat.id ? { ...c, lastMessageAt: new Date().toISOString() } : c
-      ));
-    } catch (err) {
-      alert('Failed to send');
+      setConversations(prev =>
+        prev.map(c => c._id === selectedChat.id ? { ...c, lastMessageAt: new Date().toISOString() } : c)
+      );
+    } catch (_err) { // FIX 2: Renamed 'err' to '_err' to avoid unused variable warning
+      alert('Failed to send message');
       setMessage(text);
     }
   };
 
-  const chatDisplay = getChatDisplay();
-
   const sidebarChats = useMemo(() => {
-    return [...conversations]
-      .sort((a, b) => {
-        const aTime = a.lastMessageAt || a.createdAt;
-        const bTime = b.lastMessageAt || b.createdAt;
-        return new Date(bTime).getTime() - new Date(aTime).getTime();
-      })
+    return conversations
+      .sort((a, b) => new Date(b.lastMessageAt || b.createdAt).getTime() - new Date(a.lastMessageAt || a.createdAt).getTime())
       .map(conv => {
-        const buyer = getBuyer(conv);
-        let lastMessageText = 'No messages yet';
-        if (selectedChat?.id === conv._id && messages.length > 0) {
-          lastMessageText = messages[messages.length - 1].body;
-        }
-
-        const time = conv.lastMessageAt
-          ? new Date(conv.lastMessageAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-          : '';
+        const buyer = conv.participants.find(p => p._id !== currentSellerId);
+        const lastMsg = selectedChat?.id === conv._id && messages.length > 0
+          ? messages[messages.length - 1].body
+          : 'No messages yet';
 
         return {
           id: conv._id,
-          name: buyer?.fullName || 'Unknown Buyer',
-          message: lastMessageText,
-          time,
-          online: true,
+          name: buyer?.fullName || 'Buyer',
+          message: lastMsg,
+          time: conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
           avatar: buyer?.profilePicture?.url || '/svgs/default-avatar.svg',
           unread: conv.unreadCounts?.[currentSellerId!] || 0,
+          online: true,
           conv,
         };
       });
   }, [conversations, selectedChat, messages, currentSellerId]);
 
   return (
-    <>
-      <div className="flex min-h-screen bg-gray-50">
-        <StoreSidebar />
-        <div className="flex-1 flex flex-col">
-          <DashboardHeader />
-          <main className="flex-1 p-4 md:p-6 lg:p-8">
-            <div className="flex h-full gap-0 relative max-w-7xl mx-auto">
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Fixed Desktop Sidebar */}
+      <div className="hidden lg:block fixed inset-y-0 left-0 z-50 w-64">
+        <SellerChatStoreSidebar />
+      </div>
 
-              <ChatSidebar
+      {/* Main Content */}
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+        {/* Fixed Header */}
+        <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
+          <DashboardHeader />
+        </div>
+
+        {/* Mobile Sidebar */}
+        <div className="lg:hidden">
+          <SellerChatStoreSidebar />
+        </div>
+
+        {/* Chat Container */}
+        <main className="flex-1 flex flex-col mt-16 lg:mt-16 overflow-hidden">
+          <div className="flex flex-1 overflow-hidden">
+
+            {/* Chat List - Hidden on mobile when chat is open */}
+            <div className={`
+              ${isMobile && selectedChat ? 'hidden' : 'flex'}
+              flex-col w-full lg:w-96 bg-white border-r border-gray-200
+            `}>
+              <SellerChatSidebar
                 chats={sidebarChats}
                 selectedChatId={selectedChat?.id || null}
-                onChatClick={handleChatClick}
-                isMobileOrTablet={isMobileOrTablet}
+                onChatClick={(chat) => setSelectedChat(chat)}
+                isMobileOrTablet={isMobile}
                 selectedChat={selectedChat}
               />
+            </div>
 
-              {selectedChat && chatDisplay && (
-                <div className={`flex-1 flex flex-col bg-white ${isMobileOrTablet ? 'w-full' : 'rounded-3xl shadow-lg'} overflow-hidden`}>
-
-                  {/* Header */}
-                  <div className="px-6 py-4 flex items-center gap-4 bg-white border-b border-gray-200">
-                    {isMobileOrTablet && (
-                      <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-lg">
-                        <ArrowLeft className="w-5 h-5" />
-                      </button>
-                    )}
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="relative">
-                        <Image
-                          src={chatDisplay.avatar}
-                          alt={chatDisplay.name}
-                          width={44}
-                          height={44}
-                          className="w-11 h-11 rounded-full object-cover border-2 border-white shadow-sm"
-                        />
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white" />
-                      </div>
-                      <div>
-                        <h2 className="font-semibold text-gray-900">{chatDisplay.name}</h2>
-                        <p className="text-xs text-green-600">Online</p>
+            {/* Chat Window - Full screen on mobile when selected */}
+            <div className={`
+              ${!selectedChat ? 'hidden lg:flex' : 'flex'}
+              flex-col flex-1 bg-white
+              ${isMobile ? 'fixed inset-0 z-30' : ''}
+            `}>
+              {selectedChat && buyer ? (
+                <>
+                  {/* Chat Header */}
+                  <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+                    <div className="flex items-center gap-3">
+                      {isMobile && (
+                        <button onClick={() => setSelectedChat(null)} className="p-2 hover:bg-gray-100 rounded-lg">
+                          <ArrowLeft className="w-6 h-6" />
+                        </button>
+                      )}
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <Image
+                            src={buyer.profilePicture?.url || '/svgs/default-avatar.svg'}
+                            alt={buyer.fullName}
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{buyer.fullName}</h3>
+                        </div>
                       </div>
                     </div>
-                    <button onClick={toggleActions} className="p-2 hover:bg-gray-100 rounded-lg">
-                      <MoreHorizontal className="h-5 w-5 text-gray-600" />
+                    <button onClick={() => setShowActions(true)} className="p-2 hover:bg-gray-100 rounded-lg">
+                      <MoreHorizontal className="w-5 h-5" />
                     </button>
                   </div>
 
-                  {/* Shared Product from Buyer */}
+                  {/* Shared Product */}
                   {sharedProduct && (
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
-                      <div className="flex items-center gap-4 max-w-2xl mx-auto bg-white rounded-2xl p-4 shadow-md">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100">
-                          <Image
-                            src={sharedProduct.image}
-                            alt={sharedProduct.name}
-                            width={80}
-                            height={80}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                    <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b">
+                      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm flex items-center gap-4 p-4">
+                        <Image src={sharedProduct.image} alt="" width={80} height={80} className="rounded-xl object-cover" />
                         <div className="flex-1">
-                          <h4 className="font-bold text-gray-900 truncate">{sharedProduct.name}</h4>
+                          <h4 className="font-bold truncate">{sharedProduct.name}</h4>
                           <p className="text-xl font-bold text-indigo-600">₦{sharedProduct.price.toLocaleString()}</p>
-                          <p className="text-sm text-gray-600">MOQ: {sharedProduct.moq} bags</p>
-                          <p className="text-xs text-blue-600 mt-1">Buyer is inquiring about this product</p>
+                          <p className="text-sm text-gray-600">MOQ: {sharedProduct.moq} units</p>
                         </div>
-                        <button onClick={() => setSharedProduct(null)} className="text-gray-500 hover:text-gray-700 text-2xl">
-                          ×
-                        </button>
+                        <button onClick={() => setSharedProduct(null)} className="text-2xl">×</button>
                       </div>
                     </div>
                   )}
 
                   {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50">
+                  <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
                     {messages.length === 0 ? (
                       <div className="text-center text-gray-500 mt-20">
-                        <p className="text-lg">No messages yet. Reply to the buyer!</p>
+                        <p>No messages yet. Start the conversation!</p>
                       </div>
                     ) : (
                       messages.map((msg, i) => {
@@ -289,25 +261,24 @@ export default function StoresChatPage() {
                         const isFirst = !prev || prev.sender !== msg.sender;
 
                         return (
-                          <div key={msg._id} className={`flex items-end gap-2 mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                          <div key={msg._id} className={`flex items-end gap-3 mb-4 ${isMe ? 'justify-end' : ''}`}>
                             {!isMe && isFirst && (
-                              <Image src={chatDisplay.avatar} alt="" width={32} height={32} className="w-8 h-8 rounded-full" />
+                              <Image
+                                src={buyer.profilePicture?.url || '/svgs/default-avatar.svg'}
+                                alt=""
+                                width={32}
+                                height={32}
+                                className="w-8 h-8 rounded-full"
+                              />
                             )}
-                            {!isMe && !isFirst && <div className="w-8 h-8" />}
-
-                            <div className={`relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
-                              isMe
-                                ? 'bg-indigo-600 text-white rounded-br-none'
-                                : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                            {!isMe && !isFirst && <div className="w-8" />}
+                            <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
+                              isMe ? 'bg-slate-900 text-white rounded-br-none' : 'bg-white rounded-bl-none'
                             }`}>
-                              <p className="text-sm leading-relaxed">{msg.body}</p>
+                              <p className="text-sm">{msg.body}</p>
                               <span className="text-xs opacity-70 block text-right mt-1">
                                 {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
-
-                              <div className={`absolute bottom-0 w-3 h-3 ${isMe ? 'right-0 -mr-1 bg-indigo-600' : 'left-0 -ml-1 bg-white'}`}
-                                style={{ clipPath: isMe ? 'polygon(100% 0%, 0% 100%, 100% 100%)' : 'polygon(0% 0%, 100% 100%, 0% 100%)' }}
-                              />
                             </div>
                           </div>
                         );
@@ -316,46 +287,56 @@ export default function StoresChatPage() {
                   </div>
 
                   {/* Input */}
-                  <div className="border-t border-gray-200 p-4 bg-white">
+                  <div className="p-4 bg-white">
                     <div className="flex items-center gap-3">
-                      <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
-                        <Paperclip className="h-5 w-5" />
-                      </button>
                       <input
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                         placeholder="Type a message..."
-                        className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                        className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
                       />
                       <button
                         onClick={handleSend}
                         disabled={!message.trim()}
-                        className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 disabled:opacity-50 transition"
+                        className="p-3 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 disabled:opacity-50"
                       >
-                        <Send className="h-5 w-5" />
+                        <Send className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {!isMobileOrTablet && !selectedChat && (
-                <div className="flex-1 flex items-center justify-center bg-gray-100 rounded-3xl">
+                </>
+              ) : (
+                /* Empty state - only visible on desktop or when no chat selected on mobile */
+                <div className="hidden lg:flex flex-1 items-center justify-center bg-gray-100">
                   <div className="text-center">
-                    <Image src="/svgs/emptyState-wholesale-svg.svg" alt="no messages" width={180} height={180} className="mx-auto mb-6 opacity-80" />
-                    <p className="text-gray-600 text-lg">No messages yet. Buyers will appear here.</p>
+                    <Image src="/svgs/emptyState-wholesale-svg.svg" alt="No chat" width={200} height={200} className="mx-auto mb-6 opacity-60" />
+                    <p className="text-gray-600 text-lg">Select a buyer to start chatting</p>
                   </div>
                 </div>
               )}
             </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
 
-      <ActionsModal show={showActions} onClose={() => setShowActions(false)} isMobileOrTablet={isMobileOrTablet} onDeleteClick={openDeleteModal} />
-      <DeleteModal show={showDeleteModal} onClose={() => setShowDeleteModal(false)} onConfirm={handleDelete} />
-    </>
+      {/* Modals */}
+      <ActionsModal show={showActions} onClose={() => setShowActions(false)} isMobileOrTablet={isMobile}
+        onDeleteClick={() => { setShowActions(false); setShowDeleteModal(true); }} />
+      <DeleteModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          if (selectedChat) {
+            setConversations(prev => prev.filter(c => c._id !== selectedChat.id));
+            setSelectedChat(null);
+          }
+          setShowDeleteModal(false);
+        }}
+        mode="delete"
+        itemName="this conversation"
+      />
+    </div>
   );
 }

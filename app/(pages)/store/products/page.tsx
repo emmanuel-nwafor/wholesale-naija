@@ -165,11 +165,19 @@ export default function SellersProductPage() {
 
   const handleViewProduct = (id: string) => {
     setDropdownOpen(null);
+
+    console.log("Viewing Product ID:", id);
+    localStorage.setItem("selectedProductId", id);
+
     router.push(`/store/products/${id}`);
   };
 
   const handleEditProduct = (productId: string) => {
     setDropdownOpen(null);
+
+    console.log("Editing Product ID:", productId);
+    localStorage.setItem("selectedProductId", productId);
+
     router.push(`/store/products/${productId}/edit`);
   };
 

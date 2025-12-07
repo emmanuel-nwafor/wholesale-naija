@@ -92,6 +92,10 @@ export default function LoginWithEmailModal({
     }
   };
 
+  // FIX: Removed the unused handleRedirect function (L95)
+  // The logic for redirecting is now assumed to be handled within SuccessModal or upon its closure.
+  // The original handleRedirect was:
+  /*
   const handleRedirect = () => {
     setShowSuccess(false);
     onClose();
@@ -101,6 +105,7 @@ export default function LoginWithEmailModal({
       router.push('/profile');
     }
   };
+  */
 
   return (
     <>
@@ -213,7 +218,7 @@ export default function LoginWithEmailModal({
           </div>
 
           <p className="mt-6 text-center text-xs text-gray-500">
-            By continuing you agree to Wholesale Naija's <br />
+            By continuing you agree to Wholesale Naija&apos;s <br />
             <a href="#" className="underline">
               Terms of Service
             </a>{' '}

@@ -1,4 +1,3 @@
-// app/profile/reviews/page.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -10,6 +9,25 @@ import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import Image from 'next/image';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 import DynamicHeader from '@/app/components/header/DynamicHeader';
+
+// --- NEW INTERFACES TO RESOLVE 'any' ERRORS ---
+
+interface RawSellerData {
+  _id: string;
+  store: {
+    name: string;
+    bannerUrl?: string;
+  };
+  isVerifiedSeller?: boolean; // Making optional to align with validation below
+  profilePicture?: { url: string };
+  // Assuming other properties exist but are not used
+}
+
+interface SellersApiResponse {
+  sellers: RawSellerData[];
+}
+
+// --- EXISTING INTERFACES ---
 
 interface Seller {
   _id: string;
@@ -56,12 +74,12 @@ export default function ProfileReviewsPage() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Fetch ALL sellers from /v1/users/sellers
+  // Fetch all sellers
   useEffect(() => {
     const fetchSellers = async () => {
       try {
         setLoadingSellers(true);
-        const res = await fetchWithToken<{ sellers: any[] }>(
+        const res = await fetchWithToken<SellersApiResponse>(
           '/v1/users/sellers'
         );
 
@@ -71,15 +89,15 @@ export default function ProfileReviewsPage() {
         }
 
         const validSellers = res.sellers
-          .filter((s: any) => s.store?.name)
-          .map((s: any) => ({
+          .filter((s: RawSellerData) => s.store?.name)
+          .map((s: RawSellerData): Seller => ({ 
             _id: s._id,
             store: {
               name: s.store.name,
               bannerUrl: s.store.bannerUrl || '',
             },
             isVerifiedSeller: s.isVerifiedSeller || false,
-            profilePicture: s.profilePicture || null,
+            profilePicture: s.profilePicture || undefined, 
           }));
 
         setAllSellers(validSellers);
@@ -93,7 +111,6 @@ export default function ProfileReviewsPage() {
     fetchSellers();
   }, []);
 
-  // Fetch REAL reviews written by user
   useEffect(() => {
     if (activeTab !== 'given') return;
 

@@ -5,18 +5,40 @@ import Header from '@/app/components/header/Header';
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
-import Spinner from '@/app/components/spinner/Spinner';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 import DynamicHeader from '@/app/components/header/DynamicHeader';
+import Image from 'next/image';
+
+// Interface
+interface ProfilePicture {
+  url: string;
+}
+
+interface UserData {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
+  profilePicture?: ProfilePicture;
+  dateOfBirth?: string;
+}
+
+interface ProfileResponse {
+  user: UserData;
+}
+
+interface UploadResponse {
+  uploaded: { url: string }[];
+}
 
 export default function BuyersProfilePage() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,8 +64,8 @@ export default function BuyersProfilePage() {
 
   const loadProfile = async () => {
     try {
-      setLoading(true);
-      const data = await fetchWithToken<any>('/auth/profile');
+      setIsLoading(true); 
+      const data = await fetchWithToken<ProfileResponse>('/auth/profile');
       const u = data.user;
       setForm({
         firstName: u.firstName || '',
@@ -53,10 +75,10 @@ export default function BuyersProfilePage() {
         profilePicture: u.profilePicture?.url || '',
         dateOfBirth: u.dateOfBirth || '',
       });
-    } catch (err) {
-      console.error(err);
+    } catch {
+      console.error('Failed to load profile');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -66,15 +88,15 @@ export default function BuyersProfilePage() {
     fd.append('file', file);
 
     try {
-      const res = await fetchWithToken<any>('/uploads/single', {
+      const res = await fetchWithToken<UploadResponse>('/uploads/single', {
         method: 'POST',
         body: fd,
       });
       setForm((prev) => ({
         ...prev,
-        profilePicture: res.uploaded[0].url + '?t=' + Date.now(),
+        profilePicture: res.uploaded?.[0]?.url ? res.uploaded[0].url + '?t=' + Date.now() : prev.profilePicture,
       }));
-    } catch (err) {
+    } catch { 
       alert('Upload failed');
     } finally {
       setUploading(false);
@@ -97,8 +119,12 @@ export default function BuyersProfilePage() {
       });
       setIsEditing(false);
       setShowSuccess(true);
+      // Ensure the component loads the newly saved data
+      loadProfile(); 
     } catch (err: any) {
-      alert(err.message || 'Failed to save profile');
+
+      const errorMsg = (err as { message?: string })?.message || 'Failed to save profile';
+      alert(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -155,13 +181,16 @@ export default function BuyersProfilePage() {
                     <div className="relative">
                       <div className="w-28 h-28 bg-gray-200 rounded-full flex items-center justify-center text-3xl font-bold text-gray-600">
                         {form.profilePicture ? (
-                          <img
+                          <Image 
                             src={form.profilePicture}
                             alt="Profile"
                             className="w-full h-full object-cover rounded-full"
+                            height={150}
+                            width={150}
                           />
                         ) : (
-                          'AA'
+                          // Display initials if no picture
+                          (form.firstName[0] || '') + (form.lastName[0] || '')
                         )}
                       </div>
                       {isEditing && (
@@ -197,17 +226,77 @@ export default function BuyersProfilePage() {
                   </div>
 
                   {/* Form */}
-                  <form className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {isLoading ? (
+                    <p className="text-gray-500">Loading profile data...</p>
+                  ) : (
+                    <form className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            First Name
+                          </label>
+                          <input
+                            type="text"
+                            value={form.firstName}
+                            onChange={(e) =>
+                              setForm({ ...form, firstName: e.target.value })
+                            }
+                            disabled={!isEditing}
+                            className={`w-full px-4 py-3.5 rounded-xl border transition ${
+                              isEditing
+                                ? 'border-gray-300 bg-white'
+                                : 'border-transparent bg-gray-50'
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            value={form.lastName}
+                            onChange={(e) =>
+                              setForm({ ...form, lastName: e.target.value })
+                            }
+                            disabled={!isEditing}
+                            className={`w-full px-4 py-3.5 rounded-xl border transition ${
+                              isEditing
+                                ? 'border-gray-300 bg-white'
+                                : 'border-transparent bg-gray-50'
+                            }`}
+                          />
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          First Name
+                          Date of Birth
                         </label>
                         <input
-                          type="text"
-                          value={form.firstName}
+                          type="date"
+                          value={form.dateOfBirth}
                           onChange={(e) =>
-                            setForm({ ...form, firstName: e.target.value })
+                            setForm({ ...form, dateOfBirth: e.target.value })
+                          }
+                          disabled={!isEditing}
+                          className={`w-full px-4 py-3.5 rounded-xl border transition ${
+                            isEditing
+                              ? 'border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                              : 'border-transparent bg-gray-50'
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          value={form.phone}
+                          onChange={(e) =>
+                            setForm({ ...form, phone: e.target.value })
                           }
                           disabled={!isEditing}
                           className={`w-full px-4 py-3.5 rounded-xl border transition ${
@@ -217,99 +306,43 @@ export default function BuyersProfilePage() {
                           }`}
                         />
                       </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Last Name
+                          Email Address
                         </label>
                         <input
-                          type="text"
-                          value={form.lastName}
-                          onChange={(e) =>
-                            setForm({ ...form, lastName: e.target.value })
-                          }
-                          disabled={!isEditing}
-                          className={`w-full px-4 py-3.5 rounded-xl border transition ${
-                            isEditing
-                              ? 'border-gray-300 bg-white'
-                              : 'border-transparent bg-gray-50'
-                          }`}
+                          type="email"
+                          value={form.email}
+                          disabled
+                          className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-transparent"
                         />
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Date of Birth
-                      </label>
-                      <input
-                        type="date"
-                        value={form.dateOfBirth}
-                        onChange={(e) =>
-                          setForm({ ...form, dateOfBirth: e.target.value })
-                        }
-                        disabled={!isEditing}
-                        className={`w-full px-4 py-3.5 rounded-xl border transition ${
-                          isEditing
-                            ? 'border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                            : 'border-transparent bg-gray-50'
-                        }`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        value={form.phone}
-                        onChange={(e) =>
-                          setForm({ ...form, phone: e.target.value })
-                        }
-                        disabled={!isEditing}
-                        className={`w-full px-4 py-3.5 rounded-xl border transition ${
-                          isEditing
-                            ? 'border-gray-300 bg-white'
-                            : 'border-transparent bg-gray-50'
-                        }`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        value={form.email}
-                        disabled
-                        className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-transparent"
-                      />
-                    </div>
-
-                    {isEditing && (
-                      <div className="flex justify-end gap-4 pt-6">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsEditing(false);
-                            loadProfile();
-                          }}
-                          className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleSave}
-                          disabled={saving}
-                          className="px-8 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 disabled:opacity-70"
-                        >
-                          {saving ? 'Saving...' : 'Save Changes'}
-                        </button>
-                      </div>
-                    )}
-                  </form>
+                      {isEditing && (
+                        <div className="flex justify-end gap-4 pt-6">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditing(false);
+                              loadProfile();
+                            }}
+                            className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="px-8 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 disabled:opacity-70"
+                          >
+                            {saving ? 'Saving...' : 'Save Changes'}
+                          </button>
+                        </div>
+                      )}
+                    </form>
+                  )}
                 </div>
               </div>
             </div>

@@ -234,8 +234,9 @@ export default function AddProductVariantPage() {
       setStep(1);
 
       router.push('/store/products');
-    } catch (err: any) {
-      alert(err.message || 'Product upload failed');
+    } catch (err: unknown) { // FIX: Changed 'any' to 'unknown'
+      const message = (err instanceof Error) ? err.message : 'Product upload failed (Unknown error)';
+      alert(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -309,9 +310,12 @@ export default function AddProductVariantPage() {
                               className="cursor-pointer"
                             >
                               {mainImageUrl ? (
-                                <img
+                                <Image // FIX: Replaced <img> with optimized <Image> component
                                   src={mainImageUrl}
-                                  alt="main"
+                                  alt="Main product image"
+                                  width={176} // w-44 equivalent
+                                  height={176} // h-44 equivalent
+                                  priority
                                   className="w-full max-w-44 h-44 object-cover rounded-xl border"
                                 />
                               ) : (

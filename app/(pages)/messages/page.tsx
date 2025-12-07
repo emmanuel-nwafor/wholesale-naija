@@ -13,7 +13,7 @@ import { getCurrentSellerId } from '@/app/utils/auth';
 
 interface Participant {
   _id: string;
-  fullName: string;
+  fullName?: string;
   profilePicture?: { url: string };
   store?: { name: string; _id: string };
 }
@@ -34,11 +34,22 @@ interface Message {
   sender: string;
 }
 
+interface Chat {
+  id: string;
+  name: string;
+  message: string;
+  time: string;
+  online: boolean;
+  avatar: string;
+  unread: number;
+  conv: Conversation;
+}
+
 type ModalMode = 'delete' | 'block' | 'unblock';
 
 export default function BuyersChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
@@ -56,40 +67,40 @@ export default function BuyersChatPage() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Fetch conversations
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const res = await fetchWithToken('/v1/chat/conversations');
-        setConversations((res as any)?.conversations || []);
-      } catch (err) {
-        console.error('Failed to load chats:', err);
+        const res = await fetchWithToken<{ conversations: Conversation[] }>('/v1/chat/conversations');
+        setConversations(res.conversations || []);
+      } catch {
+        setConversations([]);
       }
     };
     fetchConversations();
   }, []);
 
-  // Handle direct open from product page
   useEffect(() => {
     const targetSellerId = sessionStorage.getItem('pendingChatSellerId');
     if (!targetSellerId || conversations.length === 0) return;
 
     sessionStorage.removeItem('pendingChatSellerId');
 
-    const existingConv = conversations.find(conv =>
-      conv.participants.some(p => p._id === currentUserId) &&
-      conv.participants.some(p => p._id === targetSellerId)
+    const existingConv = conversations.find(
+      (conv) =>
+        conv.participants.some((p) => p._id === currentUserId) &&
+        conv.participants.some((p) => p._id === targetSellerId)
     );
 
     if (existingConv) {
-      const other = existingConv.participants.find(p => p._id !== currentUserId);
-      const chatItem = {
+      const other = existingConv.participants.find((p) => p._id !== currentUserId);
+      const chatItem: Chat = {
         id: existingConv._id,
         name: other?.store?.name || other?.fullName || 'Seller',
         message: 'No messages yet',
         time: '',
         online: true,
         avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
+        unread: existingConv.unreadCounts?.[currentUserId!] || 0,
         conv: existingConv,
       };
       handleChatClick(chatItem);
@@ -98,34 +109,33 @@ export default function BuyersChatPage() {
 
     const createAndOpen = async () => {
       try {
-        const res = await fetchWithToken('/v1/chat/conversations', {
+        const res = await fetchWithToken<{ conversation: Conversation }>('/v1/chat/conversations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ participantIds: [targetSellerId] }),
         });
-        const newConv = (res as any).conversation || res;
-        setConversations(prev => [newConv, ...prev]);
+        const newConv = res.conversation;
+        setConversations((prev) => [newConv, ...prev]);
 
-        const other = newConv.participants.find((p: any) => p._id !== currentUserId);
-        const chatItem = {
+        const other = newConv.participants.find((p) => p._id !== currentUserId);
+        const chatItem: Chat = {
           id: newConv._id,
           name: other?.store?.name || other?.fullName || 'Seller',
           message: 'No messages yet',
           time: '',
           online: true,
           avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
+          unread: 0,
           conv: newConv,
         };
         handleChatClick(chatItem);
-      } catch (err) {
-        console.error('Failed to create chat:', err);
+      } catch {
         alert('Could not start chat. Try again.');
       }
     };
     createAndOpen();
   }, [conversations, currentUserId]);
 
-  // Fetch messages
   useEffect(() => {
     if (!selectedChat) {
       setMessages([]);
@@ -133,25 +143,26 @@ export default function BuyersChatPage() {
     }
     const fetchMessages = async () => {
       try {
-        const res = await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}/messages`);
-        setMessages((res as any)?.messages || []);
-      } catch (err) {
-        console.error('Failed to load messages:', err);
+        const res = await fetchWithToken<{ messages: Message[] }>(
+          `/v1/chat/conversations/${selectedChat.id}/messages`
+        );
+        setMessages(res.messages || []);
+      } catch {
+        setMessages([]);
       }
     };
     fetchMessages();
   }, [selectedChat]);
 
-  const handleChatClick = (chat: any) => {
+  const handleChatClick = (chat: Chat) => {
     setSelectedChat(chat);
     setShowActions(false);
   };
 
   const handleBack = () => setSelectedChat(null);
 
-  const getOtherParticipant = (conv: Conversation) => {
-    return conv.participants.find(p => p._id !== currentUserId) || conv.participants[0];
-  };
+  const getOtherParticipant = (conv: Conversation) =>
+    conv.participants.find((p) => p._id !== currentUserId) || conv.participants[0];
 
   const getChatDisplay = () => {
     if (!selectedChat?.conv) return null;
@@ -166,25 +177,20 @@ export default function BuyersChatPage() {
 
   const chatDisplay = getChatDisplay();
 
-  // Handle delete/block/unblock actions
   const handleConfirmAction = async () => {
     if (!selectedChat || !chatDisplay?.sellerId) return;
 
     setLoading(true);
-
     try {
       if (confirmMode === 'delete') {
-        // Delete conversation (you may have a DELETE endpoint)
         await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}`, { method: 'DELETE' });
-        setConversations(prev => prev.filter(c => c._id !== selectedChat.id));
+        setConversations((prev) => prev.filter((c) => c._id !== selectedChat.id));
         setSelectedChat(null);
       } else {
         const method = confirmMode === 'block' ? 'POST' : 'DELETE';
         await fetchWithToken(`/v1/users/me/block/${chatDisplay.sellerId}`, { method });
         alert(confirmMode === 'block' ? 'User blocked' : 'User unblocked');
       }
-    } catch (err) {
-      alert(`Failed to ${confirmMode === 'block' ? 'block' : confirmMode === 'unblock' ? 'unblock' : 'delete'}`);
     } finally {
       setLoading(false);
       setShowConfirmModal(false);
@@ -208,14 +214,13 @@ export default function BuyersChatPage() {
         createdAt: new Date().toISOString(),
         sender: currentUserId!,
       };
-      setMessages(prev => [...prev, newMsg]);
-      setConversations(prev => prev.map(c =>
-        c._id === selectedChat.id
-          ? { ...c, lastMessageAt: new Date().toISOString() }
-          : c
-      ));
-    } catch (err) {
-      alert('Failed to send message');
+      setMessages((prev) => [...prev, newMsg]);
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === selectedChat.id ? { ...c, lastMessageAt: new Date().toISOString() } : c
+        )
+      );
+    } catch {
       setMessage(text);
     }
   };
@@ -227,23 +232,24 @@ export default function BuyersChatPage() {
         const bTime = b.lastMessageAt || b.createdAt;
         return new Date(bTime).getTime() - new Date(aTime).getTime();
       })
-      .map(conv => {
-        const other = conv.participants.find(p => p._id !== currentUserId);
-        const lastMsg = selectedChat?.id === conv._id && messages.length > 0
-          ? messages[messages.length - 1].body
-          : 'No messages yet';
+      .map((conv) => {
+        const other = conv.participants.find((p) => p._id !== currentUserId);
+        const lastMsg =
+          selectedChat?.id === conv._id && messages.length > 0
+            ? messages[messages.length - 1].body
+            : 'No messages yet';
         return {
           id: conv._id,
           name: other?.store?.name || other?.fullName || 'Seller',
           message: lastMsg,
           time: conv.lastMessageAt
-            ? new Date(conv.lastMessageAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            ? new Date(conv.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             : '',
           online: true,
           avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
           unread: conv.unreadCounts?.[currentUserId!] || 0,
           conv,
-        };
+        } as Chat;
       });
   }, [conversations, selectedChat, messages, currentUserId]);
 
@@ -264,7 +270,11 @@ export default function BuyersChatPage() {
               />
 
               {selectedChat && chatDisplay && (
-                <div className={`flex-1 flex flex-col bg-white ${isMobileOrTablet ? 'w-full' : 'rounded-r-3xl shadow-lg'} overflow-hidden`}>
+                <div
+                  className={`flex-1 flex flex-col bg-white ${
+                    isMobileOrTablet ? 'w-full' : 'rounded-r-3xl shadow-lg'
+                  } overflow-hidden`}
+                >
                   {/* Chat Header */}
                   <div className="px-6 py-4 flex items-center gap-4 bg-white border-b border-gray-200">
                     {isMobileOrTablet && (
@@ -309,23 +319,46 @@ export default function BuyersChatPage() {
                         const isFirst = !prev || prev.sender !== msg.sender;
 
                         return (
-                          <div key={msg._id} className={`flex items-end gap-2 mb-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                          <div
+                            key={msg._id}
+                            className={`flex items-end gap-2 mb-2 ${
+                              isMe ? 'justify-end' : 'justify-start'
+                            }`}
+                          >
                             {!isMe && isFirst && (
-                              <Image src={chatDisplay.avatar} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
+                              <Image
+                                src={chatDisplay.avatar}
+                                alt=""
+                                width={32}
+                                height={32}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
                             )}
                             {!isMe && !isFirst && <div className="w-8 h-8" />}
 
-                            <div className={`relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
-                              isMe
-                                ? 'bg-slate-900 text-white rounded-br-none'
-                                : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
-                            }`}>
+                            <div
+                              className={`relative max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
+                                isMe
+                                  ? 'bg-slate-900 text-white rounded-br-none'
+                                  : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
+                              }`}
+                            >
                               <p className="text-sm leading-relaxed">{msg.body}</p>
                               <span className="text-xs opacity-70 block text-right mt-1">
-                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {new Date(msg.createdAt).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
                               </span>
-                              <div className={`absolute bottom-0 w-3 h-3 ${isMe ? 'right-0 -mr-1 bg-slate-900' : 'left-0 -ml-1 bg-white'}`}
-                                style={{ clipPath: isMe ? 'polygon(100% 0%, 0% 100%, 100% 100%)' : 'polygon(0% 0%, 100% 100%, 0% 100%)' }}
+                              <div
+                                className={`absolute bottom-0 w-3 h-3 ${
+                                  isMe ? 'right-0 -mr-1 bg-slate-900' : 'left-0 -ml-1 bg-white'
+                                }`}
+                                style={{
+                                  clipPath: isMe
+                                    ? 'polygon(100% 0%, 0% 100%, 100% 100%)'
+                                    : 'polygon(0% 0%, 100% 100%, 0% 100%)',
+                                }}
                               />
                             </div>
                           </div>
@@ -364,7 +397,13 @@ export default function BuyersChatPage() {
               {!isMobileOrTablet && !selectedChat && (
                 <div className="flex-1 flex items-center justify-center bg-gray-100 rounded-3xl">
                   <div className="text-center">
-                    <Image src="/svgs/emptyState-wholesale-svg.svg" alt="no messages" width={180} height={180} className="mx-auto mb-6 opacity-80" />
+                    <Image
+                      src="/svgs/emptyState-wholesale-svg.svg"
+                      alt="no messages"
+                      width={180}
+                      height={180}
+                      className="mx-auto mb-6 opacity-80"
+                    />
                     <p className="text-gray-600 text-lg">Select a chat to start messaging</p>
                   </div>
                 </div>
@@ -388,11 +427,11 @@ export default function BuyersChatPage() {
           sellerId={chatDisplay.sellerId}
           storeId={chatDisplay.storeId}
           sellerName={chatDisplay.name}
-          isBlocked={false} // You can enhance this later with real blocked status
+          isBlocked={false}
         />
       )}
 
-      {/* Reusable Confirmation Modal */}
+      {/* Confirmation Modal */}
       <DeleteModal
         show={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}

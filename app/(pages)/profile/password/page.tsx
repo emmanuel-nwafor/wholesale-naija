@@ -5,49 +5,19 @@ import { Menu } from 'lucide-react';
 import Header from '@/app/components/header/Header';
 import BuyersProfileSidebar from '@/app/components/sidebar/BuyersProfileSidebar';
 import ChangePasswordModal from '@/app/components/auth/modals/ChangePasswordModal';
-import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import CarouselBanner from '@/app/components/carousels/CarouselBanner';
 import DynamicHeader from '@/app/components/header/DynamicHeader';
-
-interface UserProfile {
-  fullName: string;
-  email: string;
-  phone: string;
-  store?: {
-    name: string;
-    contactPhone?: string;
-  };
-}
 
 export default function BuyersProfilePasswordPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
-  }, []);
-
-  // Fetch profile data from the same API as sellers
-  const loadProfile = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchWithToken<{ user: UserProfile }>('/auth/profile');
-      setProfile(data.user);
-    } catch (err) {
-      console.error('Failed to fetch profile:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadProfile();
   }, []);
 
   return (
@@ -93,7 +63,7 @@ export default function BuyersProfilePasswordPage() {
                 <div className="flex-1 rounded-3xl p-6 md:p-8 bg-white">
                   <h1 className="text-xl font-bold mb-8">Password Setting</h1>
 
-                  {/* Display profile info */}
+                  {/* Display profile info (Placeholder text remains) */}
                   <div className="space-y-4 max-w-lg">
                     <p className="text-gray-600">
                       To keep your account secure, you can change your password

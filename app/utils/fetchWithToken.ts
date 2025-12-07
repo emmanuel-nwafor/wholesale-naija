@@ -1,4 +1,5 @@
 // utils/fetchWithToken.ts
+
 export interface FetchWithTokenOptions extends RequestInit {
   headers?: Record<string, string>;
   timeout?: number;
@@ -9,8 +10,7 @@ export async function fetchWithToken<T = unknown>(
   endpoint: string,
   options: FetchWithTokenOptions = {}
 ): Promise<T> {
-  const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const BASE_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -44,26 +44,35 @@ export async function fetchWithToken<T = unknown>(
 
     if (!res.ok) {
       const errorText = await res.text();
+
+      if (res.status === 401 && !token && options.onShowLoginAlert) {
+        options.onShowLoginAlert();
+        throw new Error('login-required');
+      }
+
       throw new Error(
         `Request failed (${res.status}): ${errorText || res.statusText}`
       );
     }
 
     const contentType = res.headers.get('content-type') || '';
+
     if (contentType.includes('application/json')) {
       return (await res.json()) as T;
     }
 
-    return (await res.text()) as T;
-  } catch (err: any) {
-    if (!token || err.name === 'AbortError') {
-      console.warn('FetchWithToken: No token or request timed out');
-      if (options.onShowLoginAlert) options.onShowLoginAlert();
-      throw new Error('login-required');
+    return (await res.text()) as unknown as T;
+  } catch (err: unknown) {
+    const error = err as Error; 
+    
+    if (error.name === 'AbortError') {
+      console.warn('Request timed out');
+      throw new Error('Request timeout. Please try again.');
     }
 
     console.error('FetchWithToken error:', err);
-    throw err instanceof Error ? err : new Error('Unknown error occurred');
+
+    throw err instanceof Error ? err : new Error('Network error');
   } finally {
     clearTimeout(timeoutId);
   }
