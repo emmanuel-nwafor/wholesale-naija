@@ -19,7 +19,8 @@ export default function BuyCoins() {
 
   // 1 coin = ₦500 → coins = amount / 500
   const coinsReceived = amount ? Math.floor(Number(amount) / 500) : 0;
-  const isValidAmount = amount && Number(amount) >= minAmount && Number(amount) % 500 === 0;
+  const isValidAmount =
+    amount && Number(amount) >= minAmount && Number(amount) % 500 === 0;
 
   const handleProceed = async () => {
     if (!isValidAmount || loading) return;
@@ -49,13 +50,16 @@ export default function BuyCoins() {
       if (response?.success && response.init?.data?.authorization_url) {
         window.location.href = response.init.data.authorization_url;
       } else {
-        throw new Error(response?.init?.message || 'Payment failed to initialize');
+        throw new Error(
+          response?.init?.message || 'Payment failed to initialize'
+        );
       }
     } catch (error: unknown) {
       console.error('Payment initiation failed:', error);
-      const message = error instanceof Error
-        ? error.message
-        : 'Unable to connect. Please try again.';
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Unable to connect. Please try again.';
       setError(message);
     } finally {
       setLoading(false);
@@ -84,7 +88,12 @@ export default function BuyCoins() {
             {/* Coin Rate */}
             <div className="bg-gradient-to-r from-blue-50 to-slate-50 rounded-2xl py-5 text-center border border-gray-200">
               <div className="flex items-center justify-center gap-3 text-lg font-semibold text-amber-900">
-                <Image src="/svgs/coin-1.svg" alt="coin" height={50} width={50} />
+                <Image
+                  src="/svgs/coin-1.svg"
+                  alt="coin"
+                  height={50}
+                  width={50}
+                />
                 <span>1 coin = ₦500</span>
               </div>
             </div>
@@ -110,18 +119,26 @@ export default function BuyCoins() {
                   Minimum amount is ₦500
                 </p>
               )}
-              {amount && Number(amount) % 500 !== 0 && Number(amount) >= minAmount && (
-                <p className="text-amber-700 text-xs mt-2 text-center font-medium">
-                  Amount must be in multiples of ₦500 (e.g. 500, 1000, 1500...)
-                </p>
-              )}
+              {amount &&
+                Number(amount) % 500 !== 0 &&
+                Number(amount) >= minAmount && (
+                  <p className="text-amber-700 text-xs mt-2 text-center font-medium">
+                    Amount must be in multiples of ₦500 (e.g. 500, 1000,
+                    1500...)
+                  </p>
+                )}
             </div>
 
             {/* You will receive */}
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl py-6 text-center border border-emerald-200">
               <p className="text-sm text-gray-600 mb-3">You will receive</p>
               <div className="flex items-center justify-center gap-4">
-                <Image src="/svgs/coin-1.svg" alt="coins" height={56} width={56} />
+                <Image
+                  src="/svgs/coin-1.svg"
+                  alt="coins"
+                  height={56}
+                  width={56}
+                />
                 <span className="text-5xl font-bold text-gray-700">
                   {coinsReceived}
                 </span>

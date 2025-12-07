@@ -13,7 +13,7 @@ interface LeaveReviewModalProps {
   sellerName?: string;
   sellerVerified?: boolean;
   // storeBannerUrl?: string; // REMOVED: Unused property from interface
-  storeProfileImageUrl?: string; 
+  storeProfileImageUrl?: string;
   onSuccess?: () => void;
 }
 
@@ -22,7 +22,7 @@ export default function LeaveReviewModal({
   onClose,
   sellerName = 'This Store',
   sellerVerified = false,
-  storeProfileImageUrl = '', 
+  storeProfileImageUrl = '',
 }: LeaveReviewModalProps) {
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
@@ -106,7 +106,7 @@ export default function LeaveReviewModal({
             </div>
             <div className="flex items-end gap-4">
               {/* FIX: Added 'relative' class to container for Image fill mode */}
-              <div className="w-20 h-20 bg-white rounded-full p-1 shadow-lg relative"> 
+              <div className="w-20 h-20 bg-white rounded-full p-1 shadow-lg relative">
                 {storeProfileImageUrl ? (
                   // FIX: Replaced <img> with <Image />
                   <Image
@@ -185,7 +185,7 @@ export default function LeaveReviewModal({
                     className="transition-transform hover:scale-110 active:scale-95"
                   >
                     <Star
-                      className={`w-14 h-14 drop-shadow-md transition-all ${ 
+                      className={`w-14 h-14 drop-shadow-md transition-all ${
                         star <= (hoveredStar || rating)
                           ? 'fill-yellow-400 text-yellow-400'
                           : 'text-gray-300'

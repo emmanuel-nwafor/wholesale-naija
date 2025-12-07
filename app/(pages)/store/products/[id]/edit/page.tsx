@@ -45,7 +45,7 @@ export default function ProductEditPage() {
       ? localStorage.getItem('selectedProductId')
       : null;
 
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   const [saving, setSaving] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
@@ -54,7 +54,7 @@ export default function ProductEditPage() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [moq, setMoq] = useState('');
-  const [_status, setStatus] = useState(true); 
+  const [_status, setStatus] = useState(true);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCat, setSelectedCat] = useState('');
@@ -133,14 +133,15 @@ export default function ProductEditPage() {
         setSelectedBrand('');
       }
     }
-  }, [selectedCat, categories, selectedSub]); 
+  }, [selectedCat, categories, selectedSub]);
 
   useEffect(() => {
     if (selectedSub && subcategories.length > 0) {
       const sub = subcategories.find((s) => s.name === selectedSub);
       const subBrands: Brand[] = sub?.brands || [];
       setBrands(subBrands);
-      if (!subBrands.find((b) => b.name === selectedBrand)) setSelectedBrand('');
+      if (!subBrands.find((b) => b.name === selectedBrand))
+        setSelectedBrand('');
     }
   }, [selectedSub, subcategories, selectedBrand]);
 

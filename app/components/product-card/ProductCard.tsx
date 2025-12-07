@@ -7,9 +7,9 @@ import Link from 'next/link';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
 interface Review {
-    _id: string;
-    rating: number;
-    comment: string;
+  _id: string;
+  rating: number;
+  comment: string;
 }
 
 interface ProductCardProps {
@@ -19,8 +19,8 @@ interface ProductCardProps {
     _id: string;
     name: string;
     price: number;
-    images?: string[]; 
-    moq?: string | number; 
+    images?: string[];
+    moq?: string | number;
     verified?: boolean;
     seller?: {
       _id?: string;
@@ -50,7 +50,7 @@ export default function ProductCard({
   const sellerId = p?.seller?._id;
 
   useEffect(() => {
-    if (loading || !sellerId) return; 
+    if (loading || !sellerId) return;
 
     const fetchReviews = async () => {
       try {
@@ -58,7 +58,7 @@ export default function ProductCard({
           reviews?: Review[];
           avgRating?: number | null;
         }>(`/v1/sellers/${sellerId}/reviews`);
-        
+
         setAvgRating(res?.avgRating ?? null);
         setReviewsCount(res?.reviews?.length ?? 0);
       } catch (err) {
@@ -101,8 +101,8 @@ export default function ProductCard({
     type === 'featured'
       ? 'Featured'
       : type === 'popular'
-      ? 'Popular'
-      : undefined;
+        ? 'Popular'
+        : undefined;
 
   return (
     <Link href={`/product/${p!._id}`}>
@@ -118,7 +118,7 @@ export default function ProductCard({
           <Image
             src={mainImage}
             alt={p!.name}
-            sizes="(max-width: 640px) 50vw, 300px" 
+            sizes="(max-width: 640px) 50vw, 300px"
             width={300}
             height={300}
             className="w-full h-full object-cover rounded-xl"
@@ -140,7 +140,7 @@ export default function ProductCard({
           </div>
 
           <div className="flex-col items-center justify-between">
-            <p className="text-xs text-gray-500">MOQ: {p!.moq ?? 'N/A'}</p> 
+            <p className="text-xs text-gray-500">MOQ: {p!.moq ?? 'N/A'}</p>
 
             <div className="flex items-center justify-between mt-3">
               <span className="flex text-xs text-gray-400 items-center gap-1">

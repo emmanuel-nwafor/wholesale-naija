@@ -58,10 +58,10 @@ export default function SignupWithEmailModal({
       // Success, call parent callback
       // setShowSuccess(true); // Removed as it was unused
       if (onContinue) onContinue(email);
-    } catch (error: unknown) { // FIX: Changed 'err: any' to 'error: unknown' (L60)
-      const message = error instanceof Error
-        ? error.message
-        : 'Something went wrong';
+    } catch (error: unknown) {
+      // FIX: Changed 'err: any' to 'error: unknown' (L60)
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong';
       setError(message);
     } finally {
       setLoading(false);

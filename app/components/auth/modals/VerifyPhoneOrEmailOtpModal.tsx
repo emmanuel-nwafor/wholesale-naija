@@ -101,10 +101,9 @@ export default function VerifyPhoneOrEmailOtpModal({
 
       // Success → trigger parent callback
       onVerified?.();
-    } catch (error: unknown) { 
-      const message = error instanceof Error
-        ? error.message
-        : 'Something went wrong';
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong';
       setError(message);
     } finally {
       setLoading(false);
@@ -140,7 +139,9 @@ export default function VerifyPhoneOrEmailOtpModal({
           <div className="text-5xl mb-4">{type === 'phone' ? '☎️' : '✉️'}</div>
 
           <p className="text-gray-600 text-sm">
-            We&apos;ve sent an OTP to your {type === 'phone' ? 'number' : 'email'}{' '} {/* FIX: Escaped apostrophe (L140) */}
+            We&apos;ve sent an OTP to your{' '}
+            {type === 'phone' ? 'number' : 'email'}{' '}
+            {/* FIX: Escaped apostrophe (L140) */}
             ending in <span className="font-medium">{lastFour}</span>
           </p>
 
@@ -180,7 +181,7 @@ export default function VerifyPhoneOrEmailOtpModal({
           </button>
 
           <button className="text-sm text-gray-600 mt-4 block">
-            Didn&apos;t get the code? Resend in 30s 
+            Didn&apos;t get the code? Resend in 30s
           </button>
         </div>
       </motion.div>

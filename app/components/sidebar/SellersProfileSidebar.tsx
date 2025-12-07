@@ -11,7 +11,7 @@ import {
   User,
   X,
   Store,
-  LucideIcon, 
+  LucideIcon,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -21,7 +21,7 @@ import DeleteAccountPasswordModal from '@/app/components/auth/modals/DeleteAccou
 interface SidebarItem {
   icon: LucideIcon;
   label: string;
-  href?: string; 
+  href?: string;
   danger?: boolean;
 }
 

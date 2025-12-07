@@ -59,15 +59,19 @@ export default function NewProducts() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {loading
-            ? Array.from({ length: placeholderCount }).map((_, i) => (
-                <ProductCard key={i} loading={true} />
-              ))
-            : products.length === 0
-            ? <p className="text-gray-600 py-10 col-span-full text-center">No new products available.</p>
-            : products.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
+          {loading ? (
+            Array.from({ length: placeholderCount }).map((_, i) => (
+              <ProductCard key={i} loading={true} />
+            ))
+          ) : products.length === 0 ? (
+            <p className="text-gray-600 py-10 col-span-full text-center">
+              No new products available.
+            </p>
+          ) : (
+            products.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))
+          )}
         </div>
       </div>
     </section>

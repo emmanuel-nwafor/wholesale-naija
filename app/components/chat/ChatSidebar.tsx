@@ -38,8 +38,8 @@ export default function ChatSidebar({
         isMobileOrTablet && selectedChat
           ? 'hidden'
           : isMobileOrTablet
-          ? 'w-full'
-          : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-xs'
+            ? 'w-full'
+            : 'w-96 rounded-tl-3xl rounded-bl-3xl shadow-xs'
       }`}
     >
       <div className="p-4 mb-5 border-b border-gray-200">
@@ -89,10 +89,14 @@ export default function ChatSidebar({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-sm truncate">{chat.name}</h3>
+                    <h3 className="font-medium text-sm truncate">
+                      {chat.name}
+                    </h3>
                     <span className="text-xs text-gray-500">{chat.time}</span>
                   </div>
-                  <p className="text-sm text-gray-600 truncate">{chat.message}</p>
+                  <p className="text-sm text-gray-600 truncate">
+                    {chat.message}
+                  </p>
 
                   {/* Unread badge */}
                   {chat.unread > 0 && (

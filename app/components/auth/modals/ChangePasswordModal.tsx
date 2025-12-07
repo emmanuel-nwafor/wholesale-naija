@@ -41,10 +41,10 @@ export default function ChangePasswordModal({
         body: JSON.stringify({ email }),
       });
       setStep(2);
-    } catch (error: unknown) { // FIX: Changed 'err: any' to 'error: unknown' (L44)
-      const message = error instanceof Error
-        ? error.message
-        : 'Failed to send code';
+    } catch (error: unknown) {
+      // FIX: Changed 'err: any' to 'error: unknown' (L44)
+      const message =
+        error instanceof Error ? error.message : 'Failed to send code';
       setError(message);
     } finally {
       setLoading(false);
@@ -69,11 +69,11 @@ export default function ChangePasswordModal({
       });
       setShowSuccess(true);
       // NOTE: Intentional side effect: delay closure for success message
-      setTimeout(() => onClose(), 1800); 
-    } catch (error: unknown) { // FIX: Changed 'err: any' to 'error: unknown' (L69)
-      const message = error instanceof Error
-        ? error.message
-        : 'Wrong or expired code';
+      setTimeout(() => onClose(), 1800);
+    } catch (error: unknown) {
+      // FIX: Changed 'err: any' to 'error: unknown' (L69)
+      const message =
+        error instanceof Error ? error.message : 'Wrong or expired code';
       setError(message);
     } finally {
       setLoading(false);

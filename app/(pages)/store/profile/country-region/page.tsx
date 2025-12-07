@@ -61,7 +61,7 @@ export default function SellerProfileCountryRegion() {
         setSelectedArea(addr.street || '');
       } catch (error) {
         // FIX: Changed 'err' to 'error' and removed variable access to satisfy unused variable linting (L47)
-        console.error('Failed to load address', error); 
+        console.error('Failed to load address', error);
       } finally {
         setLoading(false);
       }
@@ -225,8 +225,8 @@ export default function SellerProfileCountryRegion() {
           modalStep === 'state'
             ? 'Select State'
             : modalStep === 'lga'
-            ? `LGA in ${selectedState}`
-            : `Area in ${selectedLGA}`
+              ? `LGA in ${selectedState}`
+              : `Area in ${selectedLGA}`
         }
         isMobile={isMobile}
         currentStep={modalStep}

@@ -38,7 +38,7 @@ export default function BuyersProfilePage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +64,7 @@ export default function BuyersProfilePage() {
 
   const loadProfile = async () => {
     try {
-      setIsLoading(true); 
+      setIsLoading(true);
       const data = await fetchWithToken<ProfileResponse>('/auth/profile');
       const u = data.user;
       setForm({
@@ -94,9 +94,11 @@ export default function BuyersProfilePage() {
       });
       setForm((prev) => ({
         ...prev,
-        profilePicture: res.uploaded?.[0]?.url ? res.uploaded[0].url + '?t=' + Date.now() : prev.profilePicture,
+        profilePicture: res.uploaded?.[0]?.url
+          ? res.uploaded[0].url + '?t=' + Date.now()
+          : prev.profilePicture,
       }));
-    } catch { 
+    } catch {
       alert('Upload failed');
     } finally {
       setUploading(false);
@@ -120,10 +122,10 @@ export default function BuyersProfilePage() {
       setIsEditing(false);
       setShowSuccess(true);
       // Ensure the component loads the newly saved data
-      loadProfile(); 
+      loadProfile();
     } catch (err: any) {
-
-      const errorMsg = (err as { message?: string })?.message || 'Failed to save profile';
+      const errorMsg =
+        (err as { message?: string })?.message || 'Failed to save profile';
       alert(errorMsg);
     } finally {
       setSaving(false);
@@ -181,7 +183,7 @@ export default function BuyersProfilePage() {
                     <div className="relative">
                       <div className="w-28 h-28 bg-gray-200 rounded-full flex items-center justify-center text-3xl font-bold text-gray-600">
                         {form.profilePicture ? (
-                          <Image 
+                          <Image
                             src={form.profilePicture}
                             alt="Profile"
                             className="w-full h-full object-cover rounded-full"

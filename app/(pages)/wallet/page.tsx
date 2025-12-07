@@ -65,9 +65,13 @@ export default function Wallet() {
                 width={50}
               />
               {loading ? (
-                <span className="text-5xl font-bold text-gray-900 animate-pulse">...</span>
+                <span className="text-5xl font-bold text-gray-900 animate-pulse">
+                  ...
+                </span>
               ) : (
-                <span className="text-5xl font-bold text-gray-900">{balance}</span>
+                <span className="text-5xl font-bold text-gray-900">
+                  {balance}
+                </span>
               )}
             </div>
 
@@ -81,7 +85,12 @@ export default function Wallet() {
           {/* Coin Rate */}
           <div className="mt-4 p-6 bg-white rounded-xl shadow-sm">
             <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-              <Image src="/svgs/coin-1.svg" alt="coins" height={20} width={20} />
+              <Image
+                src="/svgs/coin-1.svg"
+                alt="coins"
+                height={20}
+                width={20}
+              />
               <span>1 coins = ₦500</span>
             </div>
           </div>
@@ -111,7 +120,8 @@ export default function Wallet() {
                   />
                 </div>
                 <p className="text-gray-500 text-sm">
-                  No transactions yet. Your purchases and unlocks will appear here.
+                  No transactions yet. Your purchases and unlocks will appear
+                  here.
                 </p>
               </div>
             ) : (
@@ -127,7 +137,9 @@ export default function Wallet() {
                           tx.type === 'CREDIT' ? 'bg-green-100' : 'bg-red-100'
                         }`}
                       >
-                        <span className={`text-lg font-bold ${tx.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
+                        <span
+                          className={`text-lg font-bold ${tx.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}
+                        >
                           {tx.type === 'CREDIT' ? '+' : '−'}
                         </span>
                       </div>
@@ -138,13 +150,19 @@ export default function Wallet() {
                           {tx.reason.includes('PURCHASE') && 'Coins Purchased'}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {format(new Date(tx.createdAt), 'dd MMM yyyy, h:mm a')}
+                          {format(
+                            new Date(tx.createdAt),
+                            'dd MMM yyyy, h:mm a'
+                          )}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`font-bold ${tx.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
-                        {tx.type === 'CREDIT' ? '+' : '−'}{tx.amount}
+                      <p
+                        className={`font-bold ${tx.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}
+                      >
+                        {tx.type === 'CREDIT' ? '+' : '−'}
+                        {tx.amount}
                       </p>
                     </div>
                   </div>

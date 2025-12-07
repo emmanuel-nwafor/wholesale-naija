@@ -64,19 +64,24 @@ export default function SavedProducts() {
     const loadWishlist = async () => {
       setLoadingProducts(true);
       try {
-        const data = await fetchWithToken<{ wishlist: { products: any[] } }>('/v1/users/me/wishlist');
-        const formatted: WishlistProduct[] = data.wishlist.products.map((p) => ({
-          _id: p._id,
-          name: p.name,
-          price: p.price,
-          images: p.images || [],
-          moq: p.moq,
-          verified: p.verified || false,
-          seller: {
-            _id: p.vendor?._id || p.seller?._id || 'unknown',
-            fullName: p.vendor?.fullName || p.seller?.fullName || 'Unknown Seller',
-          },
-        }));
+        const data = await fetchWithToken<{ wishlist: { products: any[] } }>(
+          '/v1/users/me/wishlist'
+        );
+        const formatted: WishlistProduct[] = data.wishlist.products.map(
+          (p) => ({
+            _id: p._id,
+            name: p.name,
+            price: p.price,
+            images: p.images || [],
+            moq: p.moq,
+            verified: p.verified || false,
+            seller: {
+              _id: p.vendor?._id || p.seller?._id || 'unknown',
+              fullName:
+                p.vendor?.fullName || p.seller?.fullName || 'Unknown Seller',
+            },
+          })
+        );
         setProducts(formatted);
       } catch (err) {
         console.error('Failed to load wishlist:', err);
@@ -96,7 +101,9 @@ export default function SavedProducts() {
     const loadUnlockedStores = async () => {
       setLoadingStores(true);
       try {
-        const data = await fetchWithToken<{ unlocked: UnlockedStore[] }>(`/v1/users/${userId}/unlocked`);
+        const data = await fetchWithToken<{ unlocked: UnlockedStore[] }>(
+          `/v1/users/${userId}/unlocked`
+        );
         setUnlockedStores(data.unlocked || []);
       } catch (err) {
         console.error('Failed to load unlocked stores:', err);
@@ -139,7 +146,9 @@ export default function SavedProducts() {
             <>
               <div className="mb-8">
                 <h2 className="text-center text-lg font-medium text-gray-900 bg-gray-100 py-4 rounded-xl">
-                  {loadingProducts ? 'Loading saved products...' : 'All Saved Products'}
+                  {loadingProducts
+                    ? 'Loading saved products...'
+                    : 'All Saved Products'}
                 </h2>
               </div>
 
@@ -210,7 +219,9 @@ export default function SavedProducts() {
                               height={35}
                               width={35}
                               unoptimized
-                              onError={(e) => (e.currentTarget.src = DEFAULT_AVATAR)}
+                              onError={(e) =>
+                                (e.currentTarget.src = DEFAULT_AVATAR)
+                              }
                             />
                           </div>
                         </div>
@@ -246,9 +257,10 @@ export default function SavedProducts() {
         sellerId={selectedStore?._id || ''}
         sellerName={selectedStore?.fullName || 'Unknown Seller'}
         profilePicture={selectedStore?.profilePicture?.url || DEFAULT_AVATAR}
-        store={selectedStore?.store || { name: '', description: '', location: '' }}
+        store={
+          selectedStore?.store || { name: '', description: '', location: '' }
+        }
       />
-
     </>
   );
 }

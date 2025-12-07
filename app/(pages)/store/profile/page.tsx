@@ -8,7 +8,7 @@ import DashboardHeader from '@/app/components/header/DashboardHeader';
 import ProfileSidebar from '@/app/components/sidebar/SellersProfileSidebar';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 import OkaySuccessModal from '@/app/components/modals/OkaySuccessModal';
-import Image from 'next/image'; 
+import Image from 'next/image';
 
 interface UserProfile {
   fullName?: string;
@@ -68,7 +68,7 @@ export default function SellerProfilePage() {
   const loadProfile = async () => {
     try {
       setIsLoadingProfile(true);
-      const data = await fetchWithToken<ProfileResponse>('/auth/profile'); 
+      const data = await fetchWithToken<ProfileResponse>('/auth/profile');
       const u = data.user;
 
       setForm({
@@ -82,7 +82,7 @@ export default function SellerProfilePage() {
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoadingProfile(false); 
+      setIsLoadingProfile(false);
     }
   };
 
@@ -125,7 +125,7 @@ export default function SellerProfilePage() {
           lastName: form.lastName,
           phone: form.phone,
           // Remove cache buster before saving URL
-          profilePicture: form.profilePicture.replace(/\?.*$/, ''), 
+          profilePicture: form.profilePicture.replace(/\?.*$/, ''),
         }),
       });
 
@@ -144,9 +144,8 @@ export default function SellerProfilePage() {
       setShowSuccess(true);
     } catch (error: unknown) {
       // FIX: Changed 'err: any' to 'error: unknown' (L117)
-      const message = error instanceof Error 
-        ? error.message 
-        : 'Failed to save profile';
+      const message =
+        error instanceof Error ? error.message : 'Failed to save profile';
       alert(message);
     } finally {
       setSaving(false);

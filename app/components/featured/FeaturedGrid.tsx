@@ -64,15 +64,23 @@ export default function FeaturedGrid() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {loading
-            ? Array.from({ length: placeholderCount }).map((_, i) => (
-                <ProductCard key={i} loading={true} />
-              ))
-            : products.length === 0
-            ? <p className="text-gray-600 py-10 col-span-full text-center">No featured products available.</p>
-            : products.map((product) => (
-                <ProductCard key={product._id} product={product} type="featured" />
-              ))}
+          {loading ? (
+            Array.from({ length: placeholderCount }).map((_, i) => (
+              <ProductCard key={i} loading={true} />
+            ))
+          ) : products.length === 0 ? (
+            <p className="text-gray-600 py-10 col-span-full text-center">
+              No featured products available.
+            </p>
+          ) : (
+            products.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                type="featured"
+              />
+            ))
+          )}
         </div>
       </div>
     </section>

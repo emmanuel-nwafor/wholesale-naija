@@ -234,8 +234,12 @@ export default function AddProductVariantPage() {
       setStep(1);
 
       router.push('/store/products');
-    } catch (err: unknown) { // FIX: Changed 'any' to 'unknown'
-      const message = (err instanceof Error) ? err.message : 'Product upload failed (Unknown error)';
+    } catch (err: unknown) {
+      // FIX: Changed 'any' to 'unknown'
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Product upload failed (Unknown error)';
       alert(message);
     } finally {
       setIsSubmitting(false);

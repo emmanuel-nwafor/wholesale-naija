@@ -12,11 +12,11 @@ interface Category {
   subcategories: { name: string }[];
 }
 
-export default function Sidebar({ 
-  isOpen, 
-  setIsOpen 
-}: { 
-  isOpen: boolean; 
+export default function Sidebar({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }) {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -28,8 +28,10 @@ export default function Sidebar({
       try {
         setLoading(true);
         setError(false);
-        const res = await fetchWithToken<{ categories: Category[] }>('/v1/categories');
-        
+        const res = await fetchWithToken<{ categories: Category[] }>(
+          '/v1/categories'
+        );
+
         if (res?.categories) {
           setCategories(res.categories);
         }
@@ -77,7 +79,7 @@ export default function Sidebar({
         {/* Auth Buttons */}
         <div className="p-4 space-y-3">
           <Link href="/login" className="block">
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="w-full py-3.5 border border-gray-300 rounded-xl font-medium hover:bg-gray-50 transition text-base"
             >
@@ -85,7 +87,7 @@ export default function Sidebar({
             </button>
           </Link>
           <Link href="/signup" className="block">
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               className="w-full py-3.5 bg-black text-white rounded-xl font-semibold hover:bg-gray-900 transition text-base"
             >
@@ -108,7 +110,9 @@ export default function Sidebar({
               Failed to load categories
             </p>
           ) : categories.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">No categories found</p>
+            <p className="text-center text-gray-500 py-8">
+              No categories found
+            </p>
           ) : (
             <ul className="space-y-1">
               {categories.map((category) => (

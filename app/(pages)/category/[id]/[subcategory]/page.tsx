@@ -38,11 +38,10 @@ export default function SubCategoryPage() {
 
   const displayName = originalName
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 
   useEffect(() => {
- 
     if (!categoryId || !originalName) return;
 
     const loadProducts = async () => {
@@ -93,7 +92,9 @@ export default function SubCategoryPage() {
         {/* Title + See All */}
         <div className="px-14 mb-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-800">{displayName}</h1>
+            <h1 className="text-xl font-semibold text-gray-800">
+              {displayName}
+            </h1>
             {products.length > 8 && (
               <Link
                 href={`/search?subcategory=${encodeURIComponent(originalName)}`}

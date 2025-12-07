@@ -79,9 +79,8 @@ export default function ProfileReviewsPage() {
     const fetchSellers = async () => {
       try {
         setLoadingSellers(true);
-        const res = await fetchWithToken<SellersApiResponse>(
-          '/v1/users/sellers'
-        );
+        const res =
+          await fetchWithToken<SellersApiResponse>('/v1/users/sellers');
 
         if (!res?.sellers || !Array.isArray(res.sellers)) {
           setAllSellers([]);
@@ -90,15 +89,17 @@ export default function ProfileReviewsPage() {
 
         const validSellers = res.sellers
           .filter((s: RawSellerData) => s.store?.name)
-          .map((s: RawSellerData): Seller => ({ 
-            _id: s._id,
-            store: {
-              name: s.store.name,
-              bannerUrl: s.store.bannerUrl || '',
-            },
-            isVerifiedSeller: s.isVerifiedSeller || false,
-            profilePicture: s.profilePicture || undefined, 
-          }));
+          .map(
+            (s: RawSellerData): Seller => ({
+              _id: s._id,
+              store: {
+                name: s.store.name,
+                bannerUrl: s.store.bannerUrl || '',
+              },
+              isVerifiedSeller: s.isVerifiedSeller || false,
+              profilePicture: s.profilePicture || undefined,
+            })
+          );
 
         setAllSellers(validSellers);
       } catch (err) {

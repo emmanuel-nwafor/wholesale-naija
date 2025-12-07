@@ -18,7 +18,8 @@ interface Category {
   subcategories: SubCategory[];
 }
 
-const FALLBACK_IMAGE = 'https://i.pinimg.com/736x/d4/cd/ed/d4cdedf5473646352923c5d44f94c6bf.jpg';
+const FALLBACK_IMAGE =
+  'https://i.pinimg.com/736x/d4/cd/ed/d4cdedf5473646352923c5d44f94c6bf.jpg';
 
 export default function CategoryPage() {
   const params = useParams();
@@ -44,7 +45,9 @@ export default function CategoryPage() {
     const load = async () => {
       try {
         setLoading(true);
-        const res = await fetchWithToken<{ category: Category }>(`/admin/categories/${categoryId}`);
+        const res = await fetchWithToken<{ category: Category }>(
+          `/admin/categories/${categoryId}`
+        );
         setCategory(res.category);
       } catch (err) {
         console.error(err);
@@ -64,7 +67,9 @@ export default function CategoryPage() {
       .replace(/\-\-+/g, '-');
 
     // Pass original name via query so backend gets exact match
-router.push(`/category/${categoryId}/${slug}?name=${encodeURIComponent(subcatName)}`);
+    router.push(
+      `/category/${categoryId}/${slug}?name=${encodeURIComponent(subcatName)}`
+    );
   };
 
   if (loading || !category) {

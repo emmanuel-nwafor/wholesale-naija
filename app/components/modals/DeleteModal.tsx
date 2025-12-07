@@ -91,7 +91,9 @@ export default function DeleteModal({
             className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto bg-white rounded-2xl shadow-2xl z-50 p-6"
           >
             <div className="text-center">
-              <div className={`mx-auto w-14 h-14 ${bgColor} rounded-full flex items-center justify-center mb-5`}>
+              <div
+                className={`mx-auto w-14 h-14 ${bgColor} rounded-full flex items-center justify-center mb-5`}
+              >
                 <Icon className="w-7 h-7" />
               </div>
 
@@ -100,7 +102,9 @@ export default function DeleteModal({
               </h3>
 
               {itemName && (
-                <p className="text-lg font-medium text-gray-800 mb-2">{itemName}</p>
+                <p className="text-lg font-medium text-gray-800 mb-2">
+                  {itemName}
+                </p>
               )}
 
               <p className="text-sm text-gray-600 mb-8 max-w-xs mx-auto">

@@ -15,6 +15,8 @@ export interface Conversation {
 }
 
 export const getConversations = async (): Promise<Conversation[]> => {
-  const res = await fetchWithToken<{ conversations: Conversation[] }>('/v1/chat/conversations');
+  const res = await fetchWithToken<{ conversations: Conversation[] }>(
+    '/v1/chat/conversations'
+  );
   return res?.conversations || [];
 };

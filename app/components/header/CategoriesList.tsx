@@ -23,12 +23,16 @@ interface Category {
 export default function CategoriesList() {
   const [showModal, setShowModal] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null
+  );
 
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const res = await fetchWithToken<{ categories: Category[] }>('/v1/categories');
+        const res = await fetchWithToken<{ categories: Category[] }>(
+          '/v1/categories'
+        );
         if (res?.categories) {
           setCategories(res.categories);
           // Optional: pre-select first one
@@ -95,7 +99,9 @@ export default function CategoriesList() {
                 {/* Left: Categories List */}
                 <div className="w-80 bg-gray-50 border-r border-gray-200 overflow-y-auto">
                   <div className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Categories</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">
+                      Categories
+                    </h3>
                     {categories.map((cat) => (
                       <button
                         key={cat._id}

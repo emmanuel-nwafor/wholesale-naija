@@ -36,7 +36,6 @@ interface UserProfile {
 }
 // -------------------------------------------
 
-
 export default function ProfileCountryRegion() {
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -69,7 +68,8 @@ export default function ProfileCountryRegion() {
         setSelectedState(addr.state || '');
         setSelectedLGA(addr.city || '');
         setSelectedArea(addr.street || '');
-      } catch { // FIX: Remove 'err' to satisfy @typescript-eslint/no-unused-vars
+      } catch {
+        // FIX: Remove 'err' to satisfy @typescript-eslint/no-unused-vars
         console.error('Failed to load location');
       } finally {
         setLoading(false);
@@ -119,7 +119,8 @@ export default function ProfileCountryRegion() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch { // FIX: Remove 'err' to satisfy @typescript-eslint/no-unused-vars
+    } catch {
+      // FIX: Remove 'err' to satisfy @typescript-eslint/no-unused-vars
       alert('Failed to save location. Please try again.');
     } finally {
       setSaving(false);

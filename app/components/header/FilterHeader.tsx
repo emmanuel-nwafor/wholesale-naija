@@ -15,20 +15,38 @@ export default function FilterHeader() {
     'Seller Type': 'Seller Type',
     'Store Type': 'Store Type',
     'Minimum order quantity': 'Minimum order quantity',
-    'Price': 'Price',
-    'Rating': 'Rating',
+    Price: 'Price',
+    Rating: 'Rating',
   });
 
   const filters = [
-    { name: 'Seller Type', options: ['All', 'Manufacturer', 'Wholesalers', 'Importer', 'Distributor'] },
-    { name: 'Store Type', options: ['All Stores', 'Verified Only', 'Top Rated'] },
-    { name: 'Minimum order quantity', options: ['Any', '1–10', '11–50', '51–100', '100+'] },
-    { name: 'Price', options: ['Any Price', '₦0 – ₦50k', '₦50k – ₦200k', '₦200k+'] },
+    {
+      name: 'Seller Type',
+      options: [
+        'All',
+        'Manufacturer',
+        'Wholesalers',
+        'Importer',
+        'Distributor',
+      ],
+    },
+    {
+      name: 'Store Type',
+      options: ['All Stores', 'Verified Only', 'Top Rated'],
+    },
+    {
+      name: 'Minimum order quantity',
+      options: ['Any', '1–10', '11–50', '51–100', '100+'],
+    },
+    {
+      name: 'Price',
+      options: ['Any Price', '₦0 – ₦50k', '₦50k – ₦200k', '₦200k+'],
+    },
     { name: 'Rating', options: ['Any Rating', '4.5+', '4.0+', '3.5+', '3.0+'] },
   ];
 
   const handleSelect = (name: string, value: string) => {
-    setSelectedFilters(prev => ({ ...prev, [name]: value }));
+    setSelectedFilters((prev) => ({ ...prev, [name]: value }));
     setOpenDropdown(null);
   };
 
@@ -39,7 +57,7 @@ export default function FilterHeader() {
         <div className="px-4 py-4">
           <div
             className="flex items-center gap-3 overflow-x-auto scrollbar-none"
-            style={{ overflow: 'visible' }} 
+            style={{ overflow: 'visible' }}
           >
             {/* Location */}
             <button
@@ -55,10 +73,20 @@ export default function FilterHeader() {
             {filters.map((filter) => (
               <div key={filter.name} className="relative">
                 <button
-                  onClick={() => setOpenDropdown(openDropdown === filter.name ? null : filter.name)}
+                  onClick={() =>
+                    setOpenDropdown(
+                      openDropdown === filter.name ? null : filter.name
+                    )
+                  }
                   className="flex items-center gap-2 px-5 py-3 bg-white hover:bg-gray-50 hover:cursor-pointer rounded-2xl text-gray-700 text-sm font-medium whitespace-nowrap transition"
                 >
-                  <span>{selectedFilters[filter.name as keyof typeof selectedFilters]}</span>
+                  <span>
+                    {
+                      selectedFilters[
+                        filter.name as keyof typeof selectedFilters
+                      ]
+                    }
+                  </span>
                   <ChevronDown
                     className={`w-4 h-4 ml-1 transition-transform ${
                       openDropdown === filter.name ? 'rotate-180' : ''
@@ -82,7 +110,9 @@ export default function FilterHeader() {
                             key={option}
                             onClick={() => handleSelect(filter.name, option)}
                             className={`w-full text-left px-6 py-3.5 text-sm font-medium transition-colors ${
-                              i === 0 ? 'bg-gray-100 font-semibold' : 'hover:bg-gray-50'
+                              i === 0
+                                ? 'bg-gray-100 font-semibold'
+                                : 'hover:bg-gray-50'
                             }`}
                           >
                             {option}
@@ -115,10 +145,14 @@ export default function FilterHeader() {
               className="w-full pl-12 pr-5 py-4 bg-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
           </div>
-          <StateSelection onSelect={(value) => {
-            setSelectedLocation(value === 'current' ? 'Current Location' : value);
-            setLocationOpen(false);
-          }} />
+          <StateSelection
+            onSelect={(value) => {
+              setSelectedLocation(
+                value === 'current' ? 'Current Location' : value
+              );
+              setLocationOpen(false);
+            }}
+          />
         </div>
       </Modal>
     </>

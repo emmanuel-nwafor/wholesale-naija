@@ -12,7 +12,7 @@ interface ProductItem {
   _id: string;
   name: string;
   // FIX 1: Changed price type to number
-  price: number; 
+  price: number;
   images: string[];
   moq: string;
   verified: boolean;
@@ -26,8 +26,8 @@ interface ApiProduct {
   _id: string;
   name: string;
   // Api price comes as a string (assuming)
-  price: string; 
-  images: string[] | any; 
+  price: string;
+  images: string[] | any;
   moq?: string;
   verified?: boolean;
   coins?: number | null;
@@ -72,7 +72,8 @@ export default function StoreDetailsModal({
     ? `https://wa.me/234${whatsappNumber.replace(/\D/g, '').slice(-10)}`
     : null;
   const address = store.address?.street || 'Address not provided';
-  const description = store.description || 'Trusted supplier of quality wholesale products.';
+  const description =
+    store.description || 'Trusted supplier of quality wholesale products.';
   const openingHours = store.openingDays || 'Mon – Sat, 9:00 AM – 6:00 PM';
 
   useEffect(() => {
@@ -85,22 +86,26 @@ export default function StoreDetailsModal({
       try {
         setLoading(true);
         // FIX 3: Specified fetch response type
-        const res = await fetchWithToken<{ products: ApiProduct[] }>(`/v1/sellers/${sellerId}/products?limit=20`);
+        const res = await fetchWithToken<{ products: ApiProduct[] }>(
+          `/v1/sellers/${sellerId}/products?limit=20`
+        );
         const items = res?.products || [];
 
         // FIX 4: Specified map callback type & converted price
-        const formatted = items.map((p: ApiProduct): ProductItem => ({ 
-          _id: p._id,
-          name: p.name,
-          // Convert string price to number (use parseFloat for safety)
-          price: parseFloat(p.price) || 0, 
-          images: Array.isArray(p.images) ? p.images : [],
-          moq: p.moq || '1 pc',
-          verified: p.verified ?? false,
-          coins: p.coins || null,
-          seller: { _id: sellerId, fullName: storeName },
-          variants: p.variants || [],
-        }));
+        const formatted = items.map(
+          (p: ApiProduct): ProductItem => ({
+            _id: p._id,
+            name: p.name,
+            // Convert string price to number (use parseFloat for safety)
+            price: parseFloat(p.price) || 0,
+            images: Array.isArray(p.images) ? p.images : [],
+            moq: p.moq || '1 pc',
+            verified: p.verified ?? false,
+            coins: p.coins || null,
+            seller: { _id: sellerId, fullName: storeName },
+            variants: p.variants || [],
+          })
+        );
 
         setProducts(formatted);
       } catch (err) {
@@ -137,7 +142,9 @@ export default function StoreDetailsModal({
             {/* Header */}
             <div className="p-5 border-b border-gray-200 bg-white">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Store Profile</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Store Profile
+                </h3>
                 <button
                   onClick={onClose}
                   className="p-2 rounded-lg hover:bg-gray-100 transition"
@@ -156,7 +163,9 @@ export default function StoreDetailsModal({
                     {/* FIX 5: Replaced <img> with <Image /> and added 'relative' to container */}
                     <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg relative">
                       <Image
-                        src={profilePicture || 'https://via.placeholder.com/150'}
+                        src={
+                          profilePicture || 'https://via.placeholder.com/150'
+                        }
                         alt={storeName}
                         fill // Use fill to cover the parent div
                         sizes="80px"
@@ -164,7 +173,9 @@ export default function StoreDetailsModal({
                       />
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-xl font-bold text-gray-900">{storeName}</h2>
+                      <h2 className="text-xl font-bold text-gray-900">
+                        {storeName}
+                      </h2>
                       <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                         <MapPin className="w-4 h-4" />
                         {location}
@@ -207,14 +218,20 @@ export default function StoreDetailsModal({
 
               {/* Store Description */}
               <div className="px-6 mt-6">
-                <h4 className="font-semibold text-gray-900 mb-3">Store Description</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+                <h4 className="font-semibold text-gray-900 mb-3">
+                  Store Description
+                </h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {description}
+                </p>
               </div>
 
               {/* Address & Hours */}
               <div className="px-6 mt-6">
                 <div className="bg-gray-50 rounded-2xl p-5">
-                  <h4 className="font-semibold text-gray-900 mb-3">Store Address</h4>
+                  <h4 className="font-semibold text-gray-900 mb-3">
+                    Store Address
+                  </h4>
                   <div className="flex items-start gap-3 text-sm text-gray-700">
                     <MapPin className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
                     <div>
@@ -231,8 +248,12 @@ export default function StoreDetailsModal({
               {/* Products Section */}
               <div className="px-6 mt-8 pb-10">
                 <div className="flex items-center justify-between mb-5">
-                  <h4 className="text-lg font-semibold text-gray-900">All Products</h4>
-                  <span className="text-sm text-gray-500">{products.length} items</span>
+                  <h4 className="text-lg font-semibold text-gray-900">
+                    All Products
+                  </h4>
+                  <span className="text-sm text-gray-500">
+                    {products.length} items
+                  </span>
                 </div>
 
                 {loading ? (

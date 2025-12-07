@@ -10,7 +10,8 @@ export async function fetchWithToken<T = unknown>(
   endpoint: string,
   options: FetchWithTokenOptions = {}
 ): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token =
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const BASE_URL =
     process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -63,8 +64,8 @@ export async function fetchWithToken<T = unknown>(
 
     return (await res.text()) as unknown as T;
   } catch (err: unknown) {
-    const error = err as Error; 
-    
+    const error = err as Error;
+
     if (error.name === 'AbortError') {
       console.warn('Request timed out');
       throw new Error('Request timeout. Please try again.');

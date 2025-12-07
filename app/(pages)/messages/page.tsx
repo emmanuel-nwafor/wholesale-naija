@@ -70,7 +70,9 @@ export default function BuyersChatPage() {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const res = await fetchWithToken<{ conversations: Conversation[] }>('/v1/chat/conversations');
+        const res = await fetchWithToken<{ conversations: Conversation[] }>(
+          '/v1/chat/conversations'
+        );
         setConversations(res.conversations || []);
       } catch {
         setConversations([]);
@@ -92,7 +94,9 @@ export default function BuyersChatPage() {
     );
 
     if (existingConv) {
-      const other = existingConv.participants.find((p) => p._id !== currentUserId);
+      const other = existingConv.participants.find(
+        (p) => p._id !== currentUserId
+      );
       const chatItem: Chat = {
         id: existingConv._id,
         name: other?.store?.name || other?.fullName || 'Seller',
@@ -109,11 +113,14 @@ export default function BuyersChatPage() {
 
     const createAndOpen = async () => {
       try {
-        const res = await fetchWithToken<{ conversation: Conversation }>('/v1/chat/conversations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ participantIds: [targetSellerId] }),
-        });
+        const res = await fetchWithToken<{ conversation: Conversation }>(
+          '/v1/chat/conversations',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ participantIds: [targetSellerId] }),
+          }
+        );
         const newConv = res.conversation;
         setConversations((prev) => [newConv, ...prev]);
 
@@ -162,7 +169,8 @@ export default function BuyersChatPage() {
   const handleBack = () => setSelectedChat(null);
 
   const getOtherParticipant = (conv: Conversation) =>
-    conv.participants.find((p) => p._id !== currentUserId) || conv.participants[0];
+    conv.participants.find((p) => p._id !== currentUserId) ||
+    conv.participants[0];
 
   const getChatDisplay = () => {
     if (!selectedChat?.conv) return null;
@@ -183,12 +191,18 @@ export default function BuyersChatPage() {
     setLoading(true);
     try {
       if (confirmMode === 'delete') {
-        await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}`, { method: 'DELETE' });
-        setConversations((prev) => prev.filter((c) => c._id !== selectedChat.id));
+        await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}`, {
+          method: 'DELETE',
+        });
+        setConversations((prev) =>
+          prev.filter((c) => c._id !== selectedChat.id)
+        );
         setSelectedChat(null);
       } else {
         const method = confirmMode === 'block' ? 'POST' : 'DELETE';
-        await fetchWithToken(`/v1/users/me/block/${chatDisplay.sellerId}`, { method });
+        await fetchWithToken(`/v1/users/me/block/${chatDisplay.sellerId}`, {
+          method,
+        });
         alert(confirmMode === 'block' ? 'User blocked' : 'User unblocked');
       }
     } finally {
@@ -203,11 +217,14 @@ export default function BuyersChatPage() {
     const text = message.trim();
     setMessage('');
     try {
-      await fetchWithToken(`/v1/chat/conversations/${selectedChat.id}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: text }),
-      });
+      await fetchWithToken(
+        `/v1/chat/conversations/${selectedChat.id}/messages`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body: text }),
+        }
+      );
       const newMsg: Message = {
         _id: Date.now().toString(),
         body: text,
@@ -217,7 +234,9 @@ export default function BuyersChatPage() {
       setMessages((prev) => [...prev, newMsg]);
       setConversations((prev) =>
         prev.map((c) =>
-          c._id === selectedChat.id ? { ...c, lastMessageAt: new Date().toISOString() } : c
+          c._id === selectedChat.id
+            ? { ...c, lastMessageAt: new Date().toISOString() }
+            : c
         )
       );
     } catch {
@@ -243,7 +262,10 @@ export default function BuyersChatPage() {
           name: other?.store?.name || other?.fullName || 'Seller',
           message: lastMsg,
           time: conv.lastMessageAt
-            ? new Date(conv.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            ? new Date(conv.lastMessageAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
             : '',
           online: true,
           avatar: other?.profilePicture?.url || '/svgs/default-avatar.svg',
@@ -278,7 +300,10 @@ export default function BuyersChatPage() {
                   {/* Chat Header */}
                   <div className="px-6 py-4 flex items-center gap-4 bg-white border-b border-gray-200">
                     {isMobileOrTablet && (
-                      <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-lg">
+                      <button
+                        onClick={handleBack}
+                        className="p-2 hover:bg-gray-100 rounded-lg"
+                      >
                         <ArrowLeft className="w-5 h-5" />
                       </button>
                     )}
@@ -294,7 +319,9 @@ export default function BuyersChatPage() {
                         <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white" />
                       </div>
                       <div>
-                        <h2 className="font-semibold text-gray-900">{chatDisplay.name}</h2>
+                        <h2 className="font-semibold text-gray-900">
+                          {chatDisplay.name}
+                        </h2>
                         <p className="text-xs text-green-600">Online</p>
                       </div>
                     </div>
@@ -343,16 +370,23 @@ export default function BuyersChatPage() {
                                   : 'bg-white text-gray-900 rounded-bl-none border border-gray-200'
                               }`}
                             >
-                              <p className="text-sm leading-relaxed">{msg.body}</p>
+                              <p className="text-sm leading-relaxed">
+                                {msg.body}
+                              </p>
                               <span className="text-xs opacity-70 block text-right mt-1">
-                                {new Date(msg.createdAt).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
+                                {new Date(msg.createdAt).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  }
+                                )}
                               </span>
                               <div
                                 className={`absolute bottom-0 w-3 h-3 ${
-                                  isMe ? 'right-0 -mr-1 bg-slate-900' : 'left-0 -ml-1 bg-white'
+                                  isMe
+                                    ? 'right-0 -mr-1 bg-slate-900'
+                                    : 'left-0 -ml-1 bg-white'
                                 }`}
                                 style={{
                                   clipPath: isMe
@@ -377,7 +411,9 @@ export default function BuyersChatPage() {
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                        onKeyDown={(e) =>
+                          e.key === 'Enter' && !e.shiftKey && handleSend()
+                        }
                         placeholder="Type a message..."
                         className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
                       />
@@ -404,7 +440,9 @@ export default function BuyersChatPage() {
                       height={180}
                       className="mx-auto mb-6 opacity-80"
                     />
-                    <p className="text-gray-600 text-lg">Select a chat to start messaging</p>
+                    <p className="text-gray-600 text-lg">
+                      Select a chat to start messaging
+                    </p>
                   </div>
                 </div>
               )}

@@ -43,7 +43,9 @@ export default function DynamicHeader() {
     }
 
     const isLast = index === segments.length - 1;
-    let label = knownLabels[segment] || segment.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    let label =
+      knownLabels[segment] ||
+      segment.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
     if (isLast) {
       const nameFromUrl = getNameFromQuery();

@@ -37,11 +37,11 @@ export default function StoreAnalytics(): React.JSX.Element {
           productsCount: res.productsCount,
           avgRating: res.avgRating ?? 0,
         });
-      } catch (error: unknown) { // FIX: Changed 'err: any' to 'error: unknown' (L40)
+      } catch (error: unknown) {
+        // FIX: Changed 'err: any' to 'error: unknown' (L40)
         console.error(error);
-        const message = error instanceof Error
-          ? error.message
-          : 'Unable to load analytics.';
+        const message =
+          error instanceof Error ? error.message : 'Unable to load analytics.';
         setError(message);
       } finally {
         setLoading(false);

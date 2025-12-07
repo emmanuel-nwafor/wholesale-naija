@@ -84,7 +84,8 @@ export default function ProductDetailsPage() {
 
       // Redirect after a short delay is now handled inside OkaySuccessModal onClose
       // setTimeout(() => {}, 2000);
-    } catch (err: unknown) { // FIX: Changed 'any' to 'unknown' (L87)
+    } catch (err: unknown) {
+      // FIX: Changed 'any' to 'unknown' (L87)
       console.error('Delete failed:', err);
       // Safely access error message
       const message =

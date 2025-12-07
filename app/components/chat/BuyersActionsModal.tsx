@@ -105,7 +105,10 @@ export default function BuyersActionsModal({
             >
               <div className="p-5 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="font-semibold text-lg">Report {sellerName}</h3>
-                <button onClick={() => setShowReportForm(false)} className="p-1 hover:bg-gray-100 rounded">
+                <button
+                  onClick={() => setShowReportForm(false)}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -159,9 +162,17 @@ export default function BuyersActionsModal({
           />
 
           <motion.div
-            initial={{ opacity: 0, scale: isMobile ? 0.95 : 0.9, y: isMobile ? 100 : -10 }}
+            initial={{
+              opacity: 0,
+              scale: isMobile ? 0.95 : 0.9,
+              y: isMobile ? 100 : -10,
+            }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: isMobile ? 0.95 : 0.9, y: isMobile ? 100 : -10 }}
+            exit={{
+              opacity: 0,
+              scale: isMobile ? 0.95 : 0.9,
+              y: isMobile ? 100 : -10,
+            }}
             className={`fixed z-50 bg-white shadow-2xl border border-gray-200 overflow-hidden ${
               isMobile
                 ? 'bottom-0 left-0 right-0 max-w-md mx-auto rounded-t-3xl'
@@ -230,7 +241,10 @@ export default function BuyersActionsModal({
 
             {isMobile && (
               <div className="border-t border-gray-100 p-4">
-                <button onClick={onClose} className="w-full py-3 text-center text-red-600 font-medium text-lg">
+                <button
+                  onClick={onClose}
+                  className="w-full py-3 text-center text-red-600 font-medium text-lg"
+                >
                   Close
                 </button>
               </div>

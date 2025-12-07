@@ -72,7 +72,11 @@ export default function PopularProducts() {
                 <ProductCard key={i} loading={true} />
               ))
             : products.map((product) => (
-                <ProductCard key={product._id} product={product} type="popular" />
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  type="popular"
+                />
               ))}
         </div>
       </div>

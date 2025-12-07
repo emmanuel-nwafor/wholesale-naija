@@ -43,7 +43,6 @@ export default function RequestVerificationPage() {
 
     setLoading(true);
     try {
-      // NOTE: No specific response type is expected here, so fetchWithToken<void> or similar generic can be used.
       await fetchWithToken('/v1/seller/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,10 +57,12 @@ export default function RequestVerificationPage() {
         businessName: '',
         businessRegNumber: '',
       });
-    } catch (error: unknown) { // FIX: Replaced 'err: any' with 'error: unknown' (L60)
-      const message = error instanceof Error
-        ? error.message
-        : 'Verification request failed. Please try again.';
+    } catch (error: unknown) {
+      // FIX: Replaced 'err: any' with 'error: unknown' (L60)
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Verification request failed. Please try again.';
       alert(message);
     } finally {
       setLoading(false);
@@ -103,7 +104,8 @@ export default function RequestVerificationPage() {
 
                   <p className="text-sm text-gray-600 mb-8 max-w-2xl">
                     Get verified to build trust with buyers. Submit your
-                    business details for review. Once approved, you&apos;ll get a {/* FIX: Escaped apostrophe (L102) */}
+                    business details for review. Once approved, you&apos;ll get
+                    a {/* FIX: Escaped apostrophe (L102) */}
                     verified badge on your store.
                   </p>
 
