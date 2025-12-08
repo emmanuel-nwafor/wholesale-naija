@@ -7,43 +7,30 @@ import { X, Phone, MapPin, Clock, Store as StoreIcon } from 'lucide-react';
 import ProductCard from '@/app/components/product-card/ProductCard';
 import { fetchWithToken } from '@/app/utils/fetchWithToken';
 
-// Define a minimal type for product variants if the structure is unknown or complex
-// We'll use an array of objects for better type safety than 'any[]'
 interface ProductVariant {
-  // Define variant properties if known, e.g.,
-  // name: string;
-  // value: string;
-  [key: string]: any; // FALLBACK: Use index signature if inner structure is truly variable
+  [key: string]: unknown; 
 }
 
-// Define the shape of a product item used in state
 interface ProductItem {
   _id: string;
   name: string;
-  // FIX 1: Changed price type to number
   price: number;
   images: string[];
   moq: string;
   verified: boolean;
   coins: number | null;
   seller: { _id: string; fullName: string };
-  // FIX 6: Replaced 'any[]' with 'ProductVariant[]'
   variants: ProductVariant[];
 }
 
-// Define the shape of the data returned from the API for a single product
 interface ApiProduct {
   _id: string;
   name: string;
-  // Api price comes as a string (assuming)
   price: string;
-  // FIX 7: Replaced 'any' with 'string[]' (or unknown if the API might return other types)
-  // The mapping function handles non-array cases, so string[] is the intended final type.
   images: string[] | unknown;
   moq?: string;
   verified?: boolean;
   coins?: number | null;
-  // FIX 8: Replaced 'any[]' with 'ProductVariant[]'
   variants?: ProductVariant[];
 }
 
@@ -72,7 +59,6 @@ export default function StoreDetailsModal({
   profilePicture,
   store: initialStore = {},
 }: StoreDetailsModalProps) {
-  // FIX 2: Specified state type
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -98,26 +84,21 @@ export default function StoreDetailsModal({
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // FIX 3: Specified fetch response type
         const res = await fetchWithToken<{ products: ApiProduct[] }>(
           `/v1/sellers/${sellerId}/products?limit=20`
         );
         const items = res?.products || [];
 
-        // FIX 4: Specified map callback type & converted price
         const formatted = items.map(
           (p: ApiProduct): ProductItem => ({
             _id: p._id,
             name: p.name,
-            // Convert string price to number (use parseFloat for safety)
             price: parseFloat(p.price) || 0,
-            // Assert p.images as string[] since we check and default to []
             images: Array.isArray(p.images) ? (p.images as string[]) : [],
             moq: p.moq || '1 pc',
             verified: p.verified ?? false,
             coins: p.coins || null,
             seller: { _id: sellerId, fullName: storeName },
-            // Assert p.variants as ProductVariant[] since we check and default to []
             variants: (p.variants as ProductVariant[]) || [],
           })
         );
@@ -175,14 +156,13 @@ export default function StoreDetailsModal({
               <div className="px-6 pt-6">
                 <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center gap-4">
-                    {/* FIX 5: Replaced <img> with <Image /> and added 'relative' to container */}
                     <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg relative">
                       <Image
                         src={
                           profilePicture || 'https://via.placeholder.com/150'
                         }
                         alt={storeName}
-                        fill // Use fill to cover the parent div
+                        fill
                         sizes="80px"
                         className="object-cover"
                       />

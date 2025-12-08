@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react'; 
 import Image from 'next/image';
 import Header from '@/app/components/header/Header';
 import DynamicHeader from '@/app/components/header/DynamicHeader';
@@ -59,6 +59,13 @@ interface RawApiProduct {
 }
 
 const DEFAULT_AVATAR = '/svgs/logo.svg';
+
+const HeaderFallback = () => (
+  <div style={{ height: '140px', backgroundColor: '#fff', borderBottom: '1px solid #e5e7eb' }}>
+  </div>
+);
+
+const ModalFallback = () => null;
 
 export default function SavedProducts() {
   const [activeTab, setActiveTab] = useState<Tab>('products');
@@ -132,8 +139,11 @@ export default function SavedProducts() {
 
   return (
     <>
-      <Header />
-      <DynamicHeader />
+      {/* WRAPPING HEADER COMPONENTS WITH SUSPENSE */}
+      <Suspense fallback={<HeaderFallback />}>
+        <Header />
+        <DynamicHeader />
+      </Suspense>
 
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -265,16 +275,19 @@ export default function SavedProducts() {
         </div>
       </div>
 
-      <StoreDetailsModal
-        isOpen={!!selectedStore}
-        onClose={() => setSelectedStore(null)}
-        sellerId={selectedStore?._id || ''}
-        sellerName={selectedStore?.fullName || 'Unknown Seller'}
-        profilePicture={selectedStore?.profilePicture?.url || DEFAULT_AVATAR}
-        store={
-          selectedStore?.store || { name: '', description: '', location: '' }
-        }
-      />
+      {/* 🛑 FIX: WRAPPING STOREDETAILSMODAL WITH SUSPENSE 🛑 */}
+      <Suspense fallback={<ModalFallback />}> 
+        <StoreDetailsModal
+          isOpen={!!selectedStore}
+          onClose={() => setSelectedStore(null)}
+          sellerId={selectedStore?._id || ''}
+          sellerName={selectedStore?.fullName || 'Unknown Seller'}
+          profilePicture={selectedStore?.profilePicture?.url || DEFAULT_AVATAR}
+          store={
+            selectedStore?.store || { name: '', description: '', location: '' }
+          }
+        />
+      </Suspense>
     </>
   );
 }

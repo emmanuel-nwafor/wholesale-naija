@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-// FIX 1: Import 'useCallback' to correctly define dependency functions.
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Menu, ChevronRight, SearchIcon } from 'lucide-react';
 import Sidebar from '../../components/sidebar/Sidebar';
@@ -29,7 +28,6 @@ interface Product {
   images: string[];
 }
 
-// Define AbortError type for the catch block type guard
 interface AbortError extends Error {
   name: 'AbortError';
 }
@@ -72,6 +70,7 @@ export default function Header() {
       if (res?.wallet?.balance !== undefined)
         setWalletBalance(res.wallet.balance);
     } catch (_err) {
+      console.log(_err);
     } finally {
       setBalanceLoading(false);
     }
@@ -96,9 +95,9 @@ export default function Header() {
     const t = localStorage.getItem('token');
     setToken(t);
     if (t)
-      loadUserProfile(); // FIX 1: loadUserProfile is now included in dependencies below
+      loadUserProfile(); 
     else setBalanceLoading(false);
-  }, [loadUserProfile]); // FIX 1: Added loadUserProfile to dependency array
+  }, [loadUserProfile]); 
 
   const openEmailModal = () => {
     const t = localStorage.getItem('token');
@@ -133,7 +132,6 @@ export default function Header() {
         );
         if (res?.products) setSearchResults(res.products);
       } catch (err: unknown) {
-        // FIX 2: Used 'unknown' instead of 'any'
         // Type guard for AbortError
         if (err instanceof Error && (err as AbortError).name !== 'AbortError') {
           console.error(err);
@@ -348,13 +346,13 @@ export default function Header() {
             isOpen={signupChooseModalOpen}
             onClose={() => setSignupChooseModalOpen(false)}
             onSelectBuyer={() => {
-              // FIX 3: Wrapped expressions in {}
+              // FIX: Wrapped multiple statements in curly braces {}
               localStorage.setItem('selectedRole', 'buyer');
               setSignupChooseModalOpen(false);
               token ? setLoginModalOpen(true) : setSignupEmailOpen(true);
             }}
             onSelectSeller={() => {
-              // FIX 3: Wrapped expressions in {}
+              // FIX: Wrapped multiple statements in curly braces {}
               localStorage.setItem('selectedRole', 'seller');
               setSignupChooseModalOpen(false);
               token ? setLoginModalOpen(true) : setSignupEmailOpen(true);

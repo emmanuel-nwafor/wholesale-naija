@@ -45,6 +45,7 @@ export default function BuyersActionsModal({
       onClose();
     } catch (err) {
       alert('Failed to update block status');
+      console.log(err)
     } finally {
       setLoading(false);
     }
@@ -70,6 +71,7 @@ export default function BuyersActionsModal({
       onClose();
     } catch (err) {
       alert('Failed to submit report');
+      console.log(err)
     } finally {
       setLoading(false);
     }

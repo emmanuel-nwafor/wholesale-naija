@@ -1,14 +1,14 @@
-// app/components/header/DynamicBreadcrumb.tsx
+// app/components/header/DynamicHeader.tsx
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react'; 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 
-export default function DynamicHeader() {
+const BreadcrumbContent = () => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); 
 
   const segments = pathname.split('/').filter(Boolean);
 
@@ -92,5 +92,20 @@ export default function DynamicHeader() {
         </ol>
       </div>
     </nav>
+  );
+};
+
+
+export default function DynamicHeader() {
+  const Fallback = () => (
+    <div className="bg-gray-100 py-6 px-4 sm:px-8 lg:px-12">
+        <div className="max-w-7xl mx-auto h-5 bg-gray-200 w-1/3 rounded animate-pulse"></div>
+    </div>
+  );
+  
+  return (
+    <Suspense fallback={<Fallback />}>
+      <BreadcrumbContent />
+    </Suspense>
   );
 }

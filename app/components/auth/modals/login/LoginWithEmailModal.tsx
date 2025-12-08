@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import SuccessModal from '@/app/components/modals/SuccessModal';
 
 interface LoginWithEmailModalProps {

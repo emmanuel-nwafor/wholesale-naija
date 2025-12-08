@@ -54,7 +54,8 @@ export default function ProductEditPage() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [moq, setMoq] = useState('');
-  const [_status, setStatus] = useState(true);
+  // FIX 1: Removed unused '_status' variable from destructuring
+  const [, setStatus] = useState(true);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCat, setSelectedCat] = useState('');
@@ -69,8 +70,8 @@ export default function ProductEditPage() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // REMOVED: Unused warning fix (L56)
-  const [modalState, setModalState] = useState<{
+  // FIX 2: Removed unused 'modalState' variable from destructuring
+  const [, setModalState] = useState<{
     show: boolean;
     type: 'success' | 'error';
     message: string;
@@ -124,7 +125,7 @@ export default function ProductEditPage() {
   }, [productId]);
 
   useEffect(() => {
-    // FIX: Added 'categories' to dependency array (L105)
+    // FIX: Added 'categories' to dependency array (L105) - already fixed in input
     if (selectedCat && categories.length > 0) {
       const cat = categories.find((c) => c._id === selectedCat);
       setSubcategories(cat?.subcategories || []);
@@ -205,7 +206,7 @@ export default function ProductEditPage() {
       });
       setTimeout(() => setShowReviewModal(true), 500);
     } catch (err: unknown) {
-      // FIX: Replaced 'any' with 'unknown' and safely access error message (L154)
+      // FIX: Replaced 'any' with 'unknown' and safely access error message (L154) - already fixed in input
       const message =
         err instanceof Error
           ? err.message

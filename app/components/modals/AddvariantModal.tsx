@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image'; // 1. Import the Image component
 import { motion } from 'framer-motion';
 import { X, Upload, Trash2, Plus } from 'lucide-react';
 
@@ -139,12 +140,15 @@ export default function AddVariantModal({
             </label>
             <div className="flex items-center gap-6">
               <label htmlFor="variant-image" className="cursor-pointer">
-                <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center hover:border-gray-400 transition">
+                {/* The parent container needs relative for the Image fill prop */}
+                <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center hover:border-gray-400 transition relative overflow-hidden">
                   {imagePreview ? (
-                    <img
+                    // 2. Replaced <img> with <Image />
+                    <Image
                       src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover rounded-2xl"
+                      alt="Variant Preview"
+                      fill // Use fill to cover the parent div
+                      className="object-cover rounded-2xl"
                     />
                   ) : (
                     <>
